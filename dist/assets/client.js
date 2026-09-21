@@ -1,4 +1,46 @@
 const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function animateHeroIntro(){
+ const hero=document.querySelector('.hero');
+ const title=hero?.querySelector('.hero-title');
+ if(!hero||!title||reduced.matches||window.scrollY>80||typeof title.animate!=='function')return;
+ const lines=[...title.children];
+ const label=lines.map(line=>line.textContent.trim()).join(' ');
+ title.setAttribute('aria-label',label);
+ let characterIndex=0;
+ for(const line of lines){
+  const text=line.textContent;
+  line.textContent='';
+  line.style.overflow='hidden';
+  for(const character of text){
+   const span=document.createElement('span');
+   span.textContent=character===' '?'\u00a0':character;
+   span.setAttribute('aria-hidden','true');
+   span.style.display='inline-block';
+   span.style.willChange='transform, opacity';
+   line.appendChild(span);
+   const animation=span.animate([
+    {opacity:0,transform:'translateY(115%)'},
+    {opacity:1,transform:'translateY(0)'}
+   ],{duration:760,delay:115+characterIndex*31,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
+   animation.onfinish=()=>{span.style.opacity='1';span.style.transform='translateY(0)';span.style.willChange='auto';animation.cancel();};
+   characterIndex++;
+  }
+ }
+ const fadeUp=(element,delay,distance=14)=>{
+  if(!element)return;
+  const animation=element.animate([
+   {opacity:0,transform:`translateY(${distance}px)`},
+   {opacity:1,transform:'translateY(0)'}
+  ],{duration:650,delay,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
+  animation.onfinish=()=>{element.style.opacity='1';element.style.transform='translateY(0)';animation.cancel();};
+ };
+ fadeUp(hero.querySelector('.hero-top'),220,10);
+ fadeUp(hero.querySelector('.hero-role'),690,18);
+ [...hero.querySelectorAll('.hero-bottom > *')].forEach((element,index)=>fadeUp(element,830+index*90,14));
+}
+animateHeroIntro();
+
 const reveals=[...document.querySelectorAll('.reveal')];
 if('IntersectionObserver' in window&&!reduced.matches){
  const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target);}},{threshold:.08});
