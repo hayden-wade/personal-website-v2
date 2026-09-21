@@ -20,24 +20,24 @@ function animateHeroIntro(){
    span.style.willChange='transform, opacity';
    line.appendChild(span);
    const animation=span.animate([
-    {opacity:0,transform:'translateY(115%)'},
+    {opacity:0,transform:'translateY(82%)'},
     {opacity:1,transform:'translateY(0)'}
-   ],{duration:760,delay:115+characterIndex*31,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
+   ],{duration:1050,delay:170+characterIndex*45,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
    animation.onfinish=()=>{span.style.opacity='1';span.style.transform='translateY(0)';span.style.willChange='auto';animation.cancel();};
    characterIndex++;
   }
  }
- const fadeUp=(element,delay,distance=14)=>{
+ const fadeUp=(element,delay,distance=12)=>{
   if(!element)return;
   const animation=element.animate([
    {opacity:0,transform:`translateY(${distance}px)`},
    {opacity:1,transform:'translateY(0)'}
-  ],{duration:650,delay,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
+  ],{duration:900,delay,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'});
   animation.onfinish=()=>{element.style.opacity='1';element.style.transform='translateY(0)';animation.cancel();};
  };
- fadeUp(hero.querySelector('.hero-top'),220,10);
- fadeUp(hero.querySelector('.hero-role'),690,18);
- [...hero.querySelectorAll('.hero-bottom > *')].forEach((element,index)=>fadeUp(element,830+index*90,14));
+ fadeUp(hero.querySelector('.hero-top'),300,8);
+ fadeUp(hero.querySelector('.hero-role'),1250,14);
+ [...hero.querySelectorAll('.hero-bottom > *')].forEach((element,index)=>fadeUp(element,1500+index*120,10));
 }
 animateHeroIntro();
 
