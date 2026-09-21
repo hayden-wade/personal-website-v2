@@ -1,0 +1,14 @@
+{
+  "name": "hayden-wade-personal-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hayden Wade's editorial portfolio and E30 restoration journal",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs --dev",
+    "preview": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

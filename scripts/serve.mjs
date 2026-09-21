@@ -1,0 +1,10 @@
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {build} from './build.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../dist');
+const args=process.argv.slice(2);const portIndex=args.indexOf('--port');const port=Number(portIndex>=0?args[portIndex+1]:process.env.PORT||4173);const hostIndex=args.indexOf('--host');const host=hostIndex>=0&&args[hostIndex+1]&&!args[hostIndex+1].startsWith('--')?args[hostIndex+1]:'0.0.0.0';
+if(args.includes('--dev')||!fs.existsSync(root))build();
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.ttf':'font/ttf','.woff2':'font/woff2','.json':'application/json'};
+http.createServer((req,res)=>{let pathname;try{pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch{res.writeHead(400);res.end('Bad request');return;}let file=path.resolve(root,'.'+pathname);if(file!==root&&!file.startsWith(root+path.sep)){res.writeHead(403);res.end();return;}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');if(!fs.existsSync(file)){res.writeHead(404,{'Content-Type':'text/html; charset=utf-8'});res.end(fs.readFileSync(path.join(root,'404.html')));return;}res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});if(req.method==='HEAD')res.end();else fs.createReadStream(file).pipe(res);}).listen(port,host,()=>console.log(`Website ready at http://localhost:${port}`));
