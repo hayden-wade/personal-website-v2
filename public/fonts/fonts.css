@@ -33,3 +33,6 @@
   font-display: swap;
   src: url(../fonts/font-4.ttf) format('truetype');
 }
+
+/* Keep the homepage hero image edge crisp rather than fading into the page. */
+.hero:before{display:none!important}
