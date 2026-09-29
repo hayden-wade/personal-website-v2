@@ -1,67 +1,64 @@
 # Hayden Wade — Personal Website V2
 
-A complete, responsive personal portfolio and seven-part E30 restoration journal, built around the agreed warm-stone palette, editorial typography and persistent section navigation.
+Responsive implementation of the approved **V2 — Dark Minimalistic** Figma design, using the existing dependency-free static site generator. Includes the homepage, project catalogue, ChassisWire case study, E30 respray journal, Honda CB500 Four archive and photography gallery/index/viewer.
 
-## Open the finished website
+## View locally
 
-**No installation required:** download this repository using **Code → Download ZIP**, extract it, open the `dist` folder and double-click `index.html`. All page links, fonts and photographs work locally. Keep the whole `dist` folder together.
-
-For a local web server, from the repository folder in Windows PowerShell:
+From your existing Windows checkout:
 
 ```powershell
-py -m http.server 8000 --directory dist
-```
-
-Then open **http://localhost:8000**. Leave the PowerShell window open while viewing; press Ctrl+C to stop it. If the Python launcher is unavailable, use the double-click option above, or the Node option below.
-
-## Edit and rebuild
-
-Install Node.js 20 or newer. No npm packages or dependency installation are needed.
-
-```sh
+cd C:\Users\hwade\Documents\Github\personal-website-v2
+git pull --ff-only
 npm run build
 npm run preview
 ```
 
-Open **http://localhost:4173**. Re-run `npm run build` after source edits and refresh the browser. `npm run dev` builds once and starts the same local server; it does not hot-reload.
+Open **http://localhost:4173**. Press Ctrl+C to stop the server.
 
-```sh
-npm run check
+If you have not cloned it on that computer:
+
+```powershell
+cd C:\Users\hwade\Documents\Github
+git clone https://github.com/hayden-wade/personal-website-v2.git
+cd personal-website-v2
+npm run preview
 ```
 
-The check validates generated pages, local links, image references, heading presence and unfinished draft markers.
+Requires Node.js 20 or newer. No `npm install` is required. The checked-in `dist` is ready to view. You can also open `dist/index.html` directly; links, fonts, images and viewer controls use relative paths.
 
-## Repository structure
+## Commands
 
-- `docs/`: the original design brief, architecture, palette and motion decisions, plus implementation, asset provenance and validation notes.
-- `content/about.md`, `content/experience.md`: editable long-form biographical and professional content.
-- `content/projects/`: project descriptions.
-- `content/writing/e30-respray/`: seven real Markdown articles plus the series introduction.
-- `src/site.mjs`: homepage summaries, article titles, images, links and gallery metadata.
-- `src/templates.mjs`: shared layouts and page templates.
-- `src/styles.css`: responsive design tokens and styling.
-- `src/client.js`: active navigation, restrained motion, reading progress and accessible image enlargement.
-- `public/images/`: selected photographs organised by purpose.
-- `public/fonts/`: locally served fonts and their OFL licences.
-- `scripts/build.mjs`: dependency-free static generator.
-- `scripts/serve.mjs`: local HTTP server.
-- `scripts/check.mjs`: generated-site validation.
-- `dist/`: complete, checked-in, ready-to-open website.
+- `npm run build` regenerates `dist` from source and content.
+- `npm run preview` serves `dist` at port 4173.
+- `npm run dev` builds once and serves the result; refresh after rebuilding edits.
+- `npm run check` checks generated pages, local links, anchors, images and heading presence.
 
-## Pages
+## Where to edit
 
-Homepage; About; Experience; Projects; ChassisWire; Automotive Engineering; Writing; Photography; E30 series index; and all seven individual E30 articles. A custom 404 page is included.
+| File                           | Purpose                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| `src/templates.mjs`            | Shared header/footer, cards, page templates, articles and galleries                       |
+| `src/styles.css`               | Dark design tokens, layouts, responsive rules and reduced-motion support                  |
+| `src/client.js`                | Mobile menu, accordions, project filters, concept tabs, photo viewer and reading progress |
+| `src/projects.mjs`             | Project status, descriptions, routes and all six Honda archive links                      |
+| `src/site.mjs`                 | Contact details, career summaries, E30 chapter metadata and photography collection        |
+| `content/writing/e30-respray/` | The seven existing E30 articles in Markdown                                               |
+| `public/images/`               | Local photographs                                                                         |
+| `public/assets/figma/`         | Original exported Figma status/pin vectors                                                |
+| `scripts/build.mjs`            | Static generator and relative URL handling                                                |
 
-Navigation flow: **Homepage → Writing → Restoring an E30 → individual chapter**. Every article also includes its own contents, next chapter and full series navigation.
+## Design reference and implementation notes
 
-## Content notes
+[Master Figma / V2 prototype](https://www.figma.com/design/SmRGpeF2FU2aR4DYtJ65S9?node-id=63-2)
 
-The E30 articles adapt the supplied Word draft. The document contained two versions of the series; the later set was used, with editorial/photo prompts removed and verified photos inserted. Personal recollections remain qualified. The paint-correction chapter does not claim the entire correction was completed. The final spray was handled by a painter after Hayden prepared the car.
+See [the implementation handover](docs/v2-figma-implementation.md) for screen mappings, checks, deliberate content decisions and remaining image slots.
 
-ChassisWire and automotive engineering projects are explicitly described as in development. The ChassisWire drawing is a concept schematic, not a released-product screenshot.
+The gallery currently contains the four verified photographs already in the repository. Add entries to `gallery` in `src/site.mjs` to grow it; viewer counts follow the content automatically. The Figma's 24 empty photo slots are not presented as 24 real photographs.
 
-The hero uses the existing AI-generated alpine E30 artwork from the design exploration. Restoration photographs are the actual Glacier Blue sedan. The hero artwork is kept out of the photography gallery. See `docs/assets-and-content.md` for sources and image selection.
+Redbank Plains, E30 318iS and the M54 conversion have catalogue entries but no clickable detail pages. M54 remains **planned / collecting parts**. ChassisWire UI examples are explicitly labelled as product concepts; the portfolio does not claim to contain a released wiring editor.
 
-## Deployment
+The six Honda articles link to their original published versions. Their selected photographs are hosted locally. The E30 articles and original routes are retained.
 
-The site is static: publish the contents of `dist` to a static host. No database, API keys, account system or build-time environment variables are needed. A private Sites preview is configured in `.openai/hosting.json`; GitHub remains the requested source repository.
+## Publishing
+
+This change updates GitHub source and the generated `dist` folder. It does not publish to the live domain. The site is static and needs no secrets, database or account system.

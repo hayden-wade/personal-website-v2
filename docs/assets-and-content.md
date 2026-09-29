@@ -49,3 +49,20 @@ Instrument Serif and DM Sans were downloaded from Google Fonts and are self-host
 ## Links
 
 LinkedIn and Instagram destinations were verified against the original website's links. Email was taken from the earlier website package. GitHub links use the supplied personal profile and ChassisWire organisation. No fabricated contact form or generic LinkedIn homepage is used.
+
+## V2 Figma implementation additions (September 2026)
+
+The active implementation now follows the dark V2 prototype; the original alpine artwork remains archived in `public` and is not used as a real photograph. Photography currently uses the four pre-existing verified entries rather than manufacturing the Figma gallery's 24-image inventory.
+
+The six local `public/images/honda/` files are sourced from the correspondingly named original articles on `haydenbwade.com`. Selected source images:
+
+| Local article image | Original uploaded photograph |
+| --- | --- |
+| how-to-build-a-classic-honda-cafe-racer-1972-honda-cb500f.jpg | `/wp-content/uploads/2022/02/IMG_1250-1-scaled.jpg` — actual Honda purchase, not the earlier Suzuki or third-party inspiration images |
+| tearing-down-the-honda-cb550.jpg | `/wp-content/uploads/2022/02/IMG_1536-1-768x1024.jpg` |
+| cb550f-carburetor-disassembly-and-restoration.jpg | `/wp-content/uploads/2022/02/IMG_3731-1-1024x768.jpg` |
+| cb500-cafe-racer-welding-the-frame-and-wheel-assembly.jpg | `/wp-content/uploads/2022/02/IMG_2132-2-768x1024.jpg` |
+| engine-rebuild.jpg | `/wp-content/uploads/2022/03/IMG_4181-1024x768.jpg` |
+| cb500-cafe-racer-build-rewiring-the-bike-with-m-unit.jpg | `/wp-content/uploads/2022/03/IMG_4407-768x1024.jpg` |
+
+Original article links are stored in `src/projects.mjs`. The asset names preserve the historical article slugs even where those refer to CB550; the project remains titled Honda CB500 Four per the approved design.

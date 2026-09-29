@@ -1,1 +1,126 @@
-{"/images/hero/alpine-e30.jpg": [1672, 941], "/images/about/portrait.jpg": [1280, 1196], "/images/photography/blue-mountains.jpg": [1280, 1196], "/images/photography/e30-road.jpg": [1350, 1800], "/images/photography/e30-detail.jpg": [1350, 1800], "/images/photography/workshop.jpg": [1350, 1800], "/images/projects/workshop.jpg": [1350, 1800], "/images/e30-respray/before.jpg": [1350, 1800], "/images/e30-respray/bodywork.jpg": [1800, 1350], "/images/e30-respray/primer.jpg": [1350, 1800], "/images/e30-respray/painting.jpg": [1012, 1800], "/images/e30-respray/reassembly.jpg": [1350, 1800], "/images/e30-respray/correction.jpg": [1350, 1800], "/images/e30-respray/finished.jpg": [1350, 1800], "/images/e30-respray/boot-prep.jpg": [1350, 1800], "/images/e30-respray/bonnet-prep.jpg": [1350, 1800], "/images/e30-respray/roof-prep.jpg": [1350, 1800], "/images/e30-respray/paint-side.jpg": [1350, 1800], "/images/e30-respray/roof-paint.jpg": [1350, 1800], "/images/e30-respray/trim-masking.jpg": [1350, 1800], "/images/e30-respray/back-home.jpg": [1350, 1800], "/images/e30-respray/on-trailer.jpg": [1350, 1800], "/images/e30-respray/final-front.jpg": [1179, 1572], "/images/e30-respray/paint-detail.jpg": [1350, 1800], "/images/e30-respray/current-car.jpg": [1350, 1800]}
+{
+  "/images/hero/alpine-e30.jpg": [
+    1672,
+    941
+  ],
+  "/images/about/portrait.jpg": [
+    1280,
+    1196
+  ],
+  "/images/photography/blue-mountains.jpg": [
+    1280,
+    1196
+  ],
+  "/images/photography/e30-road.jpg": [
+    1350,
+    1800
+  ],
+  "/images/photography/e30-detail.jpg": [
+    1350,
+    1800
+  ],
+  "/images/photography/workshop.jpg": [
+    1350,
+    1800
+  ],
+  "/images/projects/workshop.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/before.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/bodywork.jpg": [
+    1800,
+    1350
+  ],
+  "/images/e30-respray/primer.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/painting.jpg": [
+    1012,
+    1800
+  ],
+  "/images/e30-respray/reassembly.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/correction.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/finished.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/boot-prep.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/bonnet-prep.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/roof-prep.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/paint-side.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/roof-paint.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/trim-masking.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/back-home.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/on-trailer.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/final-front.jpg": [
+    1179,
+    1572
+  ],
+  "/images/e30-respray/paint-detail.jpg": [
+    1350,
+    1800
+  ],
+  "/images/e30-respray/current-car.jpg": [
+    1350,
+    1800
+  ],
+  "/images/honda/cb500-cafe-racer-build-rewiring-the-bike-with-m-unit.jpg": [
+    768,
+    1024
+  ],
+  "/images/honda/engine-rebuild.jpg": [
+    1024,
+    768
+  ],
+  "/images/honda/cb500-cafe-racer-welding-the-frame-and-wheel-assembly.jpg": [
+    768,
+    1024
+  ],
+  "/images/honda/tearing-down-the-honda-cb550.jpg": [
+    768,
+    1024
+  ],
+  "/images/honda/cb550f-carburetor-disassembly-and-restoration.jpg": [
+    1024,
+    768
+  ],
+  "/images/honda/how-to-build-a-classic-honda-cafe-racer-1972-honda-cb500f.jpg": [
+    1920,
+    2560
+  ]
+}
