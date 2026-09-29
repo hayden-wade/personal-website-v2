@@ -65,3 +65,11 @@ The existing E30 Markdown remains the publication copy. The misleading `before.j
 - Existing E30 Markdown content was not rewritten.
 
 No live-domain deployment is part of this commit.
+
+## Homepage restoration — 30 September 2026
+
+The first V2 implementation regressed previously accepted homepage details. Restored the original alpine/E30 concept artwork, removed the desktop 900px and mobile 88svh hero caps, and reinstated the warm-stone loader and staggered hero entrance from the original runtime (`c136de3` / `5e1d00f`). The loader retains its character rise, centre-growing line, counter, copper pulse and split-panel exit. It runs on direct home visits/reloads, skips deep links and reduced motion, and hands off to the original text timing. The counter is an introductory sequence, not measured download progress.
+
+Restored title shrink/drift/fade and gentle hero-image parallax with native scrolling. Added once-only section reveals, project hover details, animated native career accordions, and the original employer artwork with corrected alignment. Employer SVGs are self-contained, including embedded original PNGs where supplied; no replacement artwork was drawn. These restore earlier accepted details alongside the dark V2 page design. The hero is no longer a remaining content slot.
+
+Restoration validation: 20 HTML pages and 624 local references pass. Browser checks verified loader entry/removal, restored photo, title scroll transforms, employer image decoding and accordion open/close. Hero height equals the viewport at 1440×1000, 3440×1440, 1920×1200, 390×844 and 320×640. Reduced motion skips the loader and entrance; the image and native accordions also work without JavaScript. Existing menu, filters, concept tabs, viewer keyboard/focus, direct viewer links and reading progress checks still pass.

@@ -50,7 +50,7 @@ export function build() {
   fs.mkdirSync(out, { recursive: true });
   fs.cpSync(path.join(root, "public"), out, { recursive: true });
   fs.mkdirSync(path.join(out, "assets"), { recursive: true });
-  for (const name of ["styles.css", "client.js"])
+  for (const name of ["styles.css", "client.js", "home-motion.js"])
     fs.copyFileSync(
       path.join(root, "src", name),
       path.join(out, "assets", name),

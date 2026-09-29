@@ -1,9 +1,9 @@
 # Experience logos
 
-Source assets selected for the V2 — Dark Minimalistic experience section.
+Original assets selected for V2 — Dark Minimalistic:
 
-- Boeing: Streamline Boeing symbol (transparent PNG source)
-- ADHA: digitalhealth.gov.au social-share mark
-- RAAF: Australian low-visibility roundel from Wikimedia Commons
+- Boeing: supplied Streamline transparent Boeing symbol, embedded PNG.
+- ADHA: supplied digitalhealth.gov.au social-share mark, embedded PNG. SVG viewport frames the original circular artwork without the surrounding empty canvas.
+- RAAF: supplied Australian low-visibility roundel from Wikimedia Commons, original vector paths with a responsive viewBox.
 
-The SVG wrappers keep the site asset paths stable while preserving the supplied source artwork and transparent backgrounds. Replace the remote image references with locally vendored source files before production deployment if desired.
+All artwork is now self-contained. No remote image requests are needed to render the marks. The original source URLs are retained in Git history (7b62b20).
