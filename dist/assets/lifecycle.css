@@ -180,3 +180,11 @@
     animation: none !important;
   }
 }
+
+/* Keep the hero-to-header navigation inside the same 1264px editorial content
+   bounds as the homepage, while the HAYDEN WADE wordmark remains locked to 50vw. */
+@media (min-width: 701px) {
+  .home-nav {
+    padding-inline: max(var(--gutter), calc((100vw - 1264px) / 2)) !important;
+  }
+}
