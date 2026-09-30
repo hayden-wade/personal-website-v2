@@ -20,119 +20,75 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Add a restrained inertial tail to physical mouse-wheel scrolling only.
-// Precision trackpads, touch, keyboard and scrollbar interaction stay native.
-const momentumReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-const momentumPointer = window.matchMedia("(pointer: fine)");
-if (
+// Use Lenis for restrained, production-grade inertial scrolling on the homepage.
+// It loads only after the intro loader has fully left the DOM, and falls back to
+// ordinary browser scrolling if the CDN is unavailable.
+const smoothScrollEligible =
   document.querySelector(".hero") &&
-  momentumPointer.matches &&
-  !momentumReduced.matches
-) {
-  let targetY = window.scrollY;
-  let frame = 0;
-  let lastFrameTime = 0;
+  window.matchMedia("(pointer: fine)").matches;
 
-  const maxScroll = () =>
-    Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  const clampY = (value) => Math.min(maxScroll(), Math.max(0, value));
+if (smoothScrollEligible) {
+  const initLenis = () => {
+    if (!window.Lenis || window.__siteLenis) return;
 
-  const cancelMomentum = () => {
-    if (frame) cancelAnimationFrame(frame);
-    frame = 0;
-    lastFrameTime = 0;
-    targetY = window.scrollY;
+    window.__siteLenis = new window.Lenis({
+      autoRaf: true,
+      lerp: 0.18,
+      smoothWheel: true,
+      syncTouch: false,
+      wheelMultiplier: 1.05,
+      anchors: true,
+      allowNestedScroll: true,
+      stopInertiaOnNavigate: true,
+      respectReducedMotion: true,
+    });
   };
 
-  const renderMomentum = (time) => {
-    const currentY = window.scrollY;
-    targetY = clampY(targetY);
-    const distance = targetY - currentY;
-
-    if (Math.abs(distance) < 0.6) {
-      window.scrollTo(0, targetY);
-      frame = 0;
-      lastFrameTime = 0;
+  const loadLenis = () => {
+    if (window.Lenis) {
+      initLenis();
       return;
     }
 
-    // Frame-rate independent damping. Around 0.16 of the remaining distance
-    // is consumed per 60 Hz frame: enough weight to feel deliberate without lag.
-    const elapsed = lastFrameTime ? Math.min(32, time - lastFrameTime) : 16.67;
-    lastFrameTime = time;
-    const ease = 1 - Math.pow(1 - 0.16, elapsed / 16.67);
-    window.scrollTo(0, currentY + distance * ease);
-    frame = requestAnimationFrame(renderMomentum);
+    if (!document.getElementById("lenis-stylesheet")) {
+      const stylesheet = document.createElement("link");
+      stylesheet.id = "lenis-stylesheet";
+      stylesheet.rel = "stylesheet";
+      stylesheet.href = "https://unpkg.com/lenis@1.3.26/dist/lenis.css";
+      document.head.appendChild(stylesheet);
+    }
+
+    const existingScript = document.getElementById("lenis-script");
+    if (existingScript) {
+      existingScript.addEventListener("load", initLenis, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = "lenis-script";
+    script.src = "https://unpkg.com/lenis@1.3.26/dist/lenis.min.js";
+    script.async = true;
+    script.addEventListener("load", initLenis, { once: true });
+    document.head.appendChild(script);
   };
 
-  const isPrecisionScroll = (event) => {
-    if (event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL) return false;
-    const amount = Math.abs(event.deltaY);
-    // Trackpads normally emit a stream of small and/or fractional pixel deltas.
-    // Leave those alone so the browser/OS can provide its own native momentum.
-    return amount < 45 || !Number.isInteger(event.deltaY);
-  };
+  const startAfterLoader = () => {
+    if (!document.querySelector(".site-loader")) {
+      loadLenis();
+      return;
+    }
 
-  window.addEventListener(
-    "wheel",
-    (event) => {
-      if (
-        event.defaultPrevented ||
-        event.ctrlKey ||
-        event.metaKey ||
-        document.querySelector(".site-loader") ||
-        document.body.classList.contains("lightbox-open") ||
-        event.target.closest("input,textarea,select,[contenteditable='true']") ||
-        Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      )
-        return;
-
-      if (isPrecisionScroll(event)) {
-        cancelMomentum();
-        return;
+    const observer = new MutationObserver(() => {
+      if (!document.querySelector(".site-loader")) {
+        observer.disconnect();
+        loadLenis();
       }
+    });
+    observer.observe(document.body, { childList: true });
+  };
 
-      event.preventDefault();
-
-      const unit =
-        event.deltaMode === WheelEvent.DOM_DELTA_LINE
-          ? 16
-          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
-            ? window.innerHeight
-            : 1;
-      const delta = event.deltaY * unit;
-      const boundedDelta = Math.sign(delta) * Math.min(Math.abs(delta), 180);
-
-      // If the browser position was changed by something else, re-anchor before
-      // adding the next wheel impulse rather than letting an old target fight it.
-      if (!frame) targetY = window.scrollY;
-      targetY = clampY(targetY + boundedDelta * 1.08);
-
-      if (!frame) frame = requestAnimationFrame(renderMomentum);
-    },
-    { passive: false },
-  );
-
-  // Anything that represents direct navigation immediately takes ownership.
-  window.addEventListener("pointerdown", cancelMomentum, { passive: true });
-  window.addEventListener("keydown", (event) => {
-    if (
-      [
-        "ArrowUp",
-        "ArrowDown",
-        "PageUp",
-        "PageDown",
-        "Home",
-        "End",
-        " ",
-      ].includes(event.key)
-    )
-      cancelMomentum();
-  });
-  window.addEventListener("hashchange", cancelMomentum);
-  window.addEventListener("resize", () => {
-    targetY = clampY(targetY);
-  });
+  if (document.readyState === "complete") startAfterLoader();
+  else window.addEventListener("load", startAfterLoader, { once: true });
 }
 
 const sections = [...document.querySelectorAll(".home-section,.contact")];
@@ -225,6 +181,7 @@ triggers.forEach((trigger) =>
     }));
     current = triggers.indexOf(trigger);
     renderViewer(dialog);
+    window.__siteLenis?.stop();
     dialog.showModal();
     document.body.classList.add("lightbox-open");
     dialog.querySelector(".lightbox-close").focus();
@@ -235,6 +192,7 @@ dialog
   .addEventListener("click", () => dialog.close());
 dialog?.addEventListener("close", () => {
   document.body.classList.remove("lightbox-open");
+  window.__siteLenis?.start();
   opener?.focus();
 });
 for (const root of [
