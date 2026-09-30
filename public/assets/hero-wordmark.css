@@ -2,6 +2,15 @@
    Keep the original link text in the DOM for accessibility, while rendering the
    same stacked Instrument Serif treatment used by HAYDEN / WADE in the hero. */
 @media (min-width: 701px) {
+  /* Keep the moving hero title visually above the navbar surface until the
+     exact dock/swap frame. This prevents the forming dark bar from looking like
+     an opacity fade on the title as it shrinks into place. */
+  .hero-title {
+    position: relative;
+    z-index: 30;
+    pointer-events: none;
+  }
+
   .home-nav .wordmark {
     width: 100px;
     height: 58px;
