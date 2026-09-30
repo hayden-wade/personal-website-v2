@@ -25,10 +25,11 @@ function createLoaderStyles() {
 .site-loader--complete .site-loader__track:after{animation:site-loader-pulse 520ms cubic-bezier(.65,0,.35,1) forwards}
 .site-loader__status{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
 .site-loader__count{font-variant-numeric:tabular-nums;color:var(--text,#e5e0d6)}
-.site-loader--handoff .site-loader__ui,.site-loader--exit .site-loader__ui{opacity:0;transform:scale(.994)}
 .site-loader--exit{pointer-events:none;background:transparent}
 .site-loader--exit .site-loader__louvre{transform:scaleY(0)}
+.site-loader--exit .site-loader__ui{animation:site-loader-ui-release 1120ms cubic-bezier(.4,0,.2,1) both}
 @keyframes site-loader-pulse{0%{opacity:0;transform:translateX(-42px)}18%{opacity:1}82%{opacity:1}100%{opacity:0;transform:translateX(calc(min(620px,72vw) - 2px))}}
+@keyframes site-loader-ui-release{0%,52%{opacity:1;transform:scale(1)}88%,100%{opacity:0;transform:scale(.994)}}
 @media(max-width:700px){.site-loader__center{width:78vw}.site-loader__name{font-size:clamp(48px,16vw,76px)}.site-loader__meta{font-size:9px;letter-spacing:.11em}.site-loader__meta--top{top:22px}.site-loader__meta--bottom{bottom:22px}.site-loader__meta--bottom span:first-child{max-width:190px}.site-loader__track{margin-top:28px}}
 @media(prefers-reduced-motion:reduce){.site-loader{display:none!important}}
 `;
@@ -129,27 +130,22 @@ function runSiteLoader() {
         loader.classList.add("site-loader--complete");
 
         window.setTimeout(() => {
-          // First remove the loader UI while the background remains perfectly solid.
-          loader.classList.add("site-loader--handoff");
+          // Keep the finished loader composition visible while the same dark
+          // surface immediately opens into horizontal louvres around it.
+          animateHeroIntro();
+          requestAnimationFrame(() =>
+            loader.classList.add("site-loader--exit"),
+          );
 
           window.setTimeout(() => {
-            // Then the same dark field resolves into 40 horizontal louvres.
-            // The hero is already animating underneath as those louvres narrow away.
-            animateHeroIntro();
-            requestAnimationFrame(() =>
-              loader.classList.add("site-loader--exit"),
-            );
+            document.body.style.overflow = previousOverflow;
+          }, 1180);
 
-            window.setTimeout(() => {
-              document.body.style.overflow = previousOverflow;
-            }, 1180);
-
-            window.setTimeout(() => {
-              loader.remove();
-              resolve(true);
-            }, 1340);
-          }, 320);
-        }, 260);
+          window.setTimeout(() => {
+            loader.remove();
+            resolve(true);
+          }, 1340);
+        }, 120);
         return;
       }
 
