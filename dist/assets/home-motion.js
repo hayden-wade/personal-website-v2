@@ -21,14 +21,11 @@ function createLoaderStyles() {
 .site-loader--active .site-loader__char{opacity:1;transform:translateY(0)}
 .site-loader__track{position:relative;height:1px;background:var(--line,#3a3f39);margin:34px auto 16px;overflow:visible}
 .site-loader__fill{position:absolute;inset:0;background:var(--text,#e5e0d6);transform:scaleX(0);transform-origin:center;will-change:transform;box-shadow:0 0 18px rgba(229,224,214,.12)}
-.site-loader__track:after{content:'';position:absolute;top:-1px;left:0;width:38px;height:3px;background:var(--accent,#c06b49);box-shadow:0 0 22px rgba(192,107,73,.28);opacity:0;transform:translateX(-42px)}
-.site-loader--complete .site-loader__track:after{animation:site-loader-pulse 520ms cubic-bezier(.65,0,.35,1) forwards}
 .site-loader__status{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
 .site-loader__count{font-variant-numeric:tabular-nums;color:var(--text,#e5e0d6)}
 .site-loader--exit{pointer-events:none;background:transparent}
 .site-loader--exit .site-loader__louvre{transform:scaleY(0)}
 .site-loader--exit .site-loader__ui{animation:site-loader-ui-release 1120ms cubic-bezier(.4,0,.2,1) both}
-@keyframes site-loader-pulse{0%{opacity:0;transform:translateX(-42px)}18%{opacity:1}82%{opacity:1}100%{opacity:0;transform:translateX(calc(min(620px,72vw) - 2px))}}
 @keyframes site-loader-ui-release{0%,52%{opacity:1;transform:scale(1)}88%,100%{opacity:0;transform:scale(.994)}}
 @media(max-width:700px){.site-loader__center{width:78vw}.site-loader__name{font-size:clamp(48px,16vw,76px)}.site-loader__meta{font-size:9px;letter-spacing:.11em}.site-loader__meta--top{top:22px}.site-loader__meta--bottom{bottom:22px}.site-loader__meta--bottom span:first-child{max-width:190px}.site-loader__track{margin-top:28px}}
 @media(prefers-reduced-motion:reduce){.site-loader{display:none!important}}
@@ -127,7 +124,6 @@ function runSiteLoader() {
       if (target === 100 && displayed >= 99.35) {
         fill.style.transform = "scaleX(1)";
         count.textContent = "100";
-        loader.classList.add("site-loader--complete");
 
         window.setTimeout(() => {
           // Keep the finished loader composition visible while the same dark
