@@ -280,7 +280,7 @@ function installHeroWordmarkProxy() {
   let sourceCenterY = 0;
   let targetCenterY = 37;
   let heroFontSize = 196;
-  let dockScale = 27 / 196;
+  let dockScale = 30 / 196;
   let startLetterEm = -0.0255;
 
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
@@ -306,7 +306,7 @@ function installHeroWordmarkProxy() {
     startLetterEm = Number.isFinite(letterSpacingPx)
       ? letterSpacingPx / heroFontSize
       : -0.0255;
-    dockScale = 27 / heroFontSize;
+    dockScale = 30 / heroFontSize;
 
     source.style.transform = previousTransform;
     source.style.opacity = previousOpacity;
