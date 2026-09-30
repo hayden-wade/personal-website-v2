@@ -262,3 +262,118 @@ if (progress) {
   addEventListener("resize", update);
   update();
 }
+
+// Shared-element/FLIP-style hero identity handoff. Once scrolling begins, one
+// fixed visual proxy represents Hayden/Wade all the way from the hero to the
+// header. The real source and destination remain in the DOM but are hidden so
+// there can never be a doubled/cross-faded wordmark.
+function installHeroWordmarkProxy() {
+  const hero = document.querySelector(".hero");
+  const source = hero?.querySelector(".hero-title");
+  const destination = document.querySelector(".home-nav .wordmark");
+  if (!hero || !source || !destination) return;
+
+  const desktop = window.matchMedia("(min-width: 701px)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let proxy = null;
+  let scheduled = false;
+  let sourceCenterY = 0;
+  let targetCenterY = 37;
+  let heroFontSize = 196;
+  let dockScale = 27 / 196;
+  let startLetterEm = -0.0255;
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const smoothstep = (start, end, value) => {
+    const t = clamp01((value - start) / (end - start));
+    return t * t * (3 - 2 * t);
+  };
+  const mix = (from, to, progress) => from + (to - from) * progress;
+
+  const measure = () => {
+    const previousTransform = source.style.transform;
+    const previousOpacity = source.style.opacity;
+    const previousLetterSpacing = source.style.letterSpacing;
+    source.style.transform = "none";
+    source.style.opacity = "1";
+    source.style.letterSpacing = "";
+
+    const sourceRect = source.getBoundingClientRect();
+    sourceCenterY = sourceRect.top + sourceRect.height / 2;
+    const computed = getComputedStyle(source);
+    heroFontSize = parseFloat(computed.fontSize) || 196;
+    const letterSpacingPx = parseFloat(computed.letterSpacing);
+    startLetterEm = Number.isFinite(letterSpacingPx)
+      ? letterSpacingPx / heroFontSize
+      : -0.0255;
+    dockScale = 27 / heroFontSize;
+
+    source.style.transform = previousTransform;
+    source.style.opacity = previousOpacity;
+    source.style.letterSpacing = previousLetterSpacing;
+
+    const targetRect = destination.getBoundingClientRect();
+    if (targetRect.height) targetCenterY = targetRect.top + targetRect.height / 2;
+  };
+
+  const buildProxy = () => {
+    if (proxy) return;
+    proxy = source.cloneNode(true);
+    proxy.classList.add("hero-wordmark-proxy");
+    proxy.removeAttribute("id");
+    proxy.setAttribute("aria-hidden", "true");
+    proxy.style.transform = "";
+    proxy.style.opacity = "";
+    proxy.style.letterSpacing = "";
+    document.body.appendChild(proxy);
+    document.documentElement.classList.add("hero-wordmark-proxy-active");
+  };
+
+  const removeProxy = () => {
+    proxy?.remove();
+    proxy = null;
+    document.documentElement.classList.remove("hero-wordmark-proxy-active");
+  };
+
+  const update = () => {
+    scheduled = false;
+    if (!desktop.matches || reducedMotion.matches) {
+      removeProxy();
+      return;
+    }
+
+    const ratio = clamp01(window.scrollY / Math.max(1, hero.offsetHeight));
+    if (ratio <= 0 && !proxy) return;
+    if (!sourceCenterY) measure();
+    buildProxy();
+
+    const travel = smoothstep(0.08, 0.9, ratio);
+    const y = mix(sourceCenterY, targetCenterY, travel);
+    const scale = mix(1, dockScale, travel);
+    const letterEm = mix(startLetterEm, -0.055, travel);
+
+    proxy.style.top = `${y}px`;
+    proxy.style.transform = `translate3d(-50%,-50%,0) scale(${scale})`;
+    proxy.style.letterSpacing = `${letterEm}em`;
+  };
+
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(update);
+  };
+
+  measure();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", () => {
+    removeProxy();
+    sourceCenterY = 0;
+    measure();
+    schedule();
+  });
+  desktop.addEventListener("change", schedule);
+  reducedMotion.addEventListener("change", schedule);
+}
+
+if (document.readyState === "complete") installHeroWordmarkProxy();
+else window.addEventListener("load", installHeroWordmarkProxy, { once: true });
