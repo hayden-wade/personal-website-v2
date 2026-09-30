@@ -330,8 +330,8 @@ if (homeHero) {
 
       const travel = smoothstep(0.08, 0.9, ratio);
       const navReveal = smoothstep(0.54, 0.8, ratio);
+      const wordmarkReveal = smoothstep(0.75, 0.91, ratio);
       const barReveal = smoothstep(0.64, 0.89, ratio);
-      const handoffComplete = ratio >= 0.9;
       const startViewportCenter = titlePageCenter;
       const targetViewportCenter = 37;
       const desiredCenter =
@@ -343,7 +343,7 @@ if (homeHero) {
 
       heroTitle.style.transformOrigin = "50% 50%";
       heroTitle.style.transform = `translate3d(0,${translateY}px,0) scale(${scale})`;
-      heroTitle.style.opacity = handoffComplete ? "0" : "1";
+      heroTitle.style.opacity = "1";
       heroTitle.style.letterSpacing = `${-0.065 + 0.01 * travel}em`;
 
       homeNav.style.setProperty("--home-nav-bg", String(barReveal * 0.985));
@@ -353,10 +353,7 @@ if (homeHero) {
         "--home-nav-shift",
         `${24 * (1 - navReveal)}px`,
       );
-      homeNav.style.setProperty(
-        "--home-nav-wordmark",
-        handoffComplete ? "1" : "0",
-      );
+      homeNav.style.setProperty("--home-nav-wordmark", String(wordmarkReveal));
       homeNav.style.pointerEvents = navReveal > 0.35 ? "auto" : "none";
     } else {
       heroTitle.style.transform = reduced.matches
