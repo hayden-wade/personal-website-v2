@@ -113,12 +113,17 @@ function runSiteLoader() {
         count.textContent = "100";
         loader.classList.add("site-loader--complete");
         window.setTimeout(() => {
-          loader.classList.add("site-loader--exit");
+          // Stage and start the hero while it is still covered so the two
+          // sequences overlap rather than exposing a static hero for a frame.
+          animateHeroIntro();
+          requestAnimationFrame(() => loader.classList.add("site-loader--exit"));
           window.setTimeout(() => {
             document.body.style.overflow = previousOverflow;
+          }, 760);
+          window.setTimeout(() => {
+            loader.remove();
             resolve(true);
-          }, 260);
-          window.setTimeout(() => loader.remove(), 980);
+          }, 980);
         }, 260);
         return;
       }
@@ -128,10 +133,12 @@ function runSiteLoader() {
   });
 }
 
+let heroIntroStarted = false;
 function animateHeroIntro() {
   const hero = document.querySelector(".hero");
   const title = hero?.querySelector(".hero-title");
   if (
+    heroIntroStarted ||
     !hero ||
     !title ||
     reduced.matches ||
@@ -139,6 +146,7 @@ function animateHeroIntro() {
     typeof title.animate !== "function"
   )
     return;
+  heroIntroStarted = true;
   const lines = [...title.children];
   const label = lines.map((line) => line.textContent.trim()).join(" ");
   title.setAttribute("aria-label", label);
@@ -195,13 +203,35 @@ function animateHeroIntro() {
       animation.cancel();
     };
   };
+  const photo = hero.querySelector(".hero-image");
+  if (photo && typeof photo.animate === "function") {
+    const photoAnimation = photo.animate(
+      [
+        { opacity: 0.18, filter: "brightness(.74)" },
+        { opacity: 1, filter: "brightness(1)" },
+      ],
+      {
+        duration: 1250,
+        delay: 40,
+        easing: "cubic-bezier(.16,1,.3,1)",
+        fill: "both",
+      },
+    );
+    photoAnimation.onfinish = () => {
+      photo.style.opacity = "1";
+      photo.style.filter = "";
+      photoAnimation.cancel();
+    };
+  }
   fadeUp(hero.querySelector(".hero-top"), 300, 8);
   fadeUp(hero.querySelector(".hero-role"), 1250, 14);
   [...hero.querySelectorAll(".hero-bottom > *")].forEach((element, index) =>
     fadeUp(element, 1500 + index * 120, 10),
   );
 }
-runSiteLoader().then(() => animateHeroIntro());
+runSiteLoader().then((shown) => {
+  if (!shown) animateHeroIntro();
+});
 
 // Keep native scrolling; restore the original title drift and gentle image parallax.
 const homeHero = document.querySelector(".hero");
