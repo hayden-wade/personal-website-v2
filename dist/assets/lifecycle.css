@@ -1,0 +1,116 @@
+/* Homepage project lifecycle rails restored from the V2 prototype. */
+#projects .home-projects {
+  position: relative;
+  row-gap: 52px;
+}
+
+#projects .home-projects::before,
+#projects .home-projects::after {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  height: 44px;
+  font: 500 11px/1.1 "DM Sans", sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+#projects .home-projects::before {
+  content: "IN PROGRESS";
+  color: #f0eadf;
+  background:
+    radial-gradient(circle at 18.2% 36px, var(--accent, #c06b49) 0 8px, transparent 8.5px),
+    linear-gradient(var(--accent, #c06b49), var(--accent, #c06b49)) 0 35px / 18.2% 3px no-repeat,
+    linear-gradient(var(--line, #3a3f39), var(--line, #3a3f39)) 0 36px / 100% 1px no-repeat;
+}
+
+#projects .home-projects::after {
+  content: "04 ACTIVE";
+  color: var(--muted, #a7aaa3);
+  text-align: right;
+}
+
+#projects .home-projects .project-card[data-status="complete"] {
+  position: relative;
+}
+
+#projects .home-projects .project-card[data-status="complete"]::before,
+#projects .home-projects .project-card[data-status="complete"]::after {
+  position: absolute;
+  left: 0;
+  top: -50px;
+  width: calc(200% + 24px);
+  height: 44px;
+  box-sizing: border-box;
+  padding-top: 25px;
+  font: 500 11px/1.1 "DM Sans", sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+#projects .home-projects .project-card[data-status="complete"]::before {
+  content: "COMPLETED";
+  color: #f0eadf;
+  background:
+    radial-gradient(circle at 75.3% 8px, var(--accent, #c06b49) 0 8px, transparent 8.5px),
+    linear-gradient(var(--accent, #c06b49), var(--accent, #c06b49)) 100% 7px / 24.7% 3px no-repeat,
+    linear-gradient(var(--line, #3a3f39), var(--line, #3a3f39)) 0 8px / 100% 1px no-repeat;
+}
+
+#projects .home-projects .project-card[data-status="complete"]::after {
+  content: "02 PROJECTS";
+  color: var(--muted, #a7aaa3);
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  #projects .home-projects {
+    position: relative;
+    padding-top: 54px;
+  }
+
+  #projects .home-projects::before,
+  #projects .home-projects::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 42px;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+  }
+
+  #projects .home-projects::before {
+    background:
+      radial-gradient(circle at 27% 34px, var(--accent, #c06b49) 0 6px, transparent 6.5px),
+      linear-gradient(var(--accent, #c06b49), var(--accent, #c06b49)) 0 33px / 27% 3px no-repeat,
+      linear-gradient(var(--line, #3a3f39), var(--line, #3a3f39)) 0 34px / 100% 1px no-repeat;
+  }
+
+  #projects .home-projects::after {
+    right: 0;
+    text-align: right;
+  }
+
+  #projects .home-projects .project-card[data-status="complete"] {
+    margin-top: 42px;
+  }
+
+  #projects .home-projects .project-card[data-status="complete"]::before,
+  #projects .home-projects .project-card[data-status="complete"]::after {
+    top: -48px;
+    width: 100%;
+    height: 40px;
+    padding-top: 23px;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+  }
+
+  #projects .home-projects .project-card[data-status="complete"]::before {
+    background:
+      radial-gradient(circle at 73% 7px, var(--accent, #c06b49) 0 6px, transparent 6.5px),
+      linear-gradient(var(--accent, #c06b49), var(--accent, #c06b49)) 100% 6px / 27% 3px no-repeat,
+      linear-gradient(var(--line, #3a3f39), var(--line, #3a3f39)) 0 7px / 100% 1px no-repeat;
+  }
+}
