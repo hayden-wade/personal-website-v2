@@ -19,6 +19,105 @@ document.addEventListener("keydown", (e) => {
     menu.focus();
   }
 });
+
+// Give desktop wheel scrolling some weight without replacing native touch,
+// keyboard, scrollbar, reduced-motion, or nested-control behaviour.
+const momentumReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+const momentumPointer = window.matchMedia("(pointer: fine)");
+if (
+  document.querySelector(".hero") &&
+  momentumPointer.matches &&
+  !momentumReduced.matches
+) {
+  let current = window.scrollY;
+  let target = window.scrollY;
+  let frame = 0;
+
+  const maxScroll = () =>
+    Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  const clamp = (value) => Math.min(maxScroll(), Math.max(0, value));
+
+  const stopMomentum = () => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    current = window.scrollY;
+    target = window.scrollY;
+  };
+
+  const renderMomentum = () => {
+    target = clamp(target);
+    const distance = target - current;
+    current += distance * 0.105;
+
+    if (Math.abs(distance) < 0.35) {
+      current = target;
+      window.scrollTo(0, target);
+      frame = 0;
+      return;
+    }
+
+    window.scrollTo(0, current);
+    frame = requestAnimationFrame(renderMomentum);
+  };
+
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      if (
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        document.body.classList.contains("lightbox-open") ||
+        event.target.closest("input,textarea,select,[contenteditable='true']") ||
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      )
+        return;
+
+      event.preventDefault();
+
+      if (!frame) {
+        current = window.scrollY;
+        target = window.scrollY;
+      }
+
+      const unit =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? 18
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? window.innerHeight
+            : 1;
+      const rawDelta = event.deltaY * unit;
+      const limitedDelta =
+        Math.sign(rawDelta) * Math.min(Math.abs(rawDelta), 220);
+
+      target = clamp(target + limitedDelta * 0.95);
+      if (!frame) frame = requestAnimationFrame(renderMomentum);
+    },
+    { passive: false },
+  );
+
+  // Direct navigation should immediately take control back from the easing loop.
+  window.addEventListener("pointerdown", stopMomentum, { passive: true });
+  window.addEventListener("keydown", (event) => {
+    if (
+      [
+        "ArrowUp",
+        "ArrowDown",
+        "PageUp",
+        "PageDown",
+        "Home",
+        "End",
+        " ",
+      ].includes(event.key)
+    )
+      stopMomentum();
+  });
+  window.addEventListener("resize", () => {
+    target = clamp(target);
+  });
+  window.addEventListener("hashchange", stopMomentum);
+}
+
 const sections = [...document.querySelectorAll(".home-section,.contact")];
 if (sections.length) {
   const nav = [...document.querySelectorAll(".home-nav nav a")];
