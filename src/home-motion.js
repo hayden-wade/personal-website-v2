@@ -265,10 +265,10 @@ if (homeHero) {
   const heroPhoto = homeHero.querySelector(".hero-image");
   const homeNav = document.querySelector(".home-nav");
   const identity = homeNav?.querySelector(".wordmark");
-  const navLinks = homeNav ? [...homeNav.querySelectorAll("nav a")] : [];
   const desktopHandoff = window.matchMedia("(min-width: 701px)");
   let scheduled = false;
   let titlePageCenter = 0;
+  let dockScale = 0.095;
 
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
   const smoothstep = (start, end, value) => {
@@ -282,9 +282,9 @@ if (homeHero) {
     style.id = "hero-nav-handoff-styles";
     style.textContent = `
 @media (min-width:701px) and (prefers-reduced-motion:no-preference){
-  .home-nav{position:fixed!important;top:0;left:0;right:0;width:100%;max-width:none;margin:0;height:74px;z-index:20;background:rgba(23,26,24,var(--home-nav-bg,0));border-bottom:1px solid rgba(58,63,57,var(--home-nav-line,0));padding-inline:var(--gutter);}
-  .home-nav .wordmark{position:absolute;left:50%;top:50%;z-index:2;margin:0;opacity:var(--home-nav-wordmark,0);transform:translate(-50%,-50%) scale(var(--home-nav-wordmark-scale,.96));transform-origin:50% 50%;font-size:15px;letter-spacing:.025em;transition:color .2s;}
-  .home-nav nav{width:100%;height:74px;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;align-items:center;column-gap:clamp(24px,3vw,54px);}
+  .home-nav{position:fixed!important;top:0;left:0;right:0;width:100%;max-width:none;margin:0;height:74px;z-index:20;background:rgba(23,26,24,var(--home-nav-bg,0));border-bottom:1px solid rgba(58,63,57,var(--home-nav-line,0));padding-inline:0;}
+  .home-nav .wordmark{position:absolute;left:50%;top:50%;z-index:2;margin:0;opacity:var(--home-nav-wordmark,0);transform:translate(-50%,-50%);transform-origin:50% 50%;transition:color .2s;}
+  .home-nav nav{width:min(1264px,calc(100vw - (2 * var(--gutter))));height:74px;margin-inline:auto;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;align-items:center;column-gap:clamp(24px,3vw,54px);}
   .home-nav nav a{height:74px;display:flex;align-items:center;opacity:var(--home-nav-links,0);will-change:transform,opacity;}
   .home-nav nav a:nth-child(1){grid-column:1;transform:translateX(calc(-1 * var(--home-nav-shift,24px)));}
   .home-nav nav a:nth-child(2){grid-column:2;transform:translateX(calc(-1 * var(--home-nav-shift,24px)));}
@@ -304,6 +304,8 @@ if (homeHero) {
     heroTitle.style.opacity = "1";
     const rect = heroTitle.getBoundingClientRect();
     titlePageCenter = rect.top + window.scrollY + rect.height / 2;
+    const fontSize = parseFloat(getComputedStyle(heroTitle).fontSize);
+    if (Number.isFinite(fontSize) && fontSize > 0) dockScale = 27 / fontSize;
     heroTitle.style.transform = previousTransform;
     heroTitle.style.opacity = previousOpacity;
   };
@@ -327,10 +329,9 @@ if (homeHero) {
       if (!titlePageCenter) measureTitle();
 
       const travel = smoothstep(0.08, 0.9, ratio);
-      const titleRelease = smoothstep(0.72, 0.9, ratio);
       const navReveal = smoothstep(0.54, 0.8, ratio);
-      const wordmarkReveal = smoothstep(0.75, 0.91, ratio);
       const barReveal = smoothstep(0.64, 0.89, ratio);
+      const handoffComplete = ratio >= 0.9;
       const startViewportCenter = titlePageCenter;
       const targetViewportCenter = 37;
       const desiredCenter =
@@ -338,12 +339,12 @@ if (homeHero) {
         (targetViewportCenter - startViewportCenter) * travel;
       const naturalCenter = titlePageCenter - window.scrollY;
       const translateY = desiredCenter - naturalCenter;
-      const scale = 1 + (0.095 - 1) * travel;
+      const scale = 1 + (dockScale - 1) * travel;
 
       heroTitle.style.transformOrigin = "50% 50%";
       heroTitle.style.transform = `translate3d(0,${translateY}px,0) scale(${scale})`;
-      heroTitle.style.opacity = String(1 - titleRelease);
-      heroTitle.style.letterSpacing = `${-0.065 + 0.035 * travel}em`;
+      heroTitle.style.opacity = handoffComplete ? "0" : "1";
+      heroTitle.style.letterSpacing = `${-0.065 + 0.01 * travel}em`;
 
       homeNav.style.setProperty("--home-nav-bg", String(barReveal * 0.985));
       homeNav.style.setProperty("--home-nav-line", String(barReveal));
@@ -352,10 +353,9 @@ if (homeHero) {
         "--home-nav-shift",
         `${24 * (1 - navReveal)}px`,
       );
-      homeNav.style.setProperty("--home-nav-wordmark", String(wordmarkReveal));
       homeNav.style.setProperty(
-        "--home-nav-wordmark-scale",
-        String(0.94 + wordmarkReveal * 0.06),
+        "--home-nav-wordmark",
+        handoffComplete ? "1" : "0",
       );
       homeNav.style.pointerEvents = navReveal > 0.35 ? "auto" : "none";
     } else {
@@ -372,7 +372,6 @@ if (homeHero) {
           "--home-nav-links",
           "--home-nav-shift",
           "--home-nav-wordmark",
-          "--home-nav-wordmark-scale",
         ])
           homeNav.style.removeProperty(property);
       }
