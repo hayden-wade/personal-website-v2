@@ -1,4 +1,4 @@
-// Original loader motion, rethemed for the V2 dark palette.
+// Dark portfolio loader with a louvre-style handoff into the hero.
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function createLoaderStyles() {
@@ -6,10 +6,10 @@ function createLoaderStyles() {
   const style = document.createElement("style");
   style.id = "site-loader-styles";
   style.textContent = `
-.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:transparent}
-.site-loader__panel{position:absolute;left:0;right:0;height:calc(50% + 1px);background:#0b0e0c;z-index:0;transition:transform 900ms cubic-bezier(.76,0,.24,1);will-change:transform}
-.site-loader__panel--top{top:0}.site-loader__panel--bottom{bottom:0}
-.site-loader__ui{position:relative;z-index:1;width:100%;height:100%;transition:opacity 420ms cubic-bezier(.4,0,.2,1),transform 650ms cubic-bezier(.16,1,.3,1);opacity:0;background:radial-gradient(circle at 50% 48%,rgba(192,107,73,.08),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.018),transparent 32%,rgba(0,0,0,.12))}
+.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:#0b0e0c}
+.site-loader__louvres{position:absolute;inset:0;z-index:0;display:grid;grid-template-rows:repeat(40,minmax(0,1fr));overflow:hidden}
+.site-loader__louvre{display:block;width:100%;height:100%;background:#0b0e0c;transform:scaleY(1.08);transform-origin:50% 50%;will-change:transform;transition:transform 1120ms cubic-bezier(.76,0,.24,1);transition-delay:var(--louvre-delay,0ms)}
+.site-loader__ui{position:relative;z-index:1;width:100%;height:100%;transition:opacity 300ms cubic-bezier(.4,0,.2,1),transform 420ms cubic-bezier(.16,1,.3,1);opacity:0;background:radial-gradient(circle at 50% 48%,rgba(192,107,73,.08),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.018),transparent 32%,rgba(0,0,0,.12))}
 .site-loader--active .site-loader__ui{opacity:1}
 .site-loader__meta{position:absolute;left:clamp(24px,4.4vw,88px);right:clamp(24px,4.4vw,88px);display:flex;justify-content:space-between;gap:24px;font-size:11px;line-height:1.4;letter-spacing:.13em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
 .site-loader__meta--top{top:28px}.site-loader__meta--bottom{bottom:27px}
@@ -25,10 +25,9 @@ function createLoaderStyles() {
 .site-loader--complete .site-loader__track:after{animation:site-loader-pulse 520ms cubic-bezier(.65,0,.35,1) forwards}
 .site-loader__status{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
 .site-loader__count{font-variant-numeric:tabular-nums;color:var(--text,#e5e0d6)}
-.site-loader--exit{pointer-events:none}
-.site-loader--exit .site-loader__panel--top{transform:translateY(-101%)}
-.site-loader--exit .site-loader__panel--bottom{transform:translateY(101%)}
-.site-loader--exit .site-loader__ui{opacity:0;transform:scale(.992)}
+.site-loader--handoff .site-loader__ui,.site-loader--exit .site-loader__ui{opacity:0;transform:scale(.994)}
+.site-loader--exit{pointer-events:none;background:transparent}
+.site-loader--exit .site-loader__louvre{transform:scaleY(0)}
 @keyframes site-loader-pulse{0%{opacity:0;transform:translateX(-42px)}18%{opacity:1}82%{opacity:1}100%{opacity:0;transform:translateX(calc(min(620px,72vw) - 2px))}}
 @media(max-width:700px){.site-loader__center{width:78vw}.site-loader__name{font-size:clamp(48px,16vw,76px)}.site-loader__meta{font-size:9px;letter-spacing:.11em}.site-loader__meta--top{top:22px}.site-loader__meta--bottom{bottom:22px}.site-loader__meta--bottom span:first-child{max-width:190px}.site-loader__track{margin-top:28px}}
 @media(prefers-reduced-motion:reduce){.site-loader{display:none!important}}
@@ -55,11 +54,21 @@ function runSiteLoader() {
   createLoaderStyles();
   const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
+
   const loader = document.createElement("div");
   loader.className = "site-loader";
   loader.setAttribute("aria-hidden", "true");
-  loader.innerHTML = `<div class="site-loader__panel site-loader__panel--top"></div><div class="site-loader__panel site-loader__panel--bottom"></div><div class="site-loader__ui"><div class="site-loader__meta site-loader__meta--top"><span>Hayden Wade</span><span>Brisbane / AU</span></div><div class="site-loader__center"><div class="site-loader__name"><span class="site-loader__line" data-loader-line="Hayden"></span><span class="site-loader__line" data-loader-line="Wade"></span></div><div class="site-loader__track"><span class="site-loader__fill"></span></div><div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div><div class="site-loader__meta site-loader__meta--bottom"><span>Cybersecurity · Engineering · Old cars</span><span>Portfolio / 2026</span></div></div>`;
+
+  const louvreCount = 40;
+  const louvres = Array.from({ length: louvreCount }, (_, index) => {
+    const centre = (louvreCount - 1) / 2;
+    const delay = Math.round(Math.abs(index - centre) * 4);
+    return `<span class="site-loader__louvre" style="--louvre-delay:${delay}ms"></span>`;
+  }).join("");
+
+  loader.innerHTML = `<div class="site-loader__louvres">${louvres}</div><div class="site-loader__ui"><div class="site-loader__meta site-loader__meta--top"><span>Hayden Wade</span><span>Brisbane / AU</span></div><div class="site-loader__center"><div class="site-loader__name"><span class="site-loader__line" data-loader-line="Hayden"></span><span class="site-loader__line" data-loader-line="Wade"></span></div><div class="site-loader__track"><span class="site-loader__fill"></span></div><div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div><div class="site-loader__meta site-loader__meta--bottom"><span>Cybersecurity · Engineering · Old cars</span><span>Portfolio / 2026</span></div></div>`;
   document.body.prepend(loader);
+
   let charIndex = 0;
   for (const line of loader.querySelectorAll("[data-loader-line]")) {
     const text = line.dataset.loaderLine || "";
@@ -72,11 +81,13 @@ function runSiteLoader() {
       charIndex++;
     }
   }
+
   const fill = loader.querySelector(".site-loader__fill");
   const count = loader.querySelector(".site-loader__count");
   requestAnimationFrame(() =>
     requestAnimationFrame(() => loader.classList.add("site-loader--active")),
   );
+
   const heroImage = document.querySelector(".hero-image");
   let assetsReady = document.readyState === "complete";
   const pageReady =
@@ -91,10 +102,12 @@ function runSiteLoader() {
   Promise.all([pageReady, imageReady]).then(() => {
     assetsReady = true;
   });
+
   const start = performance.now();
   const minimum = 1780;
   const maximum = 3600;
   let displayed = 0;
+
   return new Promise((resolve) => {
     const tick = (now) => {
       const elapsed = now - start;
@@ -103,30 +116,43 @@ function runSiteLoader() {
         (assetsReady && elapsed >= minimum) || elapsed >= maximum
           ? 100
           : timeTarget;
+
       displayed += Math.max(0.12, (target - displayed) * 0.12);
       displayed = Math.min(target, displayed);
       const rounded = Math.min(100, Math.floor(displayed));
       fill.style.transform = `scaleX(${displayed / 100})`;
       count.textContent = String(rounded).padStart(2, "0");
+
       if (target === 100 && displayed >= 99.35) {
         fill.style.transform = "scaleX(1)";
         count.textContent = "100";
         loader.classList.add("site-loader--complete");
+
         window.setTimeout(() => {
-          // Stage and start the hero while it is still covered so the two
-          // sequences overlap rather than exposing a static hero for a frame.
-          animateHeroIntro();
-          requestAnimationFrame(() => loader.classList.add("site-loader--exit"));
+          // First remove the loader UI while the background remains perfectly solid.
+          loader.classList.add("site-loader--handoff");
+
           window.setTimeout(() => {
-            document.body.style.overflow = previousOverflow;
-          }, 760);
-          window.setTimeout(() => {
-            loader.remove();
-            resolve(true);
-          }, 980);
+            // Then the same dark field resolves into 40 horizontal louvres.
+            // The hero is already animating underneath as those louvres narrow away.
+            animateHeroIntro();
+            requestAnimationFrame(() =>
+              loader.classList.add("site-loader--exit"),
+            );
+
+            window.setTimeout(() => {
+              document.body.style.overflow = previousOverflow;
+            }, 1180);
+
+            window.setTimeout(() => {
+              loader.remove();
+              resolve(true);
+            }, 1340);
+          }, 320);
         }, 260);
         return;
       }
+
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -146,10 +172,12 @@ function animateHeroIntro() {
     typeof title.animate !== "function"
   )
     return;
+
   heroIntroStarted = true;
   const lines = [...title.children];
   const label = lines.map((line) => line.textContent.trim()).join(" ");
   title.setAttribute("aria-label", label);
+
   let characterIndex = 0;
   for (const line of lines) {
     const text = line.textContent;
@@ -183,6 +211,7 @@ function animateHeroIntro() {
       characterIndex++;
     }
   }
+
   const fadeUp = (element, delay, distance = 12) => {
     if (!element) return;
     const animation = element.animate(
@@ -203,6 +232,7 @@ function animateHeroIntro() {
       animation.cancel();
     };
   };
+
   const photo = hero.querySelector(".hero-image");
   if (photo && typeof photo.animate === "function") {
     const photoAnimation = photo.animate(
@@ -223,12 +253,14 @@ function animateHeroIntro() {
       photoAnimation.cancel();
     };
   }
+
   fadeUp(hero.querySelector(".hero-top"), 300, 8);
   fadeUp(hero.querySelector(".hero-role"), 1250, 14);
   [...hero.querySelectorAll(".hero-bottom > *")].forEach((element, index) =>
     fadeUp(element, 1500 + index * 120, 10),
   );
 }
+
 runSiteLoader().then((shown) => {
   if (!shown) animateHeroIntro();
 });
@@ -240,6 +272,7 @@ if (homeHero) {
   const heroPhoto = homeHero.querySelector(".hero-image");
   const identity = document.querySelector(".home-nav .wordmark");
   let scheduled = false;
+
   const update = () => {
     scheduled = false;
     const ratio = Math.min(
@@ -258,6 +291,7 @@ if (homeHero) {
         ? ""
         : String(Math.max(0, Math.min(1, (ratio - 0.45) * 2)));
   };
+
   window.addEventListener(
     "scroll",
     () => {
@@ -271,6 +305,7 @@ if (homeHero) {
   window.addEventListener("resize", update);
   reduced.addEventListener("change", update);
   update();
+
   if (!reduced.matches && "IntersectionObserver" in window) {
     const targets = document.querySelectorAll(
       ".home-section > h2,.about-grid > *, .experience-list .job,.home-projects .project-card,.home-photos .media,.contact h2",
@@ -285,11 +320,13 @@ if (homeHero) {
       },
       { threshold: 0.08 },
     );
+
     document.documentElement.classList.add("motion-ready");
     targets.forEach((el) => {
       el.classList.add("home-reveal");
       observer.observe(el);
     });
+
     reduced.addEventListener("change", () => {
       if (reduced.matches) {
         targets.forEach((el) => el.classList.add("visible"));
@@ -304,15 +341,18 @@ for (const detail of document.querySelectorAll(".job")) {
   const summary = detail.querySelector("summary");
   let animation = null;
   let expanding = false;
+
   summary.addEventListener("click", (event) => {
     if (reduced.matches || !detail.animate) return;
     event.preventDefault();
+
     const from = detail.getBoundingClientRect().height;
     const open = animation ? !expanding : !detail.open;
     animation?.cancel();
     detail.style.height = "";
     detail.style.overflow = "hidden";
     detail.open = true;
+
     const to = open
       ? detail.getBoundingClientRect().height
       : summary.getBoundingClientRect().height + 2;
