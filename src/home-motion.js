@@ -6,7 +6,7 @@ function createLoaderStyles() {
   const style = document.createElement("style");
   style.id = "site-loader-styles";
   style.textContent = `
-.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:#0b0e0c}
+.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:transparent}
 .site-loader__panel{position:absolute;left:0;right:0;height:calc(50% + 1px);background:#0b0e0c;z-index:0;transition:transform 900ms cubic-bezier(.76,0,.24,1);will-change:transform}
 .site-loader__panel--top{top:0}.site-loader__panel--bottom{bottom:0}
 .site-loader__ui{position:relative;z-index:1;width:100%;height:100%;transition:opacity 420ms cubic-bezier(.4,0,.2,1),transform 650ms cubic-bezier(.16,1,.3,1);opacity:0;background:radial-gradient(circle at 50% 48%,rgba(192,107,73,.08),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.018),transparent 32%,rgba(0,0,0,.12))}
