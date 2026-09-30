@@ -1,0 +1,42 @@
+/* The desktop home wordmark is a miniature of the hero identity.
+   Keep the original link text in the DOM for accessibility, while rendering the
+   same stacked Instrument Serif treatment used by HAYDEN / WADE in the hero. */
+@media (min-width: 701px) {
+  .home-nav .wordmark {
+    width: 100px;
+    height: 58px;
+    display: block;
+    font-size: 0 !important;
+    line-height: 1;
+    letter-spacing: 0 !important;
+    white-space: normal;
+    text-transform: none;
+  }
+
+  .home-nav .wordmark::before,
+  .home-nav .wordmark::after {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    color: currentColor;
+    font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+    font-size: 27px;
+    font-weight: 400;
+    line-height: 0.78;
+    letter-spacing: -0.055em;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .home-nav .wordmark::before {
+    content: "Hayden";
+    top: 7px;
+    font-style: normal;
+  }
+
+  .home-nav .wordmark::after {
+    content: "Wade";
+    top: 29px;
+    font-style: italic;
+  }
+}
