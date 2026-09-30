@@ -257,32 +257,134 @@ runSiteLoader().then((shown) => {
   if (!shown) animateHeroIntro();
 });
 
-// Keep native scrolling; restore the original title drift and gentle image parallax.
+// Turn the oversized hero identity into the centred navigation wordmark as the
+// hero leaves the viewport. The handoff is fully reversible with scroll.
 const homeHero = document.querySelector(".hero");
 if (homeHero) {
   const heroTitle = homeHero.querySelector(".hero-title");
   const heroPhoto = homeHero.querySelector(".hero-image");
-  const identity = document.querySelector(".home-nav .wordmark");
+  const homeNav = document.querySelector(".home-nav");
+  const identity = homeNav?.querySelector(".wordmark");
+  const navLinks = homeNav ? [...homeNav.querySelectorAll("nav a")] : [];
+  const desktopHandoff = window.matchMedia("(min-width: 701px)");
   let scheduled = false;
+  let titlePageCenter = 0;
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const smoothstep = (start, end, value) => {
+    const t = clamp01((value - start) / (end - start));
+    return t * t * (3 - 2 * t);
+  };
+
+  const ensureHandoffStyles = () => {
+    if (!homeNav || document.getElementById("hero-nav-handoff-styles")) return;
+    const style = document.createElement("style");
+    style.id = "hero-nav-handoff-styles";
+    style.textContent = `
+@media (min-width:701px) and (prefers-reduced-motion:no-preference){
+  .home-nav{position:fixed!important;top:0;left:0;right:0;width:100%;max-width:none;margin:0;height:74px;z-index:20;background:rgba(23,26,24,var(--home-nav-bg,0));border-bottom:1px solid rgba(58,63,57,var(--home-nav-line,0));padding-inline:var(--gutter);}
+  .home-nav .wordmark{position:absolute;left:50%;top:50%;z-index:2;margin:0;opacity:var(--home-nav-wordmark,0);transform:translate(-50%,-50%) scale(var(--home-nav-wordmark-scale,.96));transform-origin:50% 50%;font-size:15px;letter-spacing:.025em;transition:color .2s;}
+  .home-nav nav{width:100%;height:74px;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;align-items:center;column-gap:clamp(24px,3vw,54px);}
+  .home-nav nav a{height:74px;display:flex;align-items:center;opacity:var(--home-nav-links,0);will-change:transform,opacity;}
+  .home-nav nav a:nth-child(1){grid-column:1;transform:translateX(calc(-1 * var(--home-nav-shift,24px)));}
+  .home-nav nav a:nth-child(2){grid-column:2;transform:translateX(calc(-1 * var(--home-nav-shift,24px)));}
+  .home-nav nav a:nth-child(3){grid-column:4;transform:translateX(var(--home-nav-shift,24px));}
+  .home-nav nav a:nth-child(4){grid-column:5;transform:translateX(var(--home-nav-shift,24px));}
+  .home-nav nav a:nth-child(5){display:none;}
+}
+`;
+    document.head.appendChild(style);
+  };
+
+  const measureTitle = () => {
+    if (!heroTitle) return;
+    const previousTransform = heroTitle.style.transform;
+    const previousOpacity = heroTitle.style.opacity;
+    heroTitle.style.transform = "none";
+    heroTitle.style.opacity = "1";
+    const rect = heroTitle.getBoundingClientRect();
+    titlePageCenter = rect.top + window.scrollY + rect.height / 2;
+    heroTitle.style.transform = previousTransform;
+    heroTitle.style.opacity = previousOpacity;
+  };
 
   const update = () => {
     scheduled = false;
-    const ratio = Math.min(
-      1,
-      Math.max(0, window.scrollY / homeHero.offsetHeight),
-    );
-    heroTitle.style.transform = reduced.matches
-      ? ""
-      : `translateX(${-ratio * 7}vw) scale(${1 - ratio * 0.2})`;
-    heroTitle.style.opacity = reduced.matches ? "" : String(1 - ratio * 0.8);
+    const heroHeight = Math.max(1, homeHero.offsetHeight);
+    const ratio = clamp01(window.scrollY / heroHeight);
+
     heroPhoto.style.transform = reduced.matches
       ? ""
       : `translate3d(0,${ratio * 14}px,0) scale(1.025)`;
-    if (identity)
-      identity.style.opacity = reduced.matches
+
+    if (
+      desktopHandoff.matches &&
+      !reduced.matches &&
+      heroTitle &&
+      homeNav &&
+      identity
+    ) {
+      if (!titlePageCenter) measureTitle();
+
+      const travel = smoothstep(0.08, 0.9, ratio);
+      const titleRelease = smoothstep(0.72, 0.9, ratio);
+      const navReveal = smoothstep(0.54, 0.8, ratio);
+      const wordmarkReveal = smoothstep(0.75, 0.91, ratio);
+      const barReveal = smoothstep(0.64, 0.89, ratio);
+      const startViewportCenter = titlePageCenter;
+      const targetViewportCenter = 37;
+      const desiredCenter =
+        startViewportCenter +
+        (targetViewportCenter - startViewportCenter) * travel;
+      const naturalCenter = titlePageCenter - window.scrollY;
+      const translateY = desiredCenter - naturalCenter;
+      const scale = 1 + (0.095 - 1) * travel;
+
+      heroTitle.style.transformOrigin = "50% 50%";
+      heroTitle.style.transform = `translate3d(0,${translateY}px,0) scale(${scale})`;
+      heroTitle.style.opacity = String(1 - titleRelease);
+      heroTitle.style.letterSpacing = `${-0.065 + 0.035 * travel}em`;
+
+      homeNav.style.setProperty("--home-nav-bg", String(barReveal * 0.985));
+      homeNav.style.setProperty("--home-nav-line", String(barReveal));
+      homeNav.style.setProperty("--home-nav-links", String(navReveal));
+      homeNav.style.setProperty(
+        "--home-nav-shift",
+        `${24 * (1 - navReveal)}px`,
+      );
+      homeNav.style.setProperty("--home-nav-wordmark", String(wordmarkReveal));
+      homeNav.style.setProperty(
+        "--home-nav-wordmark-scale",
+        String(0.94 + wordmarkReveal * 0.06),
+      );
+      homeNav.style.pointerEvents = navReveal > 0.35 ? "auto" : "none";
+    } else {
+      heroTitle.style.transform = reduced.matches
         ? ""
-        : String(Math.max(0, Math.min(1, (ratio - 0.45) * 2)));
+        : `translateX(${-ratio * 7}vw) scale(${1 - ratio * 0.2})`;
+      heroTitle.style.opacity = reduced.matches ? "" : String(1 - ratio * 0.8);
+      heroTitle.style.letterSpacing = "";
+      if (homeNav) {
+        homeNav.style.pointerEvents = "";
+        for (const property of [
+          "--home-nav-bg",
+          "--home-nav-line",
+          "--home-nav-links",
+          "--home-nav-shift",
+          "--home-nav-wordmark",
+          "--home-nav-wordmark-scale",
+        ])
+          homeNav.style.removeProperty(property);
+      }
+      if (identity)
+        identity.style.opacity = reduced.matches
+          ? ""
+          : String(Math.max(0, Math.min(1, (ratio - 0.45) * 2)));
+    }
   };
+
+  ensureHandoffStyles();
+  measureTitle();
 
   window.addEventListener(
     "scroll",
@@ -294,8 +396,15 @@ if (homeHero) {
     },
     { passive: true },
   );
-  window.addEventListener("resize", update);
+  window.addEventListener("resize", () => {
+    titlePageCenter = 0;
+    update();
+  });
   reduced.addEventListener("change", update);
+  desktopHandoff.addEventListener("change", () => {
+    titlePageCenter = 0;
+    update();
+  });
   update();
 
   if (!reduced.matches && "IntersectionObserver" in window) {
