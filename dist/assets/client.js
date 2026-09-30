@@ -33,7 +33,7 @@ if (smoothScrollEligible) {
 
     window.__siteLenis = new window.Lenis({
       autoRaf: true,
-      lerp: 0.18,
+      lerp: 0.14,
       smoothWheel: true,
       syncTouch: false,
       wheelMultiplier: 1.05,
