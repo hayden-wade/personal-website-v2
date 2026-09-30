@@ -2,21 +2,6 @@
    Keep the original link text in the DOM for accessibility, while rendering the
    same stacked Instrument Serif treatment used by HAYDEN / WADE in the hero. */
 @media (min-width: 701px) {
-  /* Let the original hero title physically persist into the fixed header.
-     This removes the last hero-title -> header-wordmark visibility swap. */
-  .hero {
-    overflow: visible;
-  }
-
-  .hero-title {
-    position: relative;
-    z-index: 30;
-    pointer-events: none;
-    opacity: 1 !important;
-  }
-
-  /* Keep the duplicate DOM wordmark for navigation semantics, but never render
-     it on desktop: the hero title itself is now the persistent visual wordmark. */
   .home-nav .wordmark {
     width: 100px;
     height: 58px;
@@ -26,8 +11,6 @@
     letter-spacing: 0 !important;
     white-space: normal;
     text-transform: none;
-    opacity: 0 !important;
-    pointer-events: none;
   }
 
   .home-nav .wordmark::before,
