@@ -378,7 +378,9 @@ function installHeroWordmarkProxy() {
 if (document.readyState === "complete") installHeroWordmarkProxy();
 else window.addEventListener("load", installHeroWordmarkProxy, { once: true });
 
-// Smoothly retract the Experience accent line instead of dropping it instantly.
+// Smooth two-way Experience accordion motion. The native details opening is kept
+// intact, then animated from the summary height to the expanded height. Closing
+// stays open until the reverse animation finishes so the accent line can retract.
 function installExperienceAccordionMotion() {
   const jobs = [...document.querySelectorAll(".job")];
   if (!jobs.length) return;
@@ -419,6 +421,7 @@ function installExperienceAccordionMotion() {
     if (!summary) return;
 
     let animation = null;
+    let openingPending = false;
 
     const collapsedHeight = () => {
       const styles = getComputedStyle(job);
@@ -429,54 +432,98 @@ function installExperienceAccordionMotion() {
       );
     };
 
-    const clearAnimation = () => {
+    const clearInlineState = () => {
       job.style.height = "";
       job.style.overflow = "";
       job.classList.remove("is-opening", "is-closing");
-      animation?.cancel();
+      openingPending = false;
+    };
+
+    const stopAnimation = () => {
+      if (!animation) return;
+      const current = animation;
       animation = null;
+      current.cancel();
+    };
+
+    const animateOpen = (startHeight) => {
+      if (!job.open) {
+        clearInlineState();
+        return;
+      }
+
+      job.style.height = "auto";
+      const endHeight = job.getBoundingClientRect().height;
+      job.style.height = `${startHeight}px`;
+      job.style.overflow = "hidden";
+      job.classList.remove("is-closing");
+      job.classList.add("is-opening");
+      openingPending = false;
+
+      const current = job.animate(
+        [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
+        { duration, easing, fill: "both" },
+      );
+      animation = current;
+
+      current.finished
+        .then(() => {
+          if (animation !== current) return;
+          animation = null;
+          current.cancel();
+          clearInlineState();
+        })
+        .catch(() => {});
     };
 
     summary.addEventListener("click", (event) => {
       if (reducedMotion.matches || typeof job.animate !== "function") return;
-      event.preventDefault();
-      if (animation) return;
 
-      const startHeight = job.getBoundingClientRect().height;
-      job.style.overflow = "hidden";
+      if (!job.open) {
+        // Keep the closed row at its collapsed height while the browser performs
+        // the native details toggle. The next frame expands it smoothly.
+        const startHeight = collapsedHeight();
+        openingPending = true;
+        job.style.height = `${startHeight}px`;
+        job.style.overflow = "hidden";
+        job.classList.add("is-opening");
 
-      if (job.open) {
-        job.classList.add("is-closing");
-        animation = job.animate(
-          [
-            { height: `${startHeight}px` },
-            { height: `${collapsedHeight()}px` },
-          ],
-          { duration, easing, fill: "both" },
-        );
-        animation.addEventListener(
-          "finish",
-          () => {
-            job.open = false;
-            clearAnimation();
-          },
-          { once: true },
-        );
+        requestAnimationFrame(() => {
+          if (!openingPending) return;
+          animateOpen(startHeight);
+        });
         return;
       }
 
-      job.style.height = `${startHeight}px`;
-      job.open = true;
-      job.classList.add("is-opening");
-      job.style.height = "auto";
-      const endHeight = job.getBoundingClientRect().height;
-      job.style.height = `${startHeight}px`;
+      // Closing must be intercepted so the details contents remain measurable
+      // until the reverse height and accent-line animations have finished.
+      event.preventDefault();
+      openingPending = false;
 
-      animation = job.animate(
+      const startHeight = job.getBoundingClientRect().height;
+      if (animation) stopAnimation();
+
+      job.style.height = `${startHeight}px`;
+      job.style.overflow = "hidden";
+      job.classList.remove("is-opening");
+      job.classList.add("is-closing");
+
+      const endHeight = collapsedHeight();
+      const current = job.animate(
         [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
         { duration, easing, fill: "both" },
       );
-      animation.addEventListener("finish", clearAnimation, { once: true });
+      animation = current;
+
+      current.finished
+        .then(() => {
+          if (animation !== current) return;
+          animation = null;
+          job.open = false;
+          current.cancel();
+          clearInlineState();
+        })
+        .catch(() => {});
     });
   });
 }
