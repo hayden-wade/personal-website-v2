@@ -67,6 +67,13 @@ export function build() {
     const prefix =
       path.relative(path.dirname(file), out).split(path.sep).join("/") || ".";
 
+    if (route === "/") {
+      html = html.replace(
+        "</head>",
+        `<script src="${prefix}/assets/nav-indicator.js" defer></script></head>`,
+      );
+    }
+
     // Relative links keep exported pages usable under any subdirectory and from disk.
     html = html.replace(
       /(href|src|data-enlarge|data-src)="\/(?!\/)([^"]*)"/g,
