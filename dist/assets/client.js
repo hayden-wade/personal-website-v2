@@ -377,3 +377,108 @@ function installHeroWordmarkProxy() {
 
 if (document.readyState === "complete") installHeroWordmarkProxy();
 else window.addEventListener("load", installHeroWordmarkProxy, { once: true });
+
+// Smoothly retract the Experience accent line instead of dropping it instantly.
+function installExperienceAccordionMotion() {
+  const jobs = [...document.querySelectorAll(".job")];
+  if (!jobs.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const duration = 420;
+  const easing = "cubic-bezier(.65,0,.35,1)";
+
+  if (!document.getElementById("experience-accordion-motion")) {
+    const style = document.createElement("style");
+    style.id = "experience-accordion-motion";
+    style.textContent = `
+.job::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 24px;
+  bottom: 30px;
+  width: 2px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform ${duration}ms ${easing};
+  pointer-events: none;
+  will-change: transform;
+}
+.job[open]::before { transform: scaleY(1); }
+.job.is-closing::before { transform: scaleY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .job::before { transition: none; }
+}
+`;
+    document.head.appendChild(style);
+  }
+
+  jobs.forEach((job) => {
+    const summary = job.querySelector("summary");
+    if (!summary) return;
+
+    let animation = null;
+
+    const collapsedHeight = () => {
+      const styles = getComputedStyle(job);
+      return (
+        summary.getBoundingClientRect().height +
+        parseFloat(styles.borderTopWidth || 0) +
+        parseFloat(styles.borderBottomWidth || 0)
+      );
+    };
+
+    const clearAnimation = () => {
+      job.style.height = "";
+      job.style.overflow = "";
+      job.classList.remove("is-opening", "is-closing");
+      animation?.cancel();
+      animation = null;
+    };
+
+    summary.addEventListener("click", (event) => {
+      if (reducedMotion.matches || typeof job.animate !== "function") return;
+      event.preventDefault();
+      if (animation) return;
+
+      const startHeight = job.getBoundingClientRect().height;
+      job.style.overflow = "hidden";
+
+      if (job.open) {
+        job.classList.add("is-closing");
+        animation = job.animate(
+          [
+            { height: `${startHeight}px` },
+            { height: `${collapsedHeight()}px` },
+          ],
+          { duration, easing, fill: "both" },
+        );
+        animation.addEventListener(
+          "finish",
+          () => {
+            job.open = false;
+            clearAnimation();
+          },
+          { once: true },
+        );
+        return;
+      }
+
+      job.style.height = `${startHeight}px`;
+      job.open = true;
+      job.classList.add("is-opening");
+      job.style.height = "auto";
+      const endHeight = job.getBoundingClientRect().height;
+      job.style.height = `${startHeight}px`;
+
+      animation = job.animate(
+        [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
+        { duration, easing, fill: "both" },
+      );
+      animation.addEventListener("finish", clearAnimation, { once: true });
+    });
+  });
+}
+
+installExperienceAccordionMotion();
