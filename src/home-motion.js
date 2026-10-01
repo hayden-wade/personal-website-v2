@@ -1,4 +1,4 @@
-// Dark portfolio loader with a louvre-style handoff into the hero.
+// Dark portfolio loader with a liquid-fill wordmark and louvre handoff into the hero.
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 function createLoaderStyles() {
@@ -6,28 +6,26 @@ function createLoaderStyles() {
   const style = document.createElement("style");
   style.id = "site-loader-styles";
   style.textContent = `
-.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:#0b0e0c}
+.site-loader{position:fixed;inset:0;z-index:9999;color:var(--text,#e5e0d6);font-family:'DM Sans',Arial,Helvetica,sans-serif;pointer-events:all;overflow:hidden;background:#0f1210}
 .site-loader__louvres{position:absolute;inset:0;z-index:0;display:grid;grid-template-rows:repeat(40,minmax(0,1fr));overflow:hidden}
-.site-loader__louvre{display:block;width:100%;height:100%;background:#0b0e0c;transform:scaleY(1.08);transform-origin:50% 50%;will-change:transform;transition:transform 1120ms cubic-bezier(.76,0,.24,1);transition-delay:var(--louvre-delay,0ms)}
-.site-loader__ui{position:relative;z-index:1;width:100%;height:100%;transition:opacity 300ms cubic-bezier(.4,0,.2,1),transform 420ms cubic-bezier(.16,1,.3,1);opacity:0;background:radial-gradient(circle at 50% 48%,rgba(192,107,73,.08),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.018),transparent 32%,rgba(0,0,0,.12))}
+.site-loader__louvre{display:block;width:100%;height:100%;background:#0f1210;transform:scaleY(1.08);transform-origin:50% 50%;will-change:transform;transition:transform 1120ms cubic-bezier(.76,0,.24,1);transition-delay:var(--louvre-delay,0ms)}
+.site-loader__ui{position:relative;z-index:1;width:100%;height:100%;transition:opacity 300ms cubic-bezier(.4,0,.2,1),transform 420ms cubic-bezier(.16,1,.3,1);opacity:0;background:radial-gradient(circle at 50% 47%,rgba(192,107,73,.075),transparent 30%),linear-gradient(180deg,rgba(255,255,255,.016),transparent 35%,rgba(0,0,0,.12))}
 .site-loader--active .site-loader__ui{opacity:1}
 .site-loader__meta{position:absolute;left:clamp(24px,4.4vw,88px);right:clamp(24px,4.4vw,88px);display:flex;justify-content:space-between;gap:24px;font-size:11px;line-height:1.4;letter-spacing:.13em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
 .site-loader__meta--top{top:28px}.site-loader__meta--bottom{bottom:27px}
-.site-loader__center{position:absolute;left:50%;top:50%;width:min(620px,72vw);transform:translate(-50%,-50%);text-align:center}
-.site-loader__name{font-family:'Instrument Serif',Georgia,'Times New Roman',serif;font-size:clamp(54px,6.6vw,104px);font-weight:400;line-height:.84;letter-spacing:-.045em;color:var(--text,#e5e0d6);text-shadow:0 16px 70px rgba(0,0,0,.28)}
-.site-loader__line{display:block;overflow:hidden;padding:.07em 0 .13em}
-.site-loader__line:last-child{font-style:italic}
-.site-loader__char{display:inline-block;opacity:0;transform:translateY(108%);will-change:transform,opacity;transition-property:transform,opacity;transition-duration:1050ms;transition-timing-function:cubic-bezier(.16,1,.3,1)}
-.site-loader--active .site-loader__char{opacity:1;transform:translateY(0)}
-.site-loader__track{position:relative;height:1px;background:var(--line,#3a3f39);margin:34px auto 16px;overflow:visible}
-.site-loader__fill{position:absolute;inset:0;background:var(--text,#e5e0d6);transform:scaleX(0);transform-origin:center;will-change:transform;box-shadow:0 0 18px rgba(229,224,214,.12)}
-.site-loader__status{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
-.site-loader__count{font-variant-numeric:tabular-nums;color:var(--text,#e5e0d6)}
+.site-loader__center{position:absolute;left:50%;top:50%;width:min(760px,84vw);transform:translate(-50%,-50%);text-align:center}
+.site-loader__wordmark{display:block;width:100%;height:auto;overflow:visible;opacity:0;transform:translateY(9px) scale(.992);filter:drop-shadow(0 18px 54px rgba(0,0,0,.28));transition:opacity 650ms cubic-bezier(.16,1,.3,1),transform 900ms cubic-bezier(.16,1,.3,1)}
+.site-loader--active .site-loader__wordmark{opacity:1;transform:translateY(0) scale(1)}
+.site-loader__outline{fill:rgba(229,224,214,.012);stroke:rgba(167,170,163,.46);stroke-width:1.05;vector-effect:non-scaling-stroke;transition:stroke 400ms ease}
+.site-loader--complete .site-loader__outline{stroke:rgba(229,224,214,.28)}
+.site-loader__status{width:min(640px,84%);margin:20px auto 0;display:flex;align-items:center;justify-content:space-between;padding-top:13px;border-top:1px solid var(--line,#3a3f39);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted,#a7aaa3)}
+.site-loader__count{font-variant-numeric:tabular-nums;color:var(--accent,#c06b49);transition:color 260ms ease}
+.site-loader--complete .site-loader__count{color:var(--text,#e5e0d6)}
 .site-loader--exit{pointer-events:none;background:transparent}
 .site-loader--exit .site-loader__louvre{transform:scaleY(0)}
 .site-loader--exit .site-loader__ui{animation:site-loader-ui-release 1120ms cubic-bezier(.4,0,.2,1) both}
 @keyframes site-loader-ui-release{0%,52%{opacity:1;transform:scale(1)}88%,100%{opacity:0;transform:scale(.994)}}
-@media(max-width:700px){.site-loader__center{width:78vw}.site-loader__name{font-size:clamp(48px,16vw,76px)}.site-loader__meta{font-size:9px;letter-spacing:.11em}.site-loader__meta--top{top:22px}.site-loader__meta--bottom{bottom:22px}.site-loader__meta--bottom span:first-child{max-width:190px}.site-loader__track{margin-top:28px}}
+@media(max-width:700px){.site-loader__center{width:88vw}.site-loader__meta{font-size:9px;letter-spacing:.11em}.site-loader__meta--top{top:22px}.site-loader__meta--bottom{bottom:22px}.site-loader__meta--bottom span:first-child{max-width:190px}.site-loader__status{width:82%;margin-top:14px;padding-top:11px}.site-loader__outline{stroke-width:.85}}
 @media(prefers-reduced-motion:reduce){.site-loader{display:none!important}}
 `;
   document.head.appendChild(style);
@@ -47,6 +45,37 @@ function shouldShowSiteLoader() {
   }
 }
 
+function liquidWordmarkMarkup() {
+  const waveUses = [-160, 0, 160, 320, 480, 640, 800]
+    .map((x) => `<use href="#loader-wave-segment" x="${x}"/>`)
+    .join("");
+  const mainWaveUses = [-160, 0, 160, 320, 480, 640, 800]
+    .map((x) => `<use href="#loader-wave-main" x="${x}"/>`)
+    .join("");
+
+  return `<svg class="site-loader__wordmark" viewBox="0 0 760 280" role="presentation" focusable="false">
+    <defs>
+      <mask id="site-loader-text-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="760" height="280">
+        <rect width="760" height="280" fill="black"/>
+        <text x="380" y="116" text-anchor="middle" fill="white" font-family="Instrument Serif, Georgia, serif" font-size="112" font-weight="400" letter-spacing="-5">Hayden</text>
+        <text x="378" y="224" text-anchor="middle" fill="white" font-family="Instrument Serif, Georgia, serif" font-size="112" font-weight="400" font-style="italic" letter-spacing="-5">Wade</text>
+      </mask>
+      <path id="loader-wave-segment" d="M0 25 Q40 5 80 25 T160 25 V330 H0 Z" fill="#c06b49"/>
+      <path id="loader-wave-main" d="M0 31 Q40 11 80 31 T160 31 V330 H0 Z" fill="#e5e0d6"/>
+    </defs>
+
+    <text class="site-loader__outline" x="380" y="116" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="112" font-weight="400" letter-spacing="-5">Hayden</text>
+    <text class="site-loader__outline" x="378" y="224" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="112" font-weight="400" font-style="italic" letter-spacing="-5">Wade</text>
+
+    <g mask="url(#site-loader-text-mask)">
+      <g class="site-loader__liquid" data-loader-liquid transform="translate(0 286)">
+        <g opacity=".92">${waveUses}<animateTransform attributeName="transform" type="translate" from="-160 0" to="0 0" dur="3.2s" repeatCount="indefinite"/></g>
+        <g>${mainWaveUses}<animateTransform attributeName="transform" type="translate" from="0 0" to="-160 0" dur="2.45s" repeatCount="indefinite"/></g>
+      </g>
+    </g>
+  </svg>`;
+}
+
 function runSiteLoader() {
   if (!shouldShowSiteLoader()) return Promise.resolve(false);
   createLoaderStyles();
@@ -64,23 +93,10 @@ function runSiteLoader() {
     return `<span class="site-loader__louvre" style="--louvre-delay:${delay}ms"></span>`;
   }).join("");
 
-  loader.innerHTML = `<div class="site-loader__louvres">${louvres}</div><div class="site-loader__ui"><div class="site-loader__meta site-loader__meta--top"><span>Hayden Wade</span><span>Brisbane / AU</span></div><div class="site-loader__center"><div class="site-loader__name"><span class="site-loader__line" data-loader-line="Hayden"></span><span class="site-loader__line" data-loader-line="Wade"></span></div><div class="site-loader__track"><span class="site-loader__fill"></span></div><div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div><div class="site-loader__meta site-loader__meta--bottom"><span>Cybersecurity · Engineering · Old cars</span><span>Portfolio / 2026</span></div></div>`;
+  loader.innerHTML = `<div class="site-loader__louvres">${louvres}</div><div class="site-loader__ui"><div class="site-loader__meta site-loader__meta--top"><span>Hayden Wade</span><span>Brisbane / AU</span></div><div class="site-loader__center">${liquidWordmarkMarkup()}<div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div><div class="site-loader__meta site-loader__meta--bottom"><span>Cybersecurity · Engineering · Old cars</span><span>Portfolio / 2026</span></div></div>`;
   document.body.prepend(loader);
 
-  let charIndex = 0;
-  for (const line of loader.querySelectorAll("[data-loader-line]")) {
-    const text = line.dataset.loaderLine || "";
-    for (const character of text) {
-      const span = document.createElement("span");
-      span.className = "site-loader__char";
-      span.textContent = character === " " ? "\u00a0" : character;
-      span.style.transitionDelay = `${140 + charIndex * 48}ms`;
-      line.appendChild(span);
-      charIndex++;
-    }
-  }
-
-  const fill = loader.querySelector(".site-loader__fill");
+  const liquid = loader.querySelector("[data-loader-liquid]");
   const count = loader.querySelector(".site-loader__count");
   requestAnimationFrame(() =>
     requestAnimationFrame(() => loader.classList.add("site-loader--active")),
@@ -102,14 +118,19 @@ function runSiteLoader() {
   });
 
   const start = performance.now();
-  const minimum = 1780;
-  const maximum = 3600;
+  const minimum = 1900;
+  const maximum = 3800;
   let displayed = 0;
+
+  const setLiquidLevel = (percent) => {
+    const y = 286 - (percent / 100) * 320;
+    liquid?.setAttribute("transform", `translate(0 ${y.toFixed(2)})`);
+  };
 
   return new Promise((resolve) => {
     const tick = (now) => {
       const elapsed = now - start;
-      const timeTarget = Math.min(92, (elapsed / 1450) * 92);
+      const timeTarget = Math.min(92, (elapsed / 1560) * 92);
       const target =
         (assetsReady && elapsed >= minimum) || elapsed >= maximum
           ? 100
@@ -118,16 +139,18 @@ function runSiteLoader() {
       displayed += Math.max(0.12, (target - displayed) * 0.12);
       displayed = Math.min(target, displayed);
       const rounded = Math.min(100, Math.floor(displayed));
-      fill.style.transform = `scaleX(${displayed / 100})`;
+      setLiquidLevel(displayed);
       count.textContent = String(rounded).padStart(2, "0");
 
       if (target === 100 && displayed >= 99.35) {
-        fill.style.transform = "scaleX(1)";
+        displayed = 100;
+        setLiquidLevel(100);
         count.textContent = "100";
+        loader.classList.add("site-loader--complete");
 
         window.setTimeout(() => {
-          // Keep the finished loader composition visible while the same dark
-          // surface immediately opens into horizontal louvres around it.
+          // Start the hero while the completed liquid wordmark is still visible,
+          // then open the same dark surface into the existing horizontal louvres.
           animateHeroIntro();
           requestAnimationFrame(() =>
             loader.classList.add("site-loader--exit"),
@@ -141,7 +164,7 @@ function runSiteLoader() {
             loader.remove();
             resolve(true);
           }, 1340);
-        }, 120);
+        }, 180);
         return;
       }
 
