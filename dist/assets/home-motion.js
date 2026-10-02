@@ -455,36 +455,3 @@ if (homeHero) {
     });
   }
 }
-
-// Animate native details while retaining keyboard and no-JavaScript operation.
-for (const detail of document.querySelectorAll(".job")) {
-  const summary = detail.querySelector("summary");
-  let animation = null;
-  let expanding = false;
-
-  summary.addEventListener("click", (event) => {
-    if (reduced.matches || !detail.animate) return;
-    event.preventDefault();
-
-    const from = detail.getBoundingClientRect().height;
-    const open = animation ? !expanding : !detail.open;
-    animation?.cancel();
-    detail.style.height = "";
-    detail.style.overflow = "hidden";
-    detail.open = true;
-
-    const to = open
-      ? detail.getBoundingClientRect().height
-      : summary.getBoundingClientRect().height + 2;
-    expanding = open;
-    animation = detail.animate(
-      { height: [`${from}px`, `${to}px`] },
-      { duration: 450, easing: "cubic-bezier(.22,1,.36,1)" },
-    );
-    animation.onfinish = () => {
-      detail.open = open;
-      detail.style.overflow = "";
-      animation = null;
-    };
-  });
-}
