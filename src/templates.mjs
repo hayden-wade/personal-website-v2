@@ -61,6 +61,60 @@ const jobList = () =>
   `<div class="experience-list">${jobs.map((j, i) => `<details class="job" ${i === 0 ? "open" : ""}><summary><span class="job-number">0${i + 1}</span><img class="job-logo job-logo-${["boeing", "adha", "raaf"][i]}" src="/assets/logos/${["boeing", "adha", "raaf"][i]}.svg" alt="" width="28" height="28"><span class="job-title"><strong>${j.name}</strong><span>${j.role}</span></span><time>${j.date}</time><span class="job-toggle" aria-hidden="true"></span></summary><div class="job-copy">${i === 0 ? label("Brisbane, Australia · Defence / Cyber / Engineering") : ""}<p>${j.copy}</p><div class="job-tags">${(i === 0 ? ["Product security", "Systems engineering", "Defence", "Cyber"] : i === 1 ? ["Cybersecurity", "Project coordination"] : ["Engineering", "Capability", "Cyber"]).map((t) => `<span>${t}</span>`).join("")}</div></div></details>`).join("")}</div>`;
 const homeSection = (id, n, title, body) =>
   `<section class="home-section" id="${id}"><div class="section-label">${label("0" + n + " / " + id)}<span aria-hidden="true">↘</span></div><h2 class="serif">${title}</h2>${body}</section>`;
+const projectReelMedia = {
+  chassiswire: [
+    { kind: "wire", label: "Schematic / UI / wiring", href: "/projects/chassiswire/" },
+    { kind: "concept", label: "Connector / pinout", href: "/projects/chassiswire/" },
+    { kind: "concept", label: "Diagnostics / CAN", href: "/projects/chassiswire/" },
+  ],
+  house: [
+    { kind: "placeholder", label: "Redbank Plains / renovation" },
+    { kind: "placeholder", label: "Bathroom / in progress" },
+    { kind: "placeholder", label: "Kitchen / planning" },
+  ],
+  "318is": [
+    { kind: "placeholder", label: "BMW E30 318iS" },
+    { kind: "placeholder", label: "Body / restoration" },
+    { kind: "placeholder", label: "Mechanical / OEM+" },
+  ],
+  m54: [
+    { kind: "placeholder", label: "M54B30 / parts collection" },
+    { kind: "placeholder", label: "Engine / M54B30" },
+    { kind: "placeholder", label: "Wiring / integration" },
+  ],
+  respray: [
+    { image: "/images/e30-respray/finished.jpg", label: "Finished / Glacier Blue", href: "/writing/e30-respray/" },
+    { image: "/images/e30-respray/bodywork.jpg", label: "Bodywork / preparation", href: "/writing/e30-respray/02-sanding-filler-bodywork/" },
+    { image: "/images/e30-respray/painting.jpg", label: "Paint / colour", href: "/writing/e30-respray/04-painting-the-e30/" },
+  ],
+  honda: [
+    { image: "/images/honda/how-to-build-a-classic-honda-cafe-racer-1972-honda-cb500f.jpg", label: "Honda CB500 Four", href: "/projects/honda-cb500-four/" },
+    { image: "/images/honda/engine-rebuild.jpg", label: "Engine / rebuild", href: "https://haydenbwade.com/engine-rebuild/" },
+    { image: "/images/honda/cb500-cafe-racer-build-rewiring-the-bike-with-m-unit.jpg", label: "Electrical / m.unit", href: "https://haydenbwade.com/cb500-cafe-racer-build-rewiring-the-bike-with-m-unit/" },
+  ],
+};
+const projectReelMediaMarkup = (p, media, role) => {
+  const content = media.image
+    ? img(media.image, `${p.name} — ${media.label}`)
+    : media.kind === "wire"
+      ? wires()
+      : `<div class="project-reel-placeholder project-reel-placeholder--${media.kind || "placeholder"}"><span>${esc(media.label)}</span>${media.kind === "concept" ? "<i></i><i></i><i></i>" : ""}</div>`;
+  const inner = `<div class="project-reel-media-inner">${content}<span class="project-reel-media-label">${esc(media.label)}</span></div>`;
+  return media.href
+    ? `<a class="project-reel-media project-reel-media--${role}" href="${media.href}" aria-label="${esc(`Open ${p.name}: ${media.label}`)}">${inner}</a>`
+    : `<div class="project-reel-media project-reel-media--${role}" aria-label="${esc(`${p.name}: ${media.label}`)}">${inner}</div>`;
+};
+const projectReelSlide = (p, index) => {
+  const media = projectReelMedia[p.id] || [
+    { image: p.image, label: p.visual, href: p.url },
+    { kind: "placeholder", label: `${p.name} / detail` },
+    { kind: "placeholder", label: `${p.name} / process` },
+  ];
+  return `<article class="project-reel-slide" data-project-slide data-project-index="${index}" data-project-name="${esc(p.name)}" data-project-category="${esc(p.category)}" data-project-period="${esc(p.period)}" data-project-description="${esc(p.description)}" data-project-url="${p.url || ""}"><div class="project-reel-composition">${projectReelMediaMarkup(p, media[0], "hero")}${projectReelMediaMarkup(p, media[1], "support-a")}${projectReelMediaMarkup(p, media[2], "support-b")}<span class="project-reel-slide-number">${String(index + 1).padStart(2, "0")}</span></div><div class="sr-only"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p></div></article>`;
+};
+const projectReelSection = () =>
+  `<section class="home-section project-reel-section" id="projects"><div class="project-reel-intro"><div class="section-label">${label("03 / projects")}<span aria-hidden="true">↘</span></div><h2 class="serif">Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em></h2></div><div class="project-reel-stage" data-project-reel><div class="project-reel-viewport"><div class="project-reel-track" data-project-reel-track>${projectData.map(projectReelSlide).join("")}</div><div class="project-reel-caption" data-project-reel-caption aria-live="polite"><span class="project-reel-caption-index">01 / ${String(projectData.length).padStart(2, "0")}</span><h3>${esc(projectData[0].name)}</h3><p class="project-reel-caption-meta">${esc(projectData[0].category)} · ${esc(projectData[0].period)}</p><p class="project-reel-caption-description">${esc(projectData[0].description)}</p><a class="project-reel-caption-link" href="${projectData[0].url || "/projects/"}">${projectData[0].url ? "View project" : "All projects"} <span aria-hidden="true">↗</span></a></div><div class="project-reel-progress" aria-hidden="true"><span data-project-reel-progress></span></div></div></div><div class="project-reel-end"><span>Selected projects / 2026</span>${link("/projects/", "All projects →")}</div></section>`;
+
 const photographyLetters = "PHOTOGRAPHY"
   .split("")
   .map(
@@ -81,7 +135,7 @@ export function home() {
   return shell(
     "Hayden Wade",
     "Product Security Engineer in Brisbane. Engineering, old cars and projects in progress.",
-    `<div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${homeSection("about", 1, "Engineer by profession.<br> <em>Compulsive project starter<br> by nature.</em>", `<div class="about-grid"><div><p>I work across engineering, cyber, software and complex technical systems.</p><p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p></div>${figure("/images/about/portrait.jpg", "Blue Mountains / Away from the workshop")}</div><div class="interest-strip"><span>Brisbane, AU</span><span>Engineering</span><span>Old cars</span><span>Photography</span><span>Making</span></div>`)}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${homeSection("projects", 3, "Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em>", `<div class="home-projects">${projectData.map((p, i) => card(p, i, true)).join("")}</div><div class="section-end"><p>Notes from doing things the difficult way.</p>${link("/projects/", "All projects →")}</div>`)}${photographySection()}</main></div><footer class="footer" id="contact">
+    `<div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${homeSection("about", 1, "Engineer by profession.<br> <em>Compulsive project starter<br> by nature.</em>", `<div class="about-grid"><div><p>I work across engineering, cyber, software and complex technical systems.</p><p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p></div>${figure("/images/about/portrait.jpg", "Blue Mountains / Away from the workshop")}</div><div class="interest-strip"><span>Brisbane, AU</span><span>Engineering</span><span>Old cars</span><span>Photography</span><span>Making</span></div>`)}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${projectReelSection()}${photographySection()}</main></div><footer class="footer" id="contact">
   <div class="footer__marquee">
     <div class="footer__marquee-content rail">
       <span>ENGINEERING — OLD BMWs — SOFTWARE — PHOTOGRAPHY — RENOVATION — PROJECTS — NOTES — BUILT, BROKEN &amp; REBUILT —</span>
