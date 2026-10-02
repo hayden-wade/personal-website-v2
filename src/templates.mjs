@@ -275,7 +275,32 @@ export function photography() {
   return shell(
     "Photography",
     "Photographs of places, machines and people.",
-    `${header()}<main id="main" class="gallery-page"><section class="page-wrap index-intro">${label("Photography")}<div class="split-heading"><h1>Photographs of places,<br> machines & people.</h1><div>${link("/photography/index/", "Index ⠿")}<p>A visual archive — automotive, people and places.</p></div></div></section><section class="photo-3d-stage" aria-label="Photography gallery"><div class="photo-3d-grid" data-staggered-photo-grid>${gallery.slice(0, 35).map((g, i) => `<a class="photo-3d-item" href="/photography/viewer/?photo=${i}" data-gallery-photo="${i}" data-enlarge="${g.image}" data-caption="${esc(g.caption + " / " + g.category)}" aria-label="View ${esc(g.caption)}">${img(g.image, g.caption)}<span class="photo-3d-meta">${g.category}</span></a>`).join("")}</div></section><div class="page-wrap section-end">${label(gallery.length + " photographs")}${link("/photography/index/", "Index ⠿")}</div></main>${footer()}`,
+    `<main id="main" class="infinite-photo-page" data-infinite-photo-gallery>
+      <div class="infinite-photo-chrome infinite-photo-chrome--top">
+        <a class="infinite-photo-wordmark" href="/">HAYDEN WADE</a>
+        <span class="infinite-photo-section">04 / PHOTOGRAPHY</span>
+        <nav class="infinite-photo-nav" aria-label="Photography navigation">
+          ${link("/photography/index/", "INDEX ⠿")}
+          ${link("/", "CLOSE ×")}
+        </nav>
+      </div>
+      <div class="infinite-photo-stage" data-infinite-photo-stage aria-label="Infinite draggable photography gallery">
+        <div class="infinite-photo-canvas" data-infinite-photo-canvas></div>
+        <div class="infinite-photo-overlay" data-infinite-photo-overlay aria-hidden="true"></div>
+        <div class="infinite-photo-expanded-copy" data-infinite-photo-expanded-copy aria-hidden="true">
+          <p class="infinite-photo-expanded-kicker"></p>
+          <h1 class="infinite-photo-expanded-title"></h1>
+          <a class="infinite-photo-expanded-link" href="/photography/viewer/">View photograph ↗</a>
+        </div>
+      </div>
+      <div class="infinite-photo-chrome infinite-photo-chrome--bottom">
+        <span>DRAG TO EXPLORE</span>
+        <span>${String(gallery.length).padStart(2, "0")} PHOTOGRAPHS / INFINITE FIELD</span>
+      </div>
+      <div class="infinite-photo-data" hidden>
+        ${gallery.map((g, i) => `<span data-photo-src="${g.image}" data-photo-caption="${esc(g.caption)}" data-photo-category="${esc(g.category)}" data-photo-index="${i}"></span>`).join("")}
+      </div>
+    </main>`,
   );
 }
 export function photographyIndex() {
