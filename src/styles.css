@@ -28,16 +28,6 @@ body {
   font: 16px/1.55 var(--sans);
 }
 
-/* Animated technical grid background adapted from https://codepen.io/Buf1421/pen/JoEpYKw */
-.animated-grid-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  display: block;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-}
 h1,
 h2,
 h3,
@@ -636,13 +626,7 @@ figcaption,
 .home-reveal-shell {
   position: relative;
   z-index: 10;
-  isolation: isolate;
   background: var(--bg);
-}
-
-.home-reveal-shell > :not(.animated-grid-bg) {
-  position: relative;
-  z-index: 1;
 }
 .home-reveal-shell::after {
   content: "";
