@@ -1374,13 +1374,32 @@ td {
 .gallery-page {
   overflow-x: clip;
 }
-.home-section#photography .photo-3d-stage {
+.home-section#photography {
   width: 100vw;
   margin-left: calc(50% - 50vw);
+  padding-bottom: clamp(160px, 18vh, 240px);
+}
+.home-section#photography > .section-label,
+.home-section#photography > h2,
+.home-section#photography > .section-end {
+  width: min(
+    calc(100% - (2 * var(--gutter))),
+    calc(var(--max) - (2 * var(--gutter)))
+  );
+  margin-inline: auto;
+}
+.home-section#photography .photo-3d-stage {
+  width: 100%;
   margin-top: 12px;
+  background: var(--bg);
+}
+.home-section#photography .photo-3d-grid {
+  width: 100%;
+  max-width: none;
+  padding-inline: 0;
 }
 .home-section#photography .section-end {
-  margin-top: 34px;
+  margin-top: 64px;
 }
 .photo-3d-stage {
   position: relative;
@@ -1456,6 +1475,14 @@ td {
   }
 }
 @media (max-width: 700px) {
+  .home-section#photography {
+    padding-bottom: 110px;
+  }
+  .home-section#photography > .section-label,
+  .home-section#photography > h2,
+  .home-section#photography > .section-end {
+    width: calc(100% - 40px);
+  }
   .photo-3d-stage {
     padding-block: 42px 70px;
   }
