@@ -111,118 +111,216 @@ if (sections.length) {
   sections.forEach((s) => observer.observe(s));
 }
 
-// Fixed footer reveal based on Filip Zawada's CodePen.
+// Exact fixed-footer reveal baseline from the referenced CodePen.
+function footerBehindContent() {
+  const footer = document.querySelector(".footer");
+  const main = document.querySelector(".home-reveal-shell");
+  if (footer && main) {
+    if (window.matchMedia("(max-width: 700px)").matches) {
+      main.style.marginBottom = "";
+    } else {
+      const footerHeight = footer.offsetHeight;
+      main.style.marginBottom = footerHeight + "px";
+    }
+  }
+}
+
+function horizontalLoop(items, config) {
+  items = window.gsap.utils.toArray(items);
+  config = config || {};
+  let tl = window.gsap.timeline({
+      repeat: config.repeat,
+      paused: config.paused,
+      defaults: { ease: "none" },
+      onReverseComplete: () =>
+        tl.totalTime(tl.rawTime() + tl.duration() * 100),
+    }),
+    length = items.length,
+    startX = items[0].offsetLeft,
+    times = [],
+    widths = [],
+    xPercents = [],
+    curIndex = 0,
+    pixelsPerSecond = (config.speed || 1) * 100,
+    snap =
+      config.snap === false
+        ? (v) => v
+        : window.gsap.utils.snap(config.snap || 1),
+    totalWidth,
+    curX,
+    distanceToStart,
+    distanceToLoop,
+    item,
+    i;
+
+  window.gsap.set(items, {
+    xPercent: (i, el) => {
+      let w = (widths[i] = parseFloat(
+        window.gsap.getProperty(el, "width", "px"),
+      ));
+      xPercents[i] = snap(
+        (parseFloat(window.gsap.getProperty(el, "x", "px")) / w) * 100 +
+          window.gsap.getProperty(el, "xPercent"),
+      );
+      return xPercents[i];
+    },
+  });
+
+  window.gsap.set(items, { x: 0 });
+
+  totalWidth =
+    items[length - 1].offsetLeft +
+    (xPercents[length - 1] / 100) * widths[length - 1] -
+    startX +
+    items[length - 1].offsetWidth *
+      window.gsap.getProperty(items[length - 1], "scaleX") +
+    (parseFloat(config.paddingRight) || 0);
+
+  for (i = 0; i < length; i++) {
+    item = items[i];
+    curX = (xPercents[i] / 100) * widths[i];
+    distanceToStart = item.offsetLeft + curX - startX;
+    distanceToLoop =
+      distanceToStart +
+      widths[i] * window.gsap.getProperty(item, "scaleX");
+    tl.to(
+      item,
+      {
+        xPercent: snap(((curX - distanceToLoop) / widths[i]) * 100),
+        duration: distanceToLoop / pixelsPerSecond,
+      },
+      0,
+    )
+      .fromTo(
+        item,
+        {
+          xPercent: snap(
+            ((curX - distanceToLoop + totalWidth) / widths[i]) * 100,
+          ),
+        },
+        {
+          xPercent: xPercents[i],
+          duration:
+            (curX - distanceToLoop + totalWidth - curX) /
+            pixelsPerSecond,
+          immediateRender: false,
+        },
+        distanceToLoop / pixelsPerSecond,
+      )
+      .add("label" + i, distanceToStart / pixelsPerSecond);
+    times[i] = distanceToStart / pixelsPerSecond;
+  }
+
+  function toIndex(index, vars) {
+    vars = vars || {};
+    Math.abs(index - curIndex) > length / 2 &&
+      (index += index > curIndex ? -length : length);
+    let newIndex = window.gsap.utils.wrap(0, length, index),
+      time = times[newIndex];
+    if (time > tl.time() !== index > curIndex) {
+      vars.modifiers = {
+        time: window.gsap.utils.wrap(0, tl.duration()),
+      };
+      time += tl.duration() * (index > curIndex ? 1 : -1);
+    }
+    curIndex = newIndex;
+    vars.overwrite = true;
+    return tl.tweenTo(time, vars);
+  }
+
+  tl.next = (vars) => toIndex(curIndex + 1, vars);
+  tl.previous = (vars) => toIndex(curIndex - 1, vars);
+  tl.current = () => curIndex;
+  tl.toIndex = (index, vars) => toIndex(index, vars);
+  tl.times = times;
+  tl.progress(1, true).progress(0, true);
+
+  if (config.reversed) {
+    tl.vars.onReverseComplete();
+    tl.reverse();
+  }
+  return tl;
+}
+
 function installContactReveal() {
-  const footer = document.querySelector(".contact-reveal");
-  const spacer = document.querySelector(".contact-reveal-spacer");
-  const letters = [...document.querySelectorAll(".contact-monogram span")];
-  const copy = footer?.querySelector(".contact-copy");
-  const bottom = footer?.querySelector(".contact-bottom");
-  if (!footer || !spacer || !letters.length) return;
+  const footer = document.querySelector(".footer");
+  const main = document.querySelector(".home-reveal-shell");
+  const homeNav = document.querySelector(".home-nav");
+  if (!footer || !main) return;
 
-  const desktop = window.matchMedia("(min-width: 701px)");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let timeline;
+  footerBehindContent();
+  window.addEventListener("resize", footerBehindContent);
 
-  const syncFooterSpace = () => {
-    if (desktop.matches) spacer.style.height = `${footer.offsetHeight}px`;
-    else spacer.style.height = "";
-    window.ScrollTrigger?.refresh();
-  };
+  if (
+    typeof window.gsap === "undefined" ||
+    typeof window.ScrollTrigger === "undefined"
+  )
+    return;
 
-  const setVisible = () => {
-    letters.forEach((letter) => {
-      letter.style.opacity = "1";
-      letter.style.transform = "none";
-    });
-    if (copy) {
-      copy.style.opacity = "1";
-      copy.style.transform = "none";
-    }
-    if (bottom) {
-      bottom.style.opacity = "1";
-      bottom.style.transform = "none";
-    }
-  };
+  window.gsap.registerPlugin(window.ScrollTrigger);
 
-  const destroyTimeline = () => {
-    timeline?.scrollTrigger?.kill();
-    timeline?.kill();
-    timeline = null;
-  };
-
-  const buildTimeline = () => {
-    destroyTimeline();
-
-    if (
-      !desktop.matches ||
-      reducedMotion.matches ||
-      !window.gsap ||
-      !window.ScrollTrigger
-    ) {
-      setVisible();
-      return;
-    }
-
-    window.gsap.registerPlugin(window.ScrollTrigger);
-
-    window.gsap.set(letters, { opacity: 0, y: 75 });
-    if (copy) window.gsap.set(copy, { opacity: 0.25, y: 28 });
-    if (bottom) window.gsap.set(bottom, { opacity: 0.2, y: 16 });
-
-    timeline = window.gsap.timeline({
+  const paths = document.querySelectorAll(".svg-animation path");
+  if (paths.length) {
+    const svgTimeline = window.gsap.timeline({
       scrollTrigger: {
-        trigger: spacer,
-        start: "top bottom",
-        end: "top top",
+        trigger: main,
+        start: "bottom 80%",
+        end: "bottom top",
         scrub: true,
         toggleActions: "play none none reverse",
         markers: false,
+        onEnter: () => homeNav?.classList.add("footer-active"),
+        onLeaveBack: () => homeNav?.classList.remove("footer-active"),
       },
     });
 
-    letters.forEach((letter, i) => {
-      timeline.to(
-        letter,
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: "power3.out",
-        },
+    paths.forEach((path, i) => {
+      svgTimeline.fromTo(
+        path,
+        { opacity: 0, y: 75 },
+        { opacity: 1, y: 0, ease: "power3.out" },
         i * 0.25,
       );
     });
-
-    timeline.to(
-      copy,
-      { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" },
-      0.02,
-    );
-    timeline.to(
-      bottom,
-      { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" },
-      0.36,
-    );
-
-    window.ScrollTrigger.refresh();
-  };
-
-  const init = () => {
-    syncFooterSpace();
-    buildTimeline();
-  };
-
-  if (document.fonts?.ready) document.fonts.ready.then(init);
-  else init();
-
-  window.addEventListener("resize", syncFooterSpace, { passive: true });
-  desktop.addEventListener("change", init);
-  reducedMotion.addEventListener("change", init);
-
-  if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(syncFooterSpace).observe(footer);
   }
+
+  const scrollingText = window.gsap.utils.toArray(
+    ".footer__marquee-content span",
+  );
+  if (scrollingText.length) {
+    const loopTimeline = horizontalLoop(scrollingText, {
+      repeat: -1,
+      speed: 1,
+    });
+
+    let speedTween;
+    window.ScrollTrigger.create({
+      trigger: main,
+      start: "bottom 80%",
+      end: "bottom top",
+      scrub: true,
+      onUpdate: (self) => {
+        if (speedTween) speedTween.kill();
+        speedTween = window.gsap
+          .timeline()
+          .to(loopTimeline, {
+            timeScale: 3 * self.direction,
+            duration: 0.25,
+          })
+          .to(
+            loopTimeline,
+            {
+              timeScale: 1 * self.direction,
+              duration: 1.5,
+            },
+            "+=0.5",
+          );
+      },
+      markers: false,
+    });
+  }
+
+  window.ScrollTrigger.refresh();
 }
 
 installContactReveal();
