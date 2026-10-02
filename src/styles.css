@@ -2069,52 +2069,68 @@ td {
 .photo-outro-title em {
   font-weight: 400;
 }
-.photo-outro-cta {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: clamp(70px, 9vh, 110px);
-}
-.photo-outro-link {
+.photo-outro-here {
   position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  padding: 10px 0 13px;
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 1.15px;
-  line-height: 1;
-  text-transform: uppercase;
+  align-items: flex-start;
+  gap: clamp(10px, 1vw, 18px);
+  color: var(--accent);
+  text-decoration: none;
+  transform-origin: 0 50%;
+  transition:
+    color 0.45s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.45s ease;
 }
-.photo-outro-link::after {
+.photo-outro-here::after {
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: var(--accent);
-  transform: scaleX(0.22);
+  right: 0.18em;
+  bottom: -0.08em;
+  height: 0.025em;
+  min-height: 2px;
+  background: currentColor;
+  transform: scaleX(0.14);
   transform-origin: 0 50%;
-  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.65;
+  transition:
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease;
 }
-.photo-outro-arrow {
+.photo-outro-here-arrow {
   display: inline-block;
-  color: var(--accent);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 0.1em;
+  font-family: var(--sans);
+  font-size: 0.18em;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: 0;
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.35s ease;
 }
-.photo-outro-link:hover,
-.photo-outro-link:focus-visible {
+.photo-outro-here:hover,
+.photo-outro-here:focus-visible {
   color: var(--text);
+  transform: translate3d(0.04em, -0.02em, 0);
+  filter: brightness(1.06);
 }
-.photo-outro-link:hover::after,
-.photo-outro-link:focus-visible::after {
+.photo-outro-here:hover::after,
+.photo-outro-here:focus-visible::after {
   transform: scaleX(1);
+  opacity: 1;
 }
-.photo-outro-link:hover .photo-outro-arrow,
-.photo-outro-link:focus-visible .photo-outro-arrow {
-  transform: translate(7px, -7px);
+.photo-outro-here:hover .photo-outro-here-arrow,
+.photo-outro-here:focus-visible .photo-outro-here-arrow {
+  color: var(--accent);
+  transform: translate3d(0.28em, -0.28em, 0);
+}
+.photo-outro-here:active,
+.photo-outro-here.is-activating {
+  color: var(--accent);
+  transform: translate3d(0.07em, 0, 0) scale(0.985);
+  filter: brightness(1.35);
 }
 .photo-outro-foot {
   padding-top: 18px;
@@ -2230,13 +2246,8 @@ td {
   .photo-outro-line:last-child {
     padding-left: clamp(28px, 10vw, 54px);
   }
-  .photo-outro-cta {
-    justify-content: flex-start;
-    margin-bottom: 62px;
-  }
-  .photo-outro-link {
-    gap: 13px;
-    font-size: 10px;
+  .photo-outro-here {
+    gap: 10px;
   }
   .home-section#photography {
     padding-bottom: 0;
