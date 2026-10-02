@@ -1407,6 +1407,24 @@ td {
   max-width: none;
   padding-inline: 0;
 }
+.home-section#photography .photo-3d-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    rgba(23, 26, 24, 0.88) 4%,
+    rgba(23, 26, 24, 0.42) 10%,
+    rgba(23, 26, 24, 0) 18%,
+    rgba(23, 26, 24, 0) 82%,
+    rgba(23, 26, 24, 0.42) 90%,
+    rgba(23, 26, 24, 0.88) 96%,
+    var(--bg) 100%
+  );
+}
 .home-section#photography .section-end {
   margin-top: 64px;
 }
