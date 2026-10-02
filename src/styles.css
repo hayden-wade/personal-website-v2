@@ -738,6 +738,62 @@ figcaption,
   width: 80%;
   color: var(--color-foreground--100);
 }
+.footer__contact-copy {
+  margin: 0;
+  line-height: 1.28;
+}
+.footer__contact-copy a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(243, 234, 196, 0.55);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+.footer__contact-copy a:hover {
+  border-color: var(--color-accent);
+}
+.footer__socials {
+  display: flex;
+  align-items: center;
+  gap: 1.35rem;
+  margin-top: 1.7rem;
+}
+.footer__social-link {
+  width: 27px;
+  height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-foreground--100);
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+.footer__social-link:hover {
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+.footer__social-link:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 5px;
+}
+.footer__social-link svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.footer__social-link:not(.footer__social-link--fill) svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.footer__social-link--fill svg {
+  fill: currentColor;
+  stroke: none;
+}
 .footer__svg-animation {
   flex: 0 0 60%;
   display: flex;
@@ -761,26 +817,17 @@ figcaption,
   font-size: clamp(0.6rem, 1.5vw, 0.75rem);
   text-transform: uppercase;
 }
-.footer__bottom-links {
-  display: flex;
-  justify-content: space-between;
-  width: auto;
-  margin-bottom: 10px;
-  gap: 1rem;
+.footer__bottom-location,
+.footer__bottom-text {
+  margin: 0;
 }
-.footer__link {
+.footer__bottom-location p,
+.footer__bottom-text p {
+  margin: 0;
   color: var(--color-foreground--100);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-.footer__link:hover {
-  color: var(--color-accent);
 }
 .footer__bottom-text {
-  text-align: center;
-}
-.footer__bottom-text p {
-  color: var(--color-foreground--100);
+  text-align: right;
 }
 @media (max-width: 700px) {
   .home-reveal-shell::after {
@@ -809,6 +856,14 @@ figcaption,
   .footer__center-content p {
     width: 100%;
   }
+  .footer__socials {
+    margin-top: 1.35rem;
+    gap: 1.15rem;
+  }
+  .footer__social-link {
+    width: 25px;
+    height: 25px;
+  }
   .footer__svg-animation {
     margin-top: 2rem;
   }
@@ -818,9 +873,6 @@ figcaption,
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
-  }
-  .footer__bottom-links {
-    flex-wrap: wrap;
   }
 }
 .index-intro {
