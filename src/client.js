@@ -368,6 +368,9 @@ function installProjectReel() {
   const stage = document.querySelector("[data-project-reel]");
   const track = stage?.querySelector("[data-project-reel-track]");
   const slides = track ? [...track.querySelectorAll("[data-project-slide]")] : [];
+  const images = track
+    ? [...track.querySelectorAll(".project-reel-parallax-image")]
+    : [];
   const caption = stage?.querySelector("[data-project-reel-caption]");
   const progressBar = stage?.querySelector("[data-project-reel-progress]");
 
@@ -385,6 +388,8 @@ function installProjectReel() {
     ".project-reel-caption-description",
   );
   const captionLink = caption.querySelector(".project-reel-caption-link");
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
   const updateCaption = (index, animate = true) => {
     const slide = slides[index];
@@ -411,56 +416,102 @@ function installProjectReel() {
     const fade = caption.animate(
       [
         { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0.12, transform: "translateY(8px)", offset: 0.46 },
+        { opacity: 0.08, transform: "translateY(10px)", offset: 0.44 },
         { opacity: 1, transform: "translateY(0)" },
       ],
       {
-        duration: 360,
+        duration: 400,
         easing: "cubic-bezier(.16,1,.3,1)",
       },
     );
-    window.setTimeout(apply, 150);
+    window.setTimeout(apply, 160);
     fade.onfinish = () => fade.cancel();
   };
 
-  const resetParallax = () => {
-    slides.forEach((slide) => {
-      slide
-        .querySelectorAll(
-          ".project-reel-media--support-a,.project-reel-media--support-b",
-        )
-        .forEach((media) => media.style.removeProperty("--reel-parallax"));
+  // DOM parallax adapted from David Faure / Codrops' Horizontal Parallax
+  // Gallery. Each image is 125% wide with a -12.5% inset; its horizontal
+  // counter-motion is derived from the frame's position relative to the
+  // viewport centre. MIT licensed; see THIRD_PARTY_NOTICES.md.
+  const applyParallaxEffect = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportCenter = viewportWidth * 0.5;
+
+    images.forEach((image) => {
+      const frame = image.closest(".project-reel-media");
+      if (!frame) return;
+
+      const rect = frame.getBoundingClientRect();
+      const elementCenter = rect.left + rect.width * 0.5;
+      const t = clamp(
+        (elementCenter - viewportCenter) / viewportCenter,
+        -1,
+        1,
+      );
+
+      const maxShift = 10;
+      const shift = -t * maxShift;
+      image.style.transform = `translate3d(${shift.toFixed(3)}%, 0, 0)`;
     });
   };
 
-  const destroy = () => {
+  const closestProjectIndex = () => {
+    const viewportCenter = window.innerWidth * 0.5;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    slides.forEach((slide, index) => {
+      const rect = slide.getBoundingClientRect();
+      const slideCenter = rect.left + rect.width * 0.5;
+      const distance = Math.abs(slideCenter - viewportCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    return closestIndex;
+  };
+
+  const reset = () => {
     trigger?.kill();
     trigger = null;
+
     if (typeof window.gsap !== "undefined")
       window.gsap.set(track, { clearProps: "transform" });
     else track.style.transform = "";
+
+    images.forEach((image) => {
+      image.style.transform = reducedMotion.matches
+        ? "none"
+        : "translate3d(0%, 0, 0)";
+    });
+
     if (progressBar) progressBar.style.transform = "";
-    resetParallax();
     activeIndex = -1;
     updateCaption(0, false);
   };
 
   const init = () => {
-    destroy();
+    reset();
 
     if (
       !desktop.matches ||
       reducedMotion.matches ||
       typeof window.gsap === "undefined" ||
       typeof window.ScrollTrigger === "undefined"
-    )
+    ) {
+      if (!reducedMotion.matches) applyParallaxEffect();
       return;
+    }
 
     const { gsap, ScrollTrigger } = window;
     gsap.registerPlugin(ScrollTrigger);
 
     const getDistance = () =>
-      Math.max(1, track.scrollWidth - window.innerWidth + window.innerWidth * 0.08);
+      Math.max(
+        1,
+        track.scrollWidth - window.innerWidth + window.innerWidth * 0.1,
+      );
 
     const tween = gsap.to(track, {
       x: () => -getDistance(),
@@ -472,46 +523,35 @@ function installProjectReel() {
       id: "homepage-project-reel",
       trigger: stage,
       start: "top top",
-      end: () => `+=${Math.max(window.innerHeight * 3.8, getDistance() * 0.9)}`,
+      end: () =>
+        `+=${Math.max(window.innerHeight * 4.2, getDistance() * 0.86)}`,
       pin: true,
-      scrub: 0.65,
+      scrub: 0.7,
       invalidateOnRefresh: true,
       animation: tween,
       onUpdate: (self) => {
-        const position = self.progress * (slides.length - 1);
-        const index = Math.max(
-          0,
-          Math.min(slides.length - 1, Math.round(position)),
-        );
-        updateCaption(index);
+        applyParallaxEffect();
+        updateCaption(closestProjectIndex());
 
         if (progressBar)
           progressBar.style.transform = `scaleX(${self.progress.toFixed(4)})`;
-
-        slides.forEach((slide, slideIndex) => {
-          const delta = position - slideIndex;
-          const a = slide.querySelector(".project-reel-media--support-a");
-          const b = slide.querySelector(".project-reel-media--support-b");
-          if (a)
-            a.style.setProperty(
-              "--reel-parallax",
-              `translate3d(${(delta * -18).toFixed(2)}px, ${(delta * 5).toFixed(2)}px, 0)`,
-            );
-          if (b)
-            b.style.setProperty(
-              "--reel-parallax",
-              `translate3d(${(delta * 22).toFixed(2)}px, ${(delta * -6).toFixed(2)}px, 0)`,
-            );
-        });
       },
-      onRefresh: () => updateCaption(0, false),
+      onRefresh: () => {
+        applyParallaxEffect();
+        activeIndex = -1;
+        updateCaption(closestProjectIndex(), false);
+      },
     });
 
+    applyParallaxEffect();
     updateCaption(0, false);
   };
 
   desktop.addEventListener("change", init);
   reducedMotion.addEventListener("change", init);
+  window.addEventListener("resize", () => {
+    if (!desktop.matches && !reducedMotion.matches) applyParallaxEffect();
+  });
   window.addEventListener("load", () => {
     if (trigger && typeof window.ScrollTrigger !== "undefined")
       window.ScrollTrigger.refresh();
