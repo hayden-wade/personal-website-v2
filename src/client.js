@@ -366,6 +366,7 @@ tabs.forEach((tab, i) => {
 
 function installProjectReel() {
   const stage = document.querySelector("[data-project-reel]");
+  const viewport = stage?.querySelector(".project-reel-viewport");
   const track = stage?.querySelector("[data-project-reel-track]");
   const slides = track ? [...track.querySelectorAll("[data-project-slide]")] : [];
   const images = track
@@ -549,8 +550,11 @@ function installProjectReel() {
 
   desktop.addEventListener("change", init);
   reducedMotion.addEventListener("change", init);
-  window.addEventListener("resize", () => {
+  viewport?.addEventListener("scroll", () => {
     if (!desktop.matches && !reducedMotion.matches) applyParallaxEffect();
+  }, { passive: true });
+  window.addEventListener("resize", () => {
+    if (!reducedMotion.matches) applyParallaxEffect();
   });
   window.addEventListener("load", () => {
     if (trigger && typeof window.ScrollTrigger !== "undefined")
