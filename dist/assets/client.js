@@ -148,6 +148,123 @@ tabs.forEach((tab, i) => {
     tabs[n].focus();
   });
 });
+// Photography wall: scroll-scrubbed center-out column reveal inspired by
+// Codrops' Staggered 3D Grid Animations demo:
+// https://github.com/codrops/Staggered3DGridAnimations
+function installPhotographyStaggeredGrid() {
+  const grid = document.querySelector("[data-staggered-photo-grid]");
+  if (!grid) return;
+
+  const originals = [...grid.querySelectorAll(":scope > .photo-3d-item")];
+  if (!originals.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let items = [];
+  let columns = 0;
+  let scheduled = false;
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+
+  const getColumns = () =>
+    Math.max(
+      1,
+      getComputedStyle(grid)
+        .gridTemplateColumns.split(" ")
+        .filter(Boolean).length,
+    );
+
+  const decorate = (item, index) => {
+    item.style.setProperty("--photo-x", `${18 + ((index * 31) % 65)}%`);
+    item.style.setProperty("--photo-y", `${16 + ((index * 19) % 68)}%`);
+  };
+
+  const syncTiles = () => {
+    grid
+      .querySelectorAll(":scope > .photo-3d-clone")
+      .forEach((clone) => clone.remove());
+
+    columns = getColumns();
+    const rows = columns >= 7 ? 5 : columns >= 5 ? 5 : 6;
+    const targetCount = Math.max(originals.length, columns * rows);
+
+    for (let i = originals.length; i < targetCount; i++) {
+      const source =
+        originals[(i * 3 + Math.floor(i / columns)) % originals.length];
+      const clone = source.cloneNode(true);
+      clone.classList.add("photo-3d-clone");
+      clone.removeAttribute("href");
+      clone.removeAttribute("data-enlarge");
+      clone.removeAttribute("data-caption");
+      clone.removeAttribute("data-gallery-photo");
+      clone.removeAttribute("aria-label");
+      clone.setAttribute("aria-hidden", "true");
+      clone.setAttribute("role", "presentation");
+      clone.tabIndex = -1;
+      grid.appendChild(clone);
+    }
+
+    items = [...grid.querySelectorAll(":scope > .photo-3d-item")];
+    items.forEach(decorate);
+  };
+
+  const reset = () => {
+    items.forEach((item) => {
+      item.style.transform = "none";
+      item.style.opacity = "1";
+    });
+  };
+
+  const update = () => {
+    scheduled = false;
+
+    if (reducedMotion.matches) {
+      reset();
+      return;
+    }
+
+    const liveColumns = getColumns();
+    if (liveColumns !== columns) syncTiles();
+
+    const rect = grid.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const endTop = (viewportHeight - rect.height) / 2;
+    const progress = clamp01(
+      (viewportHeight - rect.top) / Math.max(1, viewportHeight - endTop),
+    );
+    const middleColumn = (columns - 1) / 2;
+    const maxDistance = Math.max(1, middleColumn);
+
+    items.forEach((item, index) => {
+      const columnIndex = index % columns;
+      const distance = Math.abs(columnIndex - middleColumn);
+      const delay = (distance / maxDistance) * 0.22;
+      const localProgress = clamp01((progress - delay) / (1 - delay));
+      const eased = Math.sin((localProgress * Math.PI) / 2);
+      const yPercent = 450 * (1 - eased);
+
+      item.style.transform = `translate3d(0, ${yPercent}%, 0)`;
+      item.style.opacity = String(Math.min(1, localProgress * 1.35));
+    });
+  };
+
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(update);
+  };
+
+  syncTiles();
+  update();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", () => {
+    syncTiles();
+    schedule();
+  });
+  reducedMotion.addEventListener("change", schedule);
+}
+
+installPhotographyStaggeredGrid();
+
 const dialog = document.querySelector(".lightbox");
 const triggers = [...document.querySelectorAll("[data-enlarge]")];
 let photos = [],
@@ -171,7 +288,7 @@ function move(root, delta) {
   renderViewer(root);
 }
 function viewerTriggersFor(trigger) {
-  const gallery = trigger.closest(".home-photos,.photo-mosaic,.photo-index");
+  const gallery = trigger.closest(".home-photos,.photo-3d-grid,.photo-index");
   return gallery ? [...gallery.querySelectorAll("[data-enlarge]")] : triggers;
 }
 triggers.forEach((trigger) =>
