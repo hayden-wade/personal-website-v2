@@ -88,7 +88,7 @@ export function home() {
     </div>
     <div class="footer__svg-animation">
       <svg width="100%" viewBox="0 0 242 94" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-animation" aria-hidden="true">
-        <text class="svg-letter" x="159" y="94" textLength="83" lengthAdjust="spacingAndGlyphs" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="400">W</text>
+        <text class="svg-letter" x="159" y="94" textLength="83" lengthAdjust="spacingAndGlyphs" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="450">W</text>
         <text class="svg-letter" x="82" y="94" textLength="69" lengthAdjust="spacingAndGlyphs" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="400">B</text>
         <text class="svg-letter" x="0" y="94" textLength="70" lengthAdjust="spacingAndGlyphs" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="400">H</text>
       </svg>
