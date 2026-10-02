@@ -757,7 +757,9 @@ function installPhotographyOutroTransition() {
         id: "photography-outro-effect25",
         trigger: title,
         start: "center center",
-        end: "+=500%",
+        // Keep the Codrops pinned character reveal, but compress it heavily
+        // for the homepage so it resolves in ~1.35 viewport-heights of scroll.
+        end: "+=135%",
         scrub: true,
         pin: section,
       },
