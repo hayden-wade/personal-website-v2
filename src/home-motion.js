@@ -428,7 +428,7 @@ if (homeHero) {
 
   if (!reduced.matches && "IntersectionObserver" in window) {
     const targets = document.querySelectorAll(
-      ".home-section > h2,.about-grid > *, .experience-list .job,.home-projects .project-card,.home-photos .media,.contact h2",
+      ".home-section > h2,.about-grid > *, .experience-list .job,.home-projects .project-card,.home-photos .media,.photo-outro-meta,.photo-outro-title,.photo-outro-cta,.photo-outro-foot,.contact h2",
     );
     const observer = new IntersectionObserver(
       (entries) => {
