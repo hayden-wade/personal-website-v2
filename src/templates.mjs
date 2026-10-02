@@ -65,7 +65,46 @@ export function home() {
   return shell(
     "Hayden Wade",
     "Product Security Engineer in Brisbane. Engineering, old cars and projects in progress.",
-    `<canvas class="animated-grid-bg" data-animated-grid-bg aria-hidden="true"></canvas><div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${homeSection("about", 1, "Engineer by profession.<br> <em>Compulsive project starter<br> by nature.</em>", `<div class="about-grid"><div><p>I work across engineering, cyber, software and complex technical systems.</p><p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p></div>${figure("/images/about/portrait.jpg", "Blue Mountains / Away from the workshop")}</div><div class="interest-strip"><span>Brisbane, AU</span><span>Engineering</span><span>Old cars</span><span>Photography</span><span>Making</span></div>`)}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${homeSection("projects", 3, "Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em>", `<div class="home-projects">${projectData.map((p, i) => card(p, i, true)).join("")}</div><div class="section-end"><p>Notes from doing things the difficult way.</p>${link("/projects/", "All projects →")}</div>`)}${homeSection("photography", 4, "Places, cars<br> <em>& other things.</em>", `<section class="photo-3d-stage" aria-label="Photography gallery"><div class="photo-3d-grid" data-staggered-photo-grid>${gallery.slice(0, 35).map((g, i) => `<a class="photo-3d-item" href="/photography/viewer/?photo=${i}" data-gallery-photo="${i}" data-enlarge="${g.image}" data-caption="${esc(g.caption + " / " + g.category)}" aria-label="View ${esc(g.caption)}">${img(g.image, g.caption)}<span class="photo-3d-meta">${g.category}</span></a>`).join("")}</div></section><div class="section-end">${link("/photography/", "View photography →")}</div>`)}</main></div><div class="contact-reveal-spacer" id="contact" aria-hidden="true"></div><footer class="contact contact-reveal" aria-label="Contact"><div class="contact-grid"><div class="contact-copy"><p class="contact-intro">Good projects usually start with a conversation. If you’re working on something interesting, have an idea, or simply want to say hello — <a href="mailto:${site.email}">my inbox is open.</a></p></div><div class="contact-monogram" aria-hidden="true"><span>H</span><span>B</span><span>W</span></div></div><div class="contact-bottom"><nav class="contact-links" aria-label="Contact links">${link("mailto:" + site.email, "Email")}${link(site.linkedin, "LinkedIn")}${link(site.github, "GitHub")}${link(site.instagram, "Instagram")}</nav><div class="contact-meta"><span>Brisbane, Australia</span><span>© 2026 Hayden Wade</span>${link("#top", "Back to top ↑")}</div></div></footer>`,
+    `<canvas class="animated-grid-bg" data-animated-grid-bg aria-hidden="true"></canvas><div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${homeSection("about", 1, "Engineer by profession.<br> <em>Compulsive project starter<br> by nature.</em>", `<div class="about-grid"><div><p>I work across engineering, cyber, software and complex technical systems.</p><p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p></div>${figure("/images/about/portrait.jpg", "Blue Mountains / Away from the workshop")}</div><div class="interest-strip"><span>Brisbane, AU</span><span>Engineering</span><span>Old cars</span><span>Photography</span><span>Making</span></div>`)}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${homeSection("projects", 3, "Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em>", `<div class="home-projects">${projectData.map((p, i) => card(p, i, true)).join("")}</div><div class="section-end"><p>Notes from doing things the difficult way.</p>${link("/projects/", "All projects →")}</div>`)}${homeSection("photography", 4, "Places, cars<br> <em>& other things.</em>", `<section class="photo-3d-stage" aria-label="Photography gallery"><div class="photo-3d-grid" data-staggered-photo-grid>${gallery.slice(0, 35).map((g, i) => `<a class="photo-3d-item" href="/photography/viewer/?photo=${i}" data-gallery-photo="${i}" data-enlarge="${g.image}" data-caption="${esc(g.caption + " / " + g.category)}" aria-label="View ${esc(g.caption)}">${img(g.image, g.caption)}<span class="photo-3d-meta">${g.category}</span></a>`).join("")}</div></section><div class="section-end">${link("/photography/", "View photography →")}</div>`)}</main></div><footer class="footer" id="contact">
+  <div class="footer__marquee">
+    <div class="footer__marquee-content rail">
+      <span>
+        The artist is not a person who creates art, but one who creates
+        possibilities in every breath they take. Creation is not confined to the
+        canvas or the stage; it’s a perpetual dance between intuition and the
+        unknown, unfolding in every moment.
+      </span>
+      <span>
+        The artist is not a person who creates art, but one who creates
+        possibilities in every breath they take. Creation is not confined to the
+        canvas or the stage; it’s a perpetual dance between intuition and the
+        unknown, unfolding in every moment.
+      </span>
+    </div>
+  </div>
+  <div class="footer__center">
+    <div class="footer__center-content">
+      <p>The artist’s role is not to control or dictate, but to serve as a channel, allowing the raw energy of creation to flow through them unfiltered. In every brushstroke, note, or word, there is a glimpse of the infinite—a reminder that creativity is not something you do, but something you are.</p>
+    </div>
+    <div class="footer__svg-animation">
+      <svg width="100%" viewBox="0 0 242 94" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-animation" aria-hidden="true">
+        <path d="M171.557 10.9091V0.909088H241.375V10.9091H212.102V94H200.83V10.9091H171.557Z" />
+        <path d="M94.7727 94V0.909088H126.227C133.5 0.909088 139.47 2.15151 144.136 4.63636C148.803 7.0909 152.258 10.4697 154.5 14.7727C156.742 19.0758 157.864 23.9697 157.864 29.4545C157.864 34.9394 156.742 39.803 154.5 44.0455C152.258 48.2879 148.818 51.6212 144.182 54.0455C139.545 56.4394 133.621 57.6364 126.409 57.6364H100.955V47.4545H126.045C131.015 47.4545 135.015 46.7273 138.045 45.2727C141.106 43.8182 143.318 41.7576 144.682 39.0909C146.076 36.3939 146.773 33.1818 146.773 29.4545C146.773 25.7273 146.076 22.4697 144.682 19.6818C143.288 16.8939 141.061 14.7424 138 13.2273C134.939 11.6818 130.894 10.9091 125.864 10.9091H106.045V94H94.7727ZM138.591 52.1818L161.5 94H148.409L125.864 52.1818H138.591Z" />
+        <path d="M12.0909 94H0.272736L34.4546 0.909088H46.0909L80.2727 94H68.4546L40.6364 15.6364H39.9091L12.0909 94ZM16.4546 57.6364H64.0909V67.6364H16.4546V57.6364Z" />
+      </svg>
+    </div>
+  </div>
+  <div class="footer__bottom">
+    <div class="footer__bottom-links">
+      <a href="#" class="footer__link">Explore your own path</a>
+      <a href="#" class="footer__link">Create from within</a>
+      <a href="#" class="footer__link">Listen to your inner voice</a>
+    </div>
+    <div class="footer__bottom-text">
+      <p>Safeguarding the unseen, made seen ― © 2024</p>
+    </div>
+  </div>
+</footer>`,
   );
 }
 export function projects() {
