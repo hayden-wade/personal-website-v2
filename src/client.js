@@ -392,10 +392,13 @@ function installProjectReel() {
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+  let captionTransitionToken = 0;
+
   const updateCaption = (index, animate = true) => {
     const slide = slides[index];
     if (!slide || index === activeIndex) return;
     activeIndex = index;
+    const token = ++captionTransitionToken;
 
     const apply = () => {
       captionIndex.textContent =
@@ -409,24 +412,54 @@ function installProjectReel() {
       captionLink.firstChild.textContent = url ? "View project " : "All projects ";
     };
 
+    const pieces = [
+      captionIndex,
+      captionTitle,
+      captionMeta,
+      captionDescription,
+      captionLink,
+    ].filter(Boolean);
+
     if (!animate || typeof caption.animate !== "function") {
       apply();
       return;
     }
 
-    const fade = caption.animate(
-      [
-        { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0.08, transform: "translateY(10px)", offset: 0.44 },
-        { opacity: 1, transform: "translateY(0)" },
-      ],
-      {
-        duration: 400,
-        easing: "cubic-bezier(.16,1,.3,1)",
-      },
-    );
-    window.setTimeout(apply, 160);
-    fade.onfinish = () => fade.cancel();
+    pieces.forEach((piece, pieceIndex) => {
+      piece.animate(
+        [
+          { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          { opacity: 0, transform: "translate3d(0, 8px, 0)" },
+        ],
+        {
+          duration: 170,
+          delay: pieceIndex * 12,
+          easing: "cubic-bezier(.4,0,1,1)",
+          fill: "forwards",
+        },
+      );
+    });
+
+    window.setTimeout(() => {
+      if (token !== captionTransitionToken) return;
+      apply();
+
+      pieces.forEach((piece, pieceIndex) => {
+        piece.getAnimations().forEach((animation) => animation.cancel());
+        piece.animate(
+          [
+            { opacity: 0, transform: "translate3d(0, 14px, 0)" },
+            { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          ],
+          {
+            duration: 420,
+            delay: pieceIndex * 28,
+            easing: "cubic-bezier(.16,1,.3,1)",
+            fill: "both",
+          },
+        );
+      });
+    }, 205);
   };
 
   // DOM parallax adapted from David Faure / Codrops' Horizontal Parallax
