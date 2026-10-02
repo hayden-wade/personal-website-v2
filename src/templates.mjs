@@ -68,23 +68,27 @@ export function home() {
     `<div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${homeSection("about", 1, "Engineer by profession.<br> <em>Compulsive project starter<br> by nature.</em>", `<div class="about-grid"><div><p>I work across engineering, cyber, software and complex technical systems.</p><p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p></div>${figure("/images/about/portrait.jpg", "Blue Mountains / Away from the workshop")}</div><div class="interest-strip"><span>Brisbane, AU</span><span>Engineering</span><span>Old cars</span><span>Photography</span><span>Making</span></div>`)}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${homeSection("projects", 3, "Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em>", `<div class="home-projects">${projectData.map((p, i) => card(p, i, true)).join("")}</div><div class="section-end"><p>Notes from doing things the difficult way.</p>${link("/projects/", "All projects →")}</div>`)}${homeSection("photography", 4, "Places, cars<br> <em>& other things.</em>", `<section class="photo-3d-stage" aria-label="Photography gallery"><div class="photo-3d-grid" data-staggered-photo-grid>${gallery.slice(0, 35).map((g, i) => `<a class="photo-3d-item" href="/photography/viewer/?photo=${i}" data-gallery-photo="${i}" data-enlarge="${g.image}" data-caption="${esc(g.caption + " / " + g.category)}" aria-label="View ${esc(g.caption)}">${img(g.image, g.caption)}<span class="photo-3d-meta">${g.category}</span></a>`).join("")}</div></section><div class="section-end">${link("/photography/", "View photography →")}</div>`)}</main></div><footer class="footer" id="contact">
   <div class="footer__marquee">
     <div class="footer__marquee-content rail">
-      <span>
-        The artist is not a person who creates art, but one who creates
-        possibilities in every breath they take. Creation is not confined to the
-        canvas or the stage; it’s a perpetual dance between intuition and the
-        unknown, unfolding in every moment.
-      </span>
-      <span>
-        The artist is not a person who creates art, but one who creates
-        possibilities in every breath they take. Creation is not confined to the
-        canvas or the stage; it’s a perpetual dance between intuition and the
-        unknown, unfolding in every moment.
-      </span>
+      <span>ENGINEERING — OLD BMWs — SOFTWARE — PHOTOGRAPHY — RENOVATION — PROJECTS — NOTES — BUILT, BROKEN &amp; REBUILT —</span>
+      <span>ENGINEERING — OLD BMWs — SOFTWARE — PHOTOGRAPHY — RENOVATION — PROJECTS — NOTES — BUILT, BROKEN &amp; REBUILT —</span>
     </div>
   </div>
   <div class="footer__center">
     <div class="footer__center-content">
-      <p>The artist’s role is not to control or dictate, but to serve as a channel, allowing the raw energy of creation to flow through them unfiltered. In every brushstroke, note, or word, there is a glimpse of the infinite—a reminder that creativity is not something you do, but something you are.</p>
+      <p class="footer__contact-copy">Have a project, idea,<br>or old BMW problem?<br><a href="mailto:${site.email}">Let’s talk.</a></p>
+      <nav class="footer__socials" aria-label="Contact links">
+        <a class="footer__social-link" href="mailto:${site.email}" aria-label="Email Hayden">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.75" y="4.75" width="18.5" height="14.5" rx="2.25"/><path d="m4 7 8 6 8-6"/></svg>
+        </a>
+        <a class="footer__social-link footer__social-link--fill" href="${site.linkedin}" aria-label="LinkedIn">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708C16 15.487 15.474 16 14.825 16H1.175C.526 16 0 15.487 0 14.854V1.146Zm4.943 12.248V6.169H2.542v7.225h2.401Zm-1.2-8.213c.837 0 1.358-.554 1.358-1.248-.015-.709-.521-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016Zm3.908 8.213h2.4V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.4V9.25c0-2.22-1.184-3.252-2.763-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225Z"/></svg>
+        </a>
+        <a class="footer__social-link footer__social-link--fill" href="${site.github}" aria-label="GitHub">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8.003 8.003 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.65 7.65 0 0 1 8 4.85c.68 0 1.36.09 2 .26 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        </a>
+        <a class="footer__social-link footer__social-link--fill" href="${site.instagram}" aria-label="Instagram">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.441c2.135 0 2.389.008 3.232.046.78.036 1.204.166 1.486.276.373.145.64.318.92.598.28.28.453.547.598.92.11.282.24.706.276 1.486.038.843.046 1.097.046 3.232s-.008 2.389-.046 3.232c-.036.78-.166 1.204-.276 1.486a4.367 4.367 0 0 1-.598.92 4.367 4.367 0 0 1-.92.598c-.282.11-.706.24-1.486.276-.843.038-1.097.046-3.232.046s-2.389-.008-3.232-.046c-.78-.036-1.204-.166-1.486-.276a4.367 4.367 0 0 1-.92-.598 4.367 4.367 0 0 1-.598-.92c-.11-.282-.24-.706-.276-1.486C1.449 10.389 1.441 10.135 1.441 8s.008-2.389.046-3.232c.036-.78.166-1.204.276-1.486.145-.373.318-.64.598-.92.28-.28.547-.453.92-.598.282-.11.706-.24 1.486-.276C5.611 1.449 5.865 1.441 8 1.441ZM8 0C5.829 0 5.556.01 4.703.048 3.85.087 3.269.222 2.76.42a5.807 5.807 0 0 0-1.51.83A5.807 5.807 0 0 0 .42 2.76c-.198.509-.333 1.09-.372 1.943C.01 5.556 0 5.829 0 8s.01 2.444.048 3.297c.039.853.174 1.434.372 1.943.205.526.478.97.83 1.322.352.352.796.625 1.51.83.509.198 1.09.333 1.943.372C5.556 15.99 5.829 16 8 16s2.444-.01 3.297-.048c.853-.039 1.434-.174 1.943-.372a5.807 5.807 0 0 0 1.51-.83 5.807 5.807 0 0 0 .83-1.51c.198-.509.333-1.09.372-1.943C15.99 10.444 16 10.171 16 8s-.01-2.444-.048-3.297c-.039-.853-.174-1.434-.372-1.943a5.807 5.807 0 0 0-.83-1.51 5.807 5.807 0 0 0-1.51-.83c-.509-.198-1.09-.333-1.943-.372C10.444.01 10.171 0 8 0Zm0 3.892a4.108 4.108 0 1 0 0 8.216 4.108 4.108 0 0 0 0-8.216Zm0 6.775a2.667 2.667 0 1 1 0-5.334 2.667 2.667 0 0 1 0 5.334Zm5.231-6.937a.96.96 0 1 1-1.92 0 .96.96 0 0 1 1.92 0Z"/></svg>
+        </a>
+      </nav>
     </div>
     <div class="footer__svg-animation">
       <svg width="100%" viewBox="0 0 242 94" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-animation" aria-hidden="true">
@@ -95,14 +99,8 @@ export function home() {
     </div>
   </div>
   <div class="footer__bottom">
-    <div class="footer__bottom-links">
-      <a href="#" class="footer__link">Explore your own path</a>
-      <a href="#" class="footer__link">Create from within</a>
-      <a href="#" class="footer__link">Listen to your inner voice</a>
-    </div>
-    <div class="footer__bottom-text">
-      <p>Safeguarding the unseen, made seen ― © 2024</p>
-    </div>
+    <div class="footer__bottom-location"><p>Brisbane, Australia</p></div>
+    <div class="footer__bottom-text"><p>© 2026 Hayden Wade</p></div>
   </div>
 </footer>`,
   );
