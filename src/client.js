@@ -259,7 +259,7 @@ function installContactReveal() {
 
   window.gsap.registerPlugin(window.ScrollTrigger);
 
-  const paths = document.querySelectorAll(".svg-animation path");
+  const paths = document.querySelectorAll(".svg-animation .svg-letter");
   if (paths.length) {
     const svgTimeline = window.gsap.timeline({
       scrollTrigger: {
