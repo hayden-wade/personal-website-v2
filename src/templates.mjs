@@ -64,38 +64,32 @@ const homeSection = (id, n, title, body) =>
 const projectReelMedia = {
   chassiswire: [
     { kind: "wire", label: "Schematic / UI / wiring", href: "/projects/chassiswire/" },
-    { kind: "concept", label: "Connector / pinout", href: "/projects/chassiswire/" },
-    { kind: "concept", label: "Diagnostics / CAN", href: "/projects/chassiswire/" },
+    { kind: "concept", label: "Connector / diagnostics", href: "/projects/chassiswire/" },
   ],
   house: [
     { kind: "placeholder", label: "Redbank Plains / renovation" },
-    { kind: "placeholder", label: "Bathroom / in progress" },
-    { kind: "placeholder", label: "Kitchen / planning" },
+    { kind: "placeholder", label: "Renovation / in progress" },
   ],
   "318is": [
     { kind: "placeholder", label: "BMW E30 318iS" },
-    { kind: "placeholder", label: "Body / restoration" },
-    { kind: "placeholder", label: "Mechanical / OEM+" },
+    { kind: "placeholder", label: "Restoration / details" },
   ],
   m54: [
     { kind: "placeholder", label: "M54B30 / parts collection" },
-    { kind: "placeholder", label: "Engine / M54B30" },
-    { kind: "placeholder", label: "Wiring / integration" },
+    { kind: "placeholder", label: "Engine / integration" },
   ],
   respray: [
     { image: "/images/e30-respray/finished.jpg", label: "Finished / Glacier Blue", href: "/writing/e30-respray/" },
-    { image: "/images/e30-respray/bodywork.jpg", label: "Bodywork / preparation", href: "/writing/e30-respray/02-sanding-filler-bodywork/" },
     { image: "/images/e30-respray/painting.jpg", label: "Paint / colour", href: "/writing/e30-respray/04-painting-the-e30/" },
   ],
   honda: [
     { image: "/images/honda/how-to-build-a-classic-honda-cafe-racer-1972-honda-cb500f.jpg", label: "Honda CB500 Four", href: "/projects/honda-cb500-four/" },
     { image: "/images/honda/engine-rebuild.jpg", label: "Engine / rebuild", href: "https://haydenbwade.com/engine-rebuild/" },
-    { image: "/images/honda/cb500-cafe-racer-build-rewiring-the-bike-with-m-unit.jpg", label: "Electrical / m.unit", href: "https://haydenbwade.com/cb500-cafe-racer-build-rewiring-the-bike-with-m-unit/" },
   ],
 };
 const projectReelMediaMarkup = (p, media, role) => {
   const content = media.image
-    ? img(media.image, `${p.name} — ${media.label}`)
+    ? img(media.image, `${p.name} — ${media.label}`, "project-reel-parallax-image")
     : media.kind === "wire"
       ? wires()
       : `<div class="project-reel-placeholder project-reel-placeholder--${media.kind || "placeholder"}"><span>${esc(media.label)}</span>${media.kind === "concept" ? "<i></i><i></i><i></i>" : ""}</div>`;
@@ -108,9 +102,8 @@ const projectReelSlide = (p, index) => {
   const media = projectReelMedia[p.id] || [
     { image: p.image, label: p.visual, href: p.url },
     { kind: "placeholder", label: `${p.name} / detail` },
-    { kind: "placeholder", label: `${p.name} / process` },
   ];
-  return `<article class="project-reel-slide" data-project-slide data-project-index="${index}" data-project-name="${esc(p.name)}" data-project-category="${esc(p.category)}" data-project-period="${esc(p.period)}" data-project-description="${esc(p.description)}" data-project-url="${p.url || ""}"><div class="project-reel-composition">${projectReelMediaMarkup(p, media[0], "hero")}${projectReelMediaMarkup(p, media[1], "support-a")}${projectReelMediaMarkup(p, media[2], "support-b")}<span class="project-reel-slide-number">${String(index + 1).padStart(2, "0")}</span></div><div class="project-reel-mobile-copy"><span>${String(index + 1).padStart(2, "0")} / ${String(projectData.length).padStart(2, "0")}</span><h3>${esc(p.name)}</h3><p>${esc(p.category)} · ${esc(p.period)}</p>${p.url ? `<a href="${p.url}">View project ↗</a>` : `<a href="/projects/">All projects →</a>`}</div><div class="sr-only"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p></div></article>`;
+  return `<article class="project-reel-slide" data-project-slide data-project-index="${index}" data-project-name="${esc(p.name)}" data-project-category="${esc(p.category)}" data-project-period="${esc(p.period)}" data-project-description="${esc(p.description)}" data-project-url="${p.url || ""}"><div class="project-reel-gallery">${projectReelMediaMarkup(p, media[0], "primary")}${projectReelMediaMarkup(p, media[1], "secondary")}</div><span class="project-reel-slide-number">${String(index + 1).padStart(2, "0")}</span><div class="project-reel-mobile-copy"><span>${String(index + 1).padStart(2, "0")} / ${String(projectData.length).padStart(2, "0")}</span><h3>${esc(p.name)}</h3><p>${esc(p.category)} · ${esc(p.period)}</p>${p.url ? `<a href="${p.url}">View project ↗</a>` : `<a href="/projects/">All projects →</a>`}</div><div class="sr-only"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p></div></article>`;
 };
 const projectReelSection = () =>
   `<section class="home-section project-reel-section" id="projects"><div class="project-reel-intro"><div class="section-label">${label("03 / projects")}<span aria-hidden="true">↘</span></div><h2 class="serif">Selected work.<br> <em>Things I’m building, restoring<br> and finishing.</em></h2></div><div class="project-reel-stage" data-project-reel><div class="project-reel-viewport"><div class="project-reel-track" data-project-reel-track>${projectData.map(projectReelSlide).join("")}</div><div class="project-reel-caption" data-project-reel-caption aria-live="polite"><span class="project-reel-caption-index">01 / ${String(projectData.length).padStart(2, "0")}</span><h3>${esc(projectData[0].name)}</h3><p class="project-reel-caption-meta">${esc(projectData[0].category)} · ${esc(projectData[0].period)}</p><p class="project-reel-caption-description">${esc(projectData[0].description)}</p><a class="project-reel-caption-link" href="${projectData[0].url || "/projects/"}">${projectData[0].url ? "View project" : "All projects"} <span aria-hidden="true">↗</span></a></div><div class="project-reel-progress" aria-hidden="true"><span data-project-reel-progress></span></div></div></div><div class="project-reel-end"><span>Selected projects / 2026</span>${link("/projects/", "All projects →")}</div></section>`;
