@@ -879,10 +879,10 @@ function installAnimatedGridBackground() {
 
   const config = {
     bgColor: root.getPropertyValue("--bg").trim() || "#171a18",
-    gridColor: "rgba(255, 255, 255, 0.02)",
-    gridColorBold: "rgba(255, 255, 255, 0.04)",
-    crossColorSmall: "rgba(255, 255, 255, 0.016)",
-    crossColorLarge: "rgba(255, 255, 255, 0.22)",
+    gridColor: "rgba(255, 255, 255, 0.055)",
+    gridColorBold: "rgba(255, 255, 255, 0.10)",
+    crossColorSmall: "rgba(255, 255, 255, 0.05)",
+    crossColorLarge: "rgba(255, 255, 255, 0.36)",
     gridSize: 50,
     boldEvery: 3,
     crossSizeSmall: 5,
