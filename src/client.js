@@ -477,6 +477,72 @@ function installPhotographyTitleTransition() {
 
 installPhotographyTitleTransition();
 
+function installPhotographyOutroTransition() {
+  const title = document.querySelector("[data-photo-outro-title]");
+  const section = title?.closest(".photo-outro");
+  const chars = title
+    ? [...title.querySelectorAll(".photo-outro-char")]
+    : [];
+
+  if (!title || !section || !chars.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const reset = () => {
+    chars.forEach((char) => {
+      char.style.transform = "none";
+      char.style.opacity = "1";
+      char.style.willChange = "auto";
+    });
+  };
+
+  if (
+    reducedMotion.matches ||
+    typeof window.gsap === "undefined" ||
+    typeof window.ScrollTrigger === "undefined"
+  ) {
+    reset();
+    return;
+  }
+
+  const { gsap, ScrollTrigger } = window;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Adapted directly from Codrops' data-effect25 in
+  // OnScrollTypographyAnimations. The original pins the title's parent while
+  // vertically scaling each character into view across a long scrubbed scroll.
+  gsap.fromTo(
+    chars,
+    {
+      willChange: "transform",
+      transformOrigin: "50% 100%",
+      scaleY: 0,
+    },
+    {
+      ease: "power3.in",
+      opacity: 1,
+      scaleY: 1,
+      stagger: 0.05,
+      scrollTrigger: {
+        id: "photography-outro-effect25",
+        trigger: title,
+        start: "center center",
+        end: "+=500%",
+        scrub: true,
+        pin: section,
+      },
+    },
+  );
+
+  reducedMotion.addEventListener("change", () => {
+    if (!reducedMotion.matches) return;
+    ScrollTrigger.getById("photography-outro-effect25")?.kill();
+    reset();
+  });
+}
+
+installPhotographyOutroTransition();
+
 // Photography wall: scroll-scrubbed center-out column reveal inspired by
 // Codrops' Staggered 3D Grid Animations demo:
 // https://github.com/codrops/Staggered3DGridAnimations
