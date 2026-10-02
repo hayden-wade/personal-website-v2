@@ -91,7 +91,7 @@ if (smoothScrollEligible) {
   else window.addEventListener("load", startAfterLoader, { once: true });
 }
 
-const sections = [...document.querySelectorAll(".home-section,.contact")];
+const sections = [...document.querySelectorAll(".home-section,.contact-reveal-spacer")];
 if (sections.length) {
   const nav = [...document.querySelectorAll(".home-nav nav a")];
   const observer = new IntersectionObserver(
@@ -110,6 +110,106 @@ if (sections.length) {
   );
   sections.forEach((s) => observer.observe(s));
 }
+// Fixed contact-footer reveal, adapted from the layered footer treatment in
+// Filip Zawada's CodePen. The footer stays behind the homepage and is uncovered
+// by a transparent spacer at the very end of the document.
+function installContactReveal() {
+  const footer = document.querySelector(".contact-reveal");
+  const spacer = document.querySelector(".contact-reveal-spacer");
+  if (!footer || !spacer) return;
+
+  const desktop = window.matchMedia("(min-width: 701px)");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const copy = footer.querySelector(".contact-copy");
+  const monogram = footer.querySelector(".contact-monogram");
+  const letters = [...footer.querySelectorAll(".contact-monogram span")];
+  const bottom = footer.querySelector(".contact-bottom");
+  let scheduled = false;
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const clearMotion = () => {
+    for (const element of [copy, monogram, bottom, ...letters]) {
+      if (!element) continue;
+      element.style.transform = "";
+      element.style.opacity = "";
+    }
+  };
+
+  const syncSpacer = () => {
+    if (!desktop.matches) {
+      spacer.style.height = "";
+      clearMotion();
+      return;
+    }
+    spacer.style.height = `${footer.offsetHeight}px`;
+  };
+
+  const update = () => {
+    scheduled = false;
+    if (!desktop.matches || reducedMotion.matches) {
+      clearMotion();
+      return;
+    }
+
+    const maxScroll = Math.max(
+      1,
+      document.documentElement.scrollHeight - window.innerHeight,
+    );
+    const remaining = Math.max(0, maxScroll - window.scrollY);
+    const footerHeight = Math.max(1, footer.offsetHeight);
+    const progress = clamp01(1 - remaining / footerHeight);
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    if (copy) {
+      copy.style.transform = `translate3d(0,${(1 - eased) * 26}px,0)`;
+      copy.style.opacity = String(0.28 + eased * 0.72);
+    }
+    if (monogram) {
+      monogram.style.transform = `translate3d(${(1 - eased) * 6}vw,${(1 - eased) * 58}px,0)`;
+      monogram.style.opacity = String(0.22 + eased * 0.78);
+    }
+    letters.forEach((letter, index) => {
+      const delay = index * 0.075;
+      const local = clamp01((progress - delay) / Math.max(0.01, 1 - delay));
+      const letterEase = 1 - Math.pow(1 - local, 3);
+      letter.style.transform = `translate3d(0,${(1 - letterEase) * 56}px,0)`;
+      letter.style.opacity = String(0.18 + letterEase * 0.82);
+    });
+    if (bottom) {
+      bottom.style.transform = `translate3d(0,${(1 - eased) * 14}px,0)`;
+      bottom.style.opacity = String(0.35 + eased * 0.65);
+    }
+  };
+
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(update);
+  };
+
+  syncSpacer();
+  update();
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", () => {
+    syncSpacer();
+    schedule();
+  });
+  desktop.addEventListener("change", () => {
+    syncSpacer();
+    schedule();
+  });
+  reducedMotion.addEventListener("change", schedule);
+
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(() => {
+      syncSpacer();
+      schedule();
+    }).observe(footer);
+  }
+}
+
+installContactReveal();
+
 document.querySelectorAll("[data-filter]").forEach((button) =>
   button.addEventListener("click", () => {
     const value = button.dataset.filter;
