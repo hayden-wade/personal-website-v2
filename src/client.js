@@ -111,16 +111,14 @@ if (sections.length) {
   sections.forEach((s) => observer.observe(s));
 }
 
-// Fixed footer reveal based on Filip Zawada's CodePen implementation.
-// The page uncovers a fixed footer; HBW uses the same GSAP/ScrollTrigger
-// stagger as the source SVG paths: opacity 0 -> 1, y 75 -> 0, power3.out,
-// staggered by 0.25 on a scrubbed timeline.
+// Fixed footer reveal based on Filip Zawada's CodePen.
 function installContactReveal() {
   const footer = document.querySelector(".contact-reveal");
   const spacer = document.querySelector(".contact-reveal-spacer");
-  const main = document.querySelector(".home-reveal-shell");
   const letters = [...document.querySelectorAll(".contact-monogram span")];
-  if (!footer || !spacer || !main || !letters.length) return;
+  const copy = footer?.querySelector(".contact-copy");
+  const bottom = footer?.querySelector(".contact-bottom");
+  if (!footer || !spacer || !letters.length) return;
 
   const desktop = window.matchMedia("(min-width: 701px)");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -129,7 +127,7 @@ function installContactReveal() {
   const syncFooterSpace = () => {
     if (desktop.matches) spacer.style.height = `${footer.offsetHeight}px`;
     else spacer.style.height = "";
-    if (window.ScrollTrigger) window.ScrollTrigger.refresh();
+    window.ScrollTrigger?.refresh();
   };
 
   const setVisible = () => {
@@ -137,6 +135,14 @@ function installContactReveal() {
       letter.style.opacity = "1";
       letter.style.transform = "none";
     });
+    if (copy) {
+      copy.style.opacity = "1";
+      copy.style.transform = "none";
+    }
+    if (bottom) {
+      bottom.style.opacity = "1";
+      bottom.style.transform = "none";
+    }
   };
 
   const destroyTimeline = () => {
@@ -151,8 +157,8 @@ function installContactReveal() {
     if (
       !desktop.matches ||
       reducedMotion.matches ||
-      typeof window.gsap === "undefined" ||
-      typeof window.ScrollTrigger === "undefined"
+      !window.gsap ||
+      !window.ScrollTrigger
     ) {
       setVisible();
       return;
@@ -160,11 +166,15 @@ function installContactReveal() {
 
     window.gsap.registerPlugin(window.ScrollTrigger);
 
+    window.gsap.set(letters, { opacity: 0, y: 75 });
+    if (copy) window.gsap.set(copy, { opacity: 0.25, y: 28 });
+    if (bottom) window.gsap.set(bottom, { opacity: 0.2, y: 16 });
+
     timeline = window.gsap.timeline({
       scrollTrigger: {
-        trigger: main,
-        start: "bottom 80%",
-        end: "bottom top",
+        trigger: spacer,
+        start: "top bottom",
+        end: "top top",
         scrub: true,
         toggleActions: "play none none reverse",
         markers: false,
@@ -172,13 +182,28 @@ function installContactReveal() {
     });
 
     letters.forEach((letter, i) => {
-      timeline.fromTo(
+      timeline.to(
         letter,
-        { opacity: 0, y: 75 },
-        { opacity: 1, y: 0, ease: "power3.out" },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power3.out",
+        },
         i * 0.25,
       );
     });
+
+    timeline.to(
+      copy,
+      { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" },
+      0.02,
+    );
+    timeline.to(
+      bottom,
+      { opacity: 1, y: 0, duration: 0.42, ease: "power2.out" },
+      0.36,
+    );
 
     window.ScrollTrigger.refresh();
   };
