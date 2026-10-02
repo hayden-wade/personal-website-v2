@@ -365,121 +365,114 @@ tabs.forEach((tab, i) => {
 });
 
 function installPhotographyTitleTransition() {
-  const stage = document.querySelector("[data-photo-title-stage]");
-  const title = stage?.querySelector("[data-photo-title]");
-  const subtitle = stage?.querySelector("[data-photo-subtitle]");
-  const rule = stage?.querySelector("[data-photo-rule]");
-  const letters = title
+  const title = document.querySelector("[data-photo-title]");
+  const subtitle = document.querySelector("[data-photo-subtitle]");
+  const rule = document.querySelector("[data-photo-rule]");
+  const chars = title
     ? [...title.querySelectorAll("[data-photo-letter]")]
     : [];
 
-  if (!stage || !title || !letters.length) return;
+  if (!title || !chars.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let scheduled = false;
-
-  const clamp01 = (value) => Math.min(1, Math.max(0, value));
-  const smoothstep = (start, end, value) => {
-    const t = clamp01((value - start) / Math.max(0.0001, end - start));
-    return t * t * (3 - 2 * t);
-  };
-
-  const letterModel = letters.map((letter, index) => {
-    const middle = (letters.length - 1) / 2;
-    const normalized = middle ? (index - middle) / middle : 0;
-    return {
-      letter,
-      normalized,
-      edge: Math.abs(normalized),
-      direction: index % 2 === 0 ? -1 : 1,
-    };
-  });
 
   const reset = () => {
-    title.style.transform = "";
-    for (const { letter } of letterModel) {
-      letter.style.transform = "none";
-      letter.style.opacity = "1";
-      letter.style.filter = "none";
-    }
+    chars.forEach((char) => {
+      char.style.transform = "none";
+      char.style.opacity = "1";
+      char.style.willChange = "auto";
+    });
     if (subtitle) {
       subtitle.style.opacity = "1";
-      subtitle.style.transform = "translateY(0)";
+      subtitle.style.transform = "none";
     }
     if (rule) rule.style.transform = "scaleX(1)";
   };
 
-  const update = () => {
-    scheduled = false;
+  if (
+    reducedMotion.matches ||
+    typeof window.gsap === "undefined" ||
+    typeof window.ScrollTrigger === "undefined"
+  ) {
+    reset();
+    return;
+  }
 
-    if (reducedMotion.matches) {
-      reset();
-      return;
-    }
+  const { gsap, ScrollTrigger } = window;
+  gsap.registerPlugin(ScrollTrigger);
 
-    const rect = stage.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const stickyTop = viewportWidth <= 700 ? 64 : 74;
-    const travel = Math.max(
-      1,
-      stage.offsetHeight - Math.max(1, viewportHeight - stickyTop),
+  // Adapted directly from Codrops' "Waking Life" (data-effect20)
+  // in OnScrollTypographyAnimations. MIT licensed; see THIRD_PARTY_NOTICES.md.
+  chars.forEach((char) => gsap.set(char.parentNode, { perspective: 1000 }));
+
+  gsap.fromTo(
+    chars,
+    {
+      willChange: "opacity, transform",
+      transformOrigin: "50% 100%",
+      opacity: 0,
+      rotationX: 90,
+    },
+    {
+      ease: "power4",
+      opacity: 1,
+      stagger: {
+        each: 0.03,
+        from: "random",
+      },
+      rotationX: 0,
+      scrollTrigger: {
+        trigger: title,
+        start: "center bottom",
+        end: "bottom top+=20%",
+        scrub: true,
+      },
+    },
+  );
+
+  if (subtitle) {
+    gsap.fromTo(
+      subtitle,
+      { opacity: 0, y: 24 },
+      {
+        opacity: 1,
+        y: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: title,
+          start: "center 58%",
+          end: "bottom 30%",
+          scrub: true,
+        },
+      },
     );
-    const progress = clamp01((stickyTop - rect.top) / travel);
-    const assemble = smoothstep(0.03, 0.7, progress);
-    const subtitleProgress = smoothstep(0.56, 0.82, progress);
-    const ruleProgress = smoothstep(0.64, 0.88, progress);
-    const inverse = 1 - assemble;
-    const xRange = Math.min(190, viewportWidth * 0.115);
-    const yEdge = Math.min(185, viewportHeight * 0.19);
-    const yCentre = Math.min(94, viewportHeight * 0.1);
+  }
 
-    for (const { letter, normalized, edge, direction } of letterModel) {
-      const startX =
-        normalized * xRange + direction * (1 - edge) * Math.min(22, viewportWidth * 0.018);
-      const startY =
-        edge * yEdge - (1 - edge) * yCentre + direction * (1 - edge) * 8;
-      const startZ = (1 - edge) * 130 - edge * 55;
-      const startRotateX = direction * (18 + edge * 24);
-      const startRotateY = normalized * -34;
-      const startRotateZ = normalized * 12 + direction * (5 + edge * 5);
-      const startScale = 0.72 + (1 - edge) * 0.34 + direction * 0.015;
-      const startOpacity = 0.26 + (1 - edge) * 0.5;
+  if (rule) {
+    gsap.fromTo(
+      rule,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: title,
+          start: "center 52%",
+          end: "bottom 28%",
+          scrub: true,
+        },
+      },
+    );
+  }
 
-      const x = startX * inverse;
-      const y = startY * inverse;
-      const z = startZ * inverse;
-      const rotateX = startRotateX * inverse;
-      const rotateY = startRotateY * inverse;
-      const rotateZ = startRotateZ * inverse;
-      const scale = 1 - (1 - startScale) * inverse;
-      const opacity = startOpacity + (1 - startOpacity) * assemble;
-
-      letter.style.transform =
-        `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(2)}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) rotateZ(${rotateZ.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
-      letter.style.opacity = String(opacity);
-      letter.style.filter = `blur(${(inverse * 1.35).toFixed(2)}px)`;
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) {
+      ScrollTrigger.getAll()
+        .filter((trigger) => trigger.trigger === title)
+        .forEach((trigger) => trigger.kill());
+      reset();
     }
-
-    title.style.transform = `translate3d(0, ${(-2.5 * smoothstep(0.78, 1, progress)).toFixed(2)}vh, 0)`;
-
-    if (subtitle) {
-      subtitle.style.opacity = String(subtitleProgress);
-      subtitle.style.transform = `translateY(${((1 - subtitleProgress) * 24).toFixed(2)}px)`;
-    }
-    if (rule) rule.style.transform = `scaleX(${ruleProgress.toFixed(4)})`;
-  };
-
-  const schedule = () => {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(update);
-  };
-
-  update();
-  window.addEventListener("scroll", schedule, { passive: true });
-  window.addEventListener("resize", schedule);
-  reducedMotion.addEventListener("change", schedule);
+  });
 }
 
 installPhotographyTitleTransition();
