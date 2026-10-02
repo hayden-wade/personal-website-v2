@@ -913,6 +913,412 @@ function installPhotographyStaggeredGrid() {
 
 installPhotographyStaggeredGrid();
 
+function installInfinitePhotographyGallery() {
+  const root = document.querySelector("[data-infinite-photo-gallery]");
+  const stage = root?.querySelector("[data-infinite-photo-stage]");
+  const canvas = root?.querySelector("[data-infinite-photo-canvas]");
+  const overlay = root?.querySelector("[data-infinite-photo-overlay]");
+  const expandedCopy = root?.querySelector("[data-infinite-photo-expanded-copy]");
+  const sourceNodes = root
+    ? [...root.querySelectorAll(".infinite-photo-data [data-photo-src]")]
+    : [];
+
+  if (!root || !stage || !canvas || !overlay || !expandedCopy || !sourceNodes.length)
+    return;
+
+  document.documentElement.classList.add("infinite-photo-active");
+  document.body.classList.add("infinite-photo-active");
+  window.__siteLenis?.stop();
+
+  const photos = sourceNodes.map((node) => ({
+    src: node.dataset.photoSrc,
+    caption: node.dataset.photoCaption || "",
+    category: node.dataset.photoCategory || "",
+    index: Number(node.dataset.photoIndex) || 0,
+  }));
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const title = expandedCopy.querySelector(".infinite-photo-expanded-title");
+  const kicker = expandedCopy.querySelector(".infinite-photo-expanded-kicker");
+  const viewerLink = expandedCopy.querySelector(".infinite-photo-expanded-link");
+
+  let cellWidth = 440;
+  let cellHeight = 560;
+  let baseWidth = 380;
+  let smallHeight = 290;
+  let largeHeight = 430;
+  let gap = 54;
+  const columns = 4;
+  const bufferZone = 1.55;
+  const visibleItems = new Map();
+
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let lastUpdate = 0;
+  let pointerId = null;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let lastPointerTime = 0;
+  let velocityX = 0;
+  let velocityY = 0;
+  let moved = false;
+  let suppressClickUntil = 0;
+  let activeCellId = null;
+  let activeItem = null;
+  let expandedItem = null;
+  let originalRect = null;
+  let animationFrame = 0;
+
+  const mod = (value, length) => ((value % length) + length) % length;
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  const measureGrid = () => {
+    baseWidth = clamp(window.innerWidth * 0.245, 250, 410);
+    if (window.innerWidth <= 700) baseWidth = clamp(window.innerWidth * 0.68, 210, 300);
+
+    smallHeight = baseWidth * 0.72;
+    largeHeight = baseWidth * 1.08;
+    gap = window.innerWidth <= 700 ? 28 : clamp(window.innerWidth * 0.032, 38, 64);
+    cellWidth = baseWidth + gap;
+    cellHeight = largeHeight + gap;
+  };
+
+  const getItemId = (col, row) => `photo-cell-${col}-${row}`;
+  const getItemIndex = (col, row) => mod(row * columns + col, photos.length);
+  const getItemSize = (col, row) => {
+    const tall = mod(row * columns + col, 2) === 1;
+    return {
+      width: baseWidth,
+      height: tall ? largeHeight : smallHeight,
+    };
+  };
+
+  const createItem = (col, row) => {
+    const id = getItemId(col, row);
+    const photo = photos[getItemIndex(col, row)];
+    const size = getItemSize(col, row);
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "infinite-photo-item";
+    item.id = id;
+    item.dataset.col = String(col);
+    item.dataset.row = String(row);
+    item.dataset.photoIndex = String(photo.index);
+    item.setAttribute("aria-label", `View ${photo.caption}`);
+    item.style.width = `${size.width}px`;
+    item.style.height = `${size.height}px`;
+    item.style.left = `${col * cellWidth}px`;
+    item.style.top = `${row * cellHeight}px`;
+
+    const imageWrap = document.createElement("span");
+    imageWrap.className = "infinite-photo-item__image";
+
+    const image = document.createElement("img");
+    image.src = photo.src;
+    image.alt = photo.caption;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.draggable = false;
+    imageWrap.appendChild(image);
+
+    const caption = document.createElement("span");
+    caption.className = "infinite-photo-caption";
+    caption.innerHTML =
+      `<span>${photo.caption}</span><span>${String(photo.index + 1).padStart(2, "0")} / ${photos.length}</span>`;
+
+    item.append(imageWrap, caption);
+    item.addEventListener("click", () => {
+      if (performance.now() < suppressClickUntil || moved || expandedItem) return;
+      expandItem(item, photo);
+    });
+
+    canvas.appendChild(item);
+    visibleItems.set(id, item);
+    return item;
+  };
+
+  const updateVisibleItems = () => {
+    if (expandedItem) return;
+
+    const viewWidth = window.innerWidth * (1 + bufferZone);
+    const viewHeight = window.innerHeight * (1 + bufferZone);
+    const startCol = Math.floor((-currentX - viewWidth / 2) / cellWidth);
+    const endCol = Math.ceil((-currentX + viewWidth * 1.5) / cellWidth);
+    const startRow = Math.floor((-currentY - viewHeight / 2) / cellHeight);
+    const endRow = Math.ceil((-currentY + viewHeight * 1.5) / cellHeight);
+    const needed = new Set();
+
+    for (let row = startRow; row <= endRow; row++) {
+      for (let col = startCol; col <= endCol; col++) {
+        const id = getItemId(col, row);
+        needed.add(id);
+        if (!visibleItems.has(id) && id !== activeCellId) createItem(col, row);
+      }
+    }
+
+    visibleItems.forEach((item, id) => {
+      if (!needed.has(id) && id !== activeCellId) {
+        item.remove();
+        visibleItems.delete(id);
+      }
+    });
+  };
+
+  const showExpandedCopy = (photo) => {
+    kicker.textContent = `${photo.category} · ${String(photo.index + 1).padStart(2, "0")} / ${photos.length}`;
+    title.textContent = photo.caption;
+    viewerLink.href = `/photography/viewer/?photo=${photo.index}`;
+    expandedCopy.setAttribute("aria-hidden", "false");
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      expandedCopy.style.opacity = "1";
+      return;
+    }
+
+    window.gsap.fromTo(
+      expandedCopy,
+      { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.55, delay: 0.24, ease: "power3.out" },
+    );
+  };
+
+  const hideExpandedCopy = () => {
+    expandedCopy.setAttribute("aria-hidden", "true");
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      expandedCopy.style.opacity = "0";
+      return;
+    }
+    window.gsap.to(expandedCopy, {
+      opacity: 0,
+      y: -12,
+      duration: 0.28,
+      ease: "power2.in",
+    });
+  };
+
+  const closeExpandedItem = () => {
+    if (!expandedItem || !originalRect) return;
+
+    const itemToRestore = activeItem;
+    hideExpandedCopy();
+
+    const finish = () => {
+      expandedItem?.remove();
+      expandedItem = null;
+      overlay.classList.remove("is-active");
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.style.opacity = "0";
+      itemToRestore?.style.removeProperty("visibility");
+      activeItem = null;
+      activeCellId = null;
+      originalRect = null;
+      updateVisibleItems();
+    };
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      finish();
+      return;
+    }
+
+    window.gsap.to(overlay, {
+      opacity: 0,
+      duration: 0.38,
+      ease: "power2.inOut",
+    });
+    window.gsap.to(expandedItem, {
+      x: originalRect.left,
+      y: originalRect.top,
+      width: originalRect.width,
+      height: originalRect.height,
+      duration: 0.58,
+      ease: "power4.inOut",
+      onComplete: finish,
+    });
+  };
+
+  const expandItem = (item, photo) => {
+    if (expandedItem) return;
+
+    activeItem = item;
+    activeCellId = item.id;
+    originalRect = item.getBoundingClientRect();
+
+    expandedItem = document.createElement("div");
+    expandedItem.className = "infinite-photo-expanded";
+    expandedItem.style.left = "0";
+    expandedItem.style.top = "0";
+    expandedItem.style.width = `${originalRect.width}px`;
+    expandedItem.style.height = `${originalRect.height}px`;
+    expandedItem.style.transform = `translate3d(${originalRect.left}px, ${originalRect.top}px, 0)`;
+
+    const image = document.createElement("img");
+    image.src = photo.src;
+    image.alt = photo.caption;
+    expandedItem.appendChild(image);
+    expandedItem.addEventListener("click", closeExpandedItem);
+    document.body.appendChild(expandedItem);
+
+    item.style.visibility = "hidden";
+    overlay.classList.add("is-active");
+    overlay.setAttribute("aria-hidden", "false");
+
+    let targetWidth = Math.min(window.innerWidth * 0.56, 980);
+    let targetHeight = targetWidth * (originalRect.height / originalRect.width);
+    const maxHeight = window.innerHeight * 0.66;
+    if (targetHeight > maxHeight) {
+      targetHeight = maxHeight;
+      targetWidth = targetHeight * (originalRect.width / originalRect.height);
+    }
+    const targetX = (window.innerWidth - targetWidth) / 2;
+    const targetY = (window.innerHeight - targetHeight) / 2;
+
+    showExpandedCopy(photo);
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      overlay.style.opacity = "1";
+      expandedItem.style.width = `${targetWidth}px`;
+      expandedItem.style.height = `${targetHeight}px`;
+      expandedItem.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+      return;
+    }
+
+    window.gsap.to(overlay, {
+      opacity: 1,
+      duration: 0.5,
+      ease: "power2.inOut",
+    });
+    window.gsap.to(expandedItem, {
+      x: targetX,
+      y: targetY,
+      width: targetWidth,
+      height: targetHeight,
+      duration: 0.68,
+      ease: "power4.inOut",
+    });
+  };
+
+  overlay.addEventListener("click", closeExpandedItem);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && expandedItem) closeExpandedItem();
+  });
+
+  stage.addEventListener("pointerdown", (event) => {
+    if (expandedItem || event.button !== 0) return;
+    pointerId = event.pointerId;
+    stage.setPointerCapture?.(pointerId);
+    dragStartX = lastPointerX = event.clientX;
+    dragStartY = lastPointerY = event.clientY;
+    lastPointerTime = performance.now();
+    velocityX = 0;
+    velocityY = 0;
+    moved = false;
+    stage.classList.add("is-dragging");
+  });
+
+  stage.addEventListener("pointermove", (event) => {
+    if (pointerId !== event.pointerId || expandedItem) return;
+
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+    const now = performance.now();
+    const dt = Math.max(8, now - lastPointerTime);
+
+    if (
+      Math.abs(event.clientX - dragStartX) > 5 ||
+      Math.abs(event.clientY - dragStartY) > 5
+    )
+      moved = true;
+
+    velocityX = dx / dt;
+    velocityY = dy / dt;
+    targetX += dx;
+    targetY += dy;
+
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    lastPointerTime = now;
+  });
+
+  const releasePointer = (event) => {
+    if (pointerId !== event.pointerId) return;
+    pointerId = null;
+    stage.classList.remove("is-dragging");
+
+    if (moved) {
+      suppressClickUntil = performance.now() + 180;
+      const momentum = window.innerWidth <= 700 ? 140 : 210;
+      targetX += velocityX * momentum;
+      targetY += velocityY * momentum;
+    }
+  };
+
+  stage.addEventListener("pointerup", releasePointer);
+  stage.addEventListener("pointercancel", releasePointer);
+
+  stage.addEventListener(
+    "wheel",
+    (event) => {
+      if (expandedItem) return;
+      event.preventDefault();
+      targetX -= event.deltaX * 0.9;
+      targetY -= event.deltaY * 0.9;
+    },
+    { passive: false },
+  );
+
+  const animate = () => {
+    const ease = reducedMotion.matches ? 1 : 0.075;
+    currentX += (targetX - currentX) * ease;
+    currentY += (targetY - currentY) * ease;
+    canvas.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+    const now = performance.now();
+    const distance = Math.hypot(currentX - lastX, currentY - lastY);
+    if (distance > 80 || now - lastUpdate > 110) {
+      updateVisibleItems();
+      lastX = currentX;
+      lastY = currentY;
+      lastUpdate = now;
+    }
+
+    animationFrame = requestAnimationFrame(animate);
+  };
+
+  const handleResize = () => {
+    measureGrid();
+
+    visibleItems.forEach((item) => item.remove());
+    visibleItems.clear();
+
+    if (expandedItem) closeExpandedItem();
+    updateVisibleItems();
+  };
+
+  measureGrid();
+  updateVisibleItems();
+  animationFrame = requestAnimationFrame(animate);
+  window.addEventListener("resize", handleResize);
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      cancelAnimationFrame(animationFrame);
+      document.documentElement.classList.remove("infinite-photo-active");
+      document.body.classList.remove("infinite-photo-active");
+    },
+    { once: true },
+  );
+}
+
+installInfinitePhotographyGallery();
+
 const dialog = document.querySelector(".lightbox");
 const triggers = [...document.querySelectorAll("[data-enlarge]")];
 let photos = [],
