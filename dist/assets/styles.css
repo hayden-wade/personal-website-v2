@@ -636,7 +636,7 @@ figcaption,
 .home-reveal-shell {
   position: relative;
   z-index: 10;
-  background: var(--bg);
+  background: transparent;
 }
 .home-reveal-shell::after {
   content: "";
