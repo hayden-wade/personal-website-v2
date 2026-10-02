@@ -2297,6 +2297,297 @@ td {
     transition: none !important;
   }
 }
+/* Separate photography page: infinite draggable image field.
+   Interaction/layout is independently rewritten from Francesco Colombati's
+   CodePen "Infinite Draggable Image Gallery". */
+html.infinite-photo-active,
+body.infinite-photo-active {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body.infinite-photo-active {
+  background: var(--bg);
+}
+.infinite-photo-page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,0.015), transparent 42%),
+    var(--bg);
+  color: var(--text);
+  isolation: isolate;
+}
+.infinite-photo-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.infinite-photo-stage.is-dragging {
+  cursor: grabbing;
+}
+.infinite-photo-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+.infinite-photo-item {
+  position: absolute;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid rgba(229, 224, 214, 0.08);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.14);
+  cursor: pointer;
+  transform: translateZ(0);
+  will-change: opacity;
+}
+.infinite-photo-item__image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.infinite-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  transform: scale(1.002);
+  transition:
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.45s ease;
+}
+.infinite-photo-item:hover img,
+.infinite-photo-item:focus-visible img {
+  transform: scale(1.045);
+  filter: brightness(0.92);
+}
+.infinite-photo-item:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+.infinite-photo-caption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 11px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-end;
+  color: rgba(247, 241, 229, 0.9);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.85px;
+  line-height: 1.25;
+  text-transform: uppercase;
+  opacity: 0.75;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.65);
+  pointer-events: none;
+}
+.infinite-photo-caption span:last-child {
+  color: rgba(247, 241, 229, 0.55);
+  white-space: nowrap;
+}
+.infinite-photo-item::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(0,0,0,0.4));
+}
+.infinite-photo-chrome {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding-inline: clamp(20px, 2.5vw, 46px);
+  pointer-events: none;
+  color: rgba(229, 224, 214, 0.72);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.infinite-photo-chrome--top {
+  top: 0;
+  padding-top: clamp(20px, 2.6vh, 34px);
+}
+.infinite-photo-chrome--bottom {
+  bottom: 0;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: clamp(20px, 2.6vh, 34px);
+}
+.infinite-photo-chrome--bottom span:last-child {
+  text-align: right;
+}
+.infinite-photo-wordmark,
+.infinite-photo-nav a {
+  pointer-events: auto;
+}
+.infinite-photo-wordmark {
+  justify-self: start;
+  color: var(--text);
+  font: 400 clamp(20px, 1.7vw, 29px) / 1 var(--serif);
+  letter-spacing: -0.045em;
+  text-transform: none;
+}
+.infinite-photo-section {
+  justify-self: center;
+  color: var(--accent);
+}
+.infinite-photo-nav {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2vw, 34px);
+}
+.infinite-photo-nav a {
+  position: relative;
+  color: rgba(229, 224, 214, 0.75);
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+.infinite-photo-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.infinite-photo-nav a:hover::after,
+.infinite-photo-nav a:focus-visible::after {
+  transform: scaleX(1);
+}
+.infinite-photo-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(23,26,24,0.46), transparent 11%, transparent 89%, rgba(23,26,24,0.46)),
+    linear-gradient(180deg, rgba(23,26,24,0.62), transparent 13%, transparent 86%, rgba(23,26,24,0.62));
+}
+.infinite-photo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(10, 12, 11, 0.9);
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(3px);
+}
+.infinite-photo-overlay.is-active {
+  pointer-events: auto;
+}
+.infinite-photo-expanded {
+  position: fixed;
+  z-index: 60;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 34px 120px rgba(0,0,0,0.45);
+  cursor: zoom-out;
+}
+.infinite-photo-expanded img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.infinite-photo-expanded-copy {
+  position: fixed;
+  z-index: 70;
+  left: 50%;
+  top: 50%;
+  width: min(88vw, 1100px);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.infinite-photo-expanded-kicker {
+  margin-bottom: 18px;
+  color: var(--accent);
+  font-size: 9px;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+}
+.infinite-photo-expanded-title {
+  margin: 0;
+  color: var(--text);
+  font: 400 clamp(48px, 7.4vw, 132px) / 0.9 var(--serif);
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+.infinite-photo-expanded-link {
+  display: inline-block;
+  margin-top: 30px;
+  pointer-events: auto;
+  color: var(--text);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.infinite-photo-expanded-copy[aria-hidden="false"] {
+  pointer-events: none;
+}
+.infinite-photo-expanded-copy[aria-hidden="false"] .infinite-photo-expanded-link {
+  pointer-events: auto;
+}
+@media (max-width: 700px) {
+  .infinite-photo-chrome {
+    grid-template-columns: 1fr auto;
+    padding-inline: 18px;
+  }
+  .infinite-photo-section {
+    display: none;
+  }
+  .infinite-photo-nav {
+    gap: 16px;
+  }
+  .infinite-photo-wordmark {
+    font-size: 20px;
+  }
+  .infinite-photo-chrome--bottom {
+    grid-template-columns: 1fr;
+    font-size: 8px;
+  }
+  .infinite-photo-chrome--bottom span:last-child {
+    display: none;
+  }
+  .infinite-photo-caption {
+    left: 9px;
+    right: 9px;
+    bottom: 8px;
+    font-size: 7px;
+  }
+  .infinite-photo-expanded-title {
+    font-size: clamp(40px, 13vw, 74px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .infinite-photo-item img,
+  .infinite-photo-nav a::after {
+    transition: none !important;
+  }
+}
+
 .photo-index {
   padding-block: 55px;
 }
