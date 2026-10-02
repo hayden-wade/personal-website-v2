@@ -583,6 +583,24 @@ figcaption,
   isolation: isolate;
   user-select: none;
 }
+.project-reel-viewport::before {
+  content: "";
+  position: absolute;
+  z-index: 9;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    rgba(23, 26, 24, 0.88) 2.25%,
+    rgba(23, 26, 24, 0.34) 5.75%,
+    rgba(23, 26, 24, 0) 10%,
+    rgba(23, 26, 24, 0) 90%,
+    rgba(23, 26, 24, 0.34) 94.25%,
+    rgba(23, 26, 24, 0.88) 97.75%,
+    var(--bg) 100%
+  );
+}
 .project-reel-viewport::after {
   content: "";
   position: absolute;
@@ -603,8 +621,8 @@ figcaption,
   height: 100%;
   display: flex;
   align-items: center;
-  gap: clamp(120px, 10vw, 220px);
-  padding: clamp(74px, 9vh, 112px) 10vw clamp(122px, 15vh, 170px) 28vw;
+  gap: clamp(5px, 0.45vw, 8px);
+  padding: clamp(68px, 8vh, 104px) 10vw clamp(122px, 15vh, 170px) 28vw;
   will-change: transform;
 }
 .project-reel-slide {
@@ -617,15 +635,15 @@ figcaption,
 .project-reel-gallery {
   display: flex;
   align-items: center;
-  gap: clamp(22px, 2vw, 40px);
+  gap: clamp(5px, 0.45vw, 8px);
   height: 100%;
 }
 .project-reel-media {
   position: relative;
   flex-shrink: 0;
   display: block;
-  height: min(58vh, 640px);
-  max-height: 60vh;
+  height: min(62vh, 680px);
+  max-height: 62vh;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--surface);
@@ -636,8 +654,8 @@ figcaption,
     transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .project-reel-media--secondary {
-  height: min(47vh, 520px);
-  transform: translateY(clamp(34px, 5vh, 62px));
+  height: min(62vh, 680px);
+  transform: none;
 }
 .project-reel-media-inner {
   position: relative;
@@ -721,8 +739,8 @@ figcaption,
 }
 .project-reel-slide-number {
   position: absolute;
-  top: 13%;
-  left: -26px;
+  top: calc(50% - min(31vh, 340px) - 24px);
+  left: 0;
   color: var(--accent);
   font-size: 9px;
   letter-spacing: 1.2px;
@@ -881,6 +899,7 @@ figcaption,
   .project-reel-viewport::-webkit-scrollbar {
     display: none;
   }
+  .project-reel-viewport::before,
   .project-reel-viewport::after,
   .project-reel-caption,
   .project-reel-progress {
@@ -888,7 +907,7 @@ figcaption,
   }
   .project-reel-track {
     height: auto;
-    gap: 40px;
+    gap: 6px;
     padding: 24px 20px 48px;
     transform: none !important;
   }
@@ -900,16 +919,14 @@ figcaption,
     scroll-snap-align: center;
   }
   .project-reel-gallery {
-    height: 470px;
-    gap: 12px;
+    height: 390px;
+    gap: 6px;
     align-items: center;
   }
-  .project-reel-media {
-    height: 360px;
-  }
+  .project-reel-media,
   .project-reel-media--secondary {
-    height: 285px;
-    transform: translateY(42px);
+    height: 300px;
+    transform: none;
   }
   .project-reel-mobile-copy {
     display: block;
@@ -951,15 +968,13 @@ figcaption,
     min-height: 555px;
   }
   .project-reel-gallery {
-    height: 410px;
-    gap: 8px;
+    height: 340px;
+    gap: 5px;
   }
-  .project-reel-media {
-    height: 310px;
-  }
+  .project-reel-media,
   .project-reel-media--secondary {
-    height: 235px;
-    transform: translateY(38px);
+    height: 260px;
+    transform: none;
   }
   .project-reel-slide-number {
     top: 8px;
