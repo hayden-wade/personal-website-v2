@@ -98,3 +98,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+## Francesco Colombati — Infinite Draggable Image Gallery (CodePen)
+
+The standalone Photography page uses Francesco Colombati's CodePen as a visual and interaction reference:
+
+- Pen: Infinite Draggable Image Gallery
+- Source: https://codepen.io/FColombati/pen/jEWbzXr
+- Author: Francesco Colombati
+
+The implementation in this repository is independently rewritten for this site. It reproduces the core interaction ideas — an effectively infinite two-dimensional image field, pointer/touch dragging with momentum, dynamic tile creation, and click-to-expand imagery — while using this site's own markup, styling, content and motion code.
