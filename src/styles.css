@@ -827,40 +827,6 @@ figcaption,
 .project-reel-caption-link:focus-visible span {
   transform: translate(5px, -5px);
 }
-.project-reel-progress {
-  position: absolute;
-  z-index: 12;
-  left: var(--gutter);
-  right: var(--gutter);
-  bottom: 26px;
-  height: 1px;
-  background: rgba(229, 224, 214, 0.14);
-}
-.project-reel-progress span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-}
-.project-reel-end {
-  width: min(
-    calc(100% - (2 * var(--gutter))),
-    calc(var(--max) - (2 * var(--gutter)))
-  );
-  margin-inline: auto;
-  padding: 22px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0.9px;
-  text-transform: uppercase;
-}
 @media (hover: hover) and (pointer: fine) {
   .project-reel-stage:has(.project-reel-media--primary:hover) .project-reel-caption h3,
   .project-reel-stage:has(.project-reel-media--primary:focus-visible) .project-reel-caption h3 {
@@ -901,8 +867,7 @@ figcaption,
   }
   .project-reel-viewport::before,
   .project-reel-viewport::after,
-  .project-reel-caption,
-  .project-reel-progress {
+  .project-reel-caption {
     display: none;
   }
   .project-reel-track {
@@ -979,9 +944,6 @@ figcaption,
   .project-reel-slide-number {
     top: 8px;
     left: 0;
-  }
-  .project-reel-end {
-    width: calc(100% - 40px);
   }
 }
 @media (prefers-reduced-motion: reduce) {
