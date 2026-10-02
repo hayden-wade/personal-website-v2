@@ -1642,11 +1642,19 @@ td {
   font: 400 clamp(64px, 8.7vw, 178px) / 0.84 var(--serif);
   letter-spacing: -0.055em;
 }
-.photo-outro-title span {
+.photo-outro-line {
   display: block;
 }
-.photo-outro-title span:last-child {
+.photo-outro-line:last-child {
   padding-left: clamp(54px, 12vw, 240px);
+}
+.photo-outro-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.photo-outro-char {
+  display: inline-block;
+  transform-origin: 50% 100%;
 }
 .photo-outro-title em {
   font-weight: 400;
@@ -1809,7 +1817,7 @@ td {
     line-height: 0.88;
     letter-spacing: -0.045em;
   }
-  .photo-outro-title span:last-child {
+  .photo-outro-line:last-child {
     padding-left: clamp(28px, 10vw, 54px);
   }
   .photo-outro-cta {
@@ -1844,6 +1852,10 @@ td {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .photo-outro-char {
+    transform: none !important;
+    opacity: 1 !important;
+  }
   .photo-cinematic-title [data-photo-letter] {
     transform: none !important;
     opacity: 1 !important;
