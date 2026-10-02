@@ -713,6 +713,7 @@ function installPhotographyOutroTransition() {
   const chars = title
     ? [...title.querySelectorAll(".photo-outro-char")]
     : [];
+  const archiveLink = title?.querySelector(".photo-outro-here");
 
   if (!title || !section || !chars.length) return;
 
@@ -757,9 +758,8 @@ function installPhotographyOutroTransition() {
         id: "photography-outro-effect25",
         trigger: title,
         start: "center center",
-        // Keep the Codrops pinned character reveal, but compress it heavily
-        // for the homepage so it resolves in ~1.35 viewport-heights of scroll.
-        end: "+=135%",
+        // Short phrase: keep the pinned reveal cinematic without lingering.
+        end: "+=90%",
         scrub: true,
         pin: section,
       },
@@ -770,6 +770,26 @@ function installPhotographyOutroTransition() {
     if (!reducedMotion.matches) return;
     ScrollTrigger.getById("photography-outro-effect25")?.kill();
     reset();
+  });
+
+  archiveLink?.addEventListener("click", (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      reducedMotion.matches
+    )
+      return;
+
+    event.preventDefault();
+    archiveLink.classList.add("is-activating");
+    const href = archiveLink.href;
+    window.setTimeout(() => {
+      window.location.href = href;
+    }, 150);
   });
 }
 
