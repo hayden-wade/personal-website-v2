@@ -373,7 +373,6 @@ function installProjectReel() {
     ? [...track.querySelectorAll(".project-reel-parallax-image")]
     : [];
   const caption = stage?.querySelector("[data-project-reel-caption]");
-  const progressBar = stage?.querySelector("[data-project-reel-progress]");
 
   if (!stage || !track || !slides.length || !caption) return;
 
@@ -520,7 +519,6 @@ function installProjectReel() {
         : "translate3d(0%, 0, 0)";
     });
 
-    if (progressBar) progressBar.style.transform = "";
     activeIndex = -1;
     updateCaption(0, false);
   };
@@ -566,9 +564,6 @@ function installProjectReel() {
       onUpdate: (self) => {
         applyParallaxEffect();
         updateCaption(closestProjectIndex());
-
-        if (progressBar)
-          progressBar.style.transform = `scaleX(${self.progress.toFixed(4)})`;
       },
       onRefresh: () => {
         applyParallaxEffect();
