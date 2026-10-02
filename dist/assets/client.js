@@ -383,16 +383,17 @@ function installHeroWordmarkProxy() {
 if (document.readyState === "complete") installHeroWordmarkProxy();
 else window.addEventListener("load", installHeroWordmarkProxy, { once: true });
 
-// Experience accordion: opening is driven by the content height itself so the
-// copy is progressively revealed at full size instead of popping from 0 to 100%.
+// Experience accordion adapted from the WAAPI <details> animation pattern:
+// https://codepen.io/EvilSpark/pen/ewWyVO
+// The <details> element itself animates between the summary height and the
+// measured summary + content height, so the copy is clipped/revealed naturally.
 function installExperienceAccordionMotion() {
   const jobs = [...document.querySelectorAll(".experience-list .job")];
   if (!jobs.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const openingDuration = 560;
-  const closingDuration = 420;
-  const closingEasing = "cubic-bezier(.65,0,.35,1)";
+  const duration = 400;
+  const easing = "ease-out";
 
   if (!document.getElementById("experience-accordion-motion")) {
     const style = document.createElement("style");
@@ -408,169 +409,124 @@ function installExperienceAccordionMotion() {
   background: var(--accent);
   transform: scaleY(0);
   transform-origin: top;
+  transition: transform ${duration}ms ${easing};
   pointer-events: none;
   will-change: transform;
 }
-.job[open]::before { transform: scaleY(1); }
-.job.is-opening::before {
-  animation: experience-rail-open ${openingDuration}ms linear both;
+.job[open]::before {
+  transform: scaleY(1);
 }
 .job.is-closing::before {
-  animation: experience-rail-close ${closingDuration}ms ${closingEasing} both;
-}
-@keyframes experience-rail-open {
-  from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
-}
-@keyframes experience-rail-close {
-  from { transform: scaleY(1); }
-  to { transform: scaleY(0); }
+  transform: scaleY(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .job.is-opening::before,
-  .job.is-closing::before { animation: none; }
+  .job::before {
+    transition: none;
+  }
 }
 `;
     document.head.appendChild(style);
   }
 
-  for (const job of jobs) {
-    const summary = job.querySelector("summary");
-    const copy = job.querySelector(".job-copy");
-    if (!summary || !copy) continue;
+  class ExperienceAccordion {
+    constructor(el) {
+      this.el = el;
+      this.summary = el.querySelector("summary");
+      this.content = el.querySelector(".job-copy");
+      this.animation = null;
+      this.isClosing = false;
+      this.isExpanding = false;
 
-    let animation = null;
+      if (!this.summary || !this.content) return;
 
-    const collapsedHeight = () => {
-      const styles = getComputedStyle(job);
-      return (
-        summary.getBoundingClientRect().height +
-        parseFloat(styles.borderTopWidth || 0) +
-        parseFloat(styles.borderBottomWidth || 0)
-      );
-    };
+      this.summary.addEventListener("click", (event) => this.onClick(event));
+    }
 
-    const clearCopyStyles = () => {
-      copy.style.height = "";
-      copy.style.paddingTop = "";
-      copy.style.paddingBottom = "";
-      copy.style.overflow = "";
-      copy.style.boxSizing = "";
-      copy.style.willChange = "";
-    };
-
-    const clearJobStyles = () => {
-      job.style.height = "";
-      job.style.overflow = "";
-      job.classList.remove("is-opening", "is-closing");
-    };
-
-    const finishAnimation = () => {
-      if (animation) {
-        const current = animation;
-        animation = null;
-        current.cancel();
+    onClick(event) {
+      if (reducedMotion.matches || typeof this.el.animate !== "function") {
+        return;
       }
-    };
-
-    const openJob = () => {
-      job.classList.remove("is-closing");
-      job.classList.add("is-opening");
-
-      // Open the details element synchronously, then immediately collapse only
-      // the copy before the browser gets a chance to paint the fully-open state.
-      job.open = true;
-      copy.style.boxSizing = "border-box";
-
-      const naturalHeight = copy.getBoundingClientRect().height;
-      const copyStyles = getComputedStyle(copy);
-      const naturalPaddingTop = parseFloat(copyStyles.paddingTop) || 0;
-      const naturalPaddingBottom = parseFloat(copyStyles.paddingBottom) || 0;
-
-      copy.style.height = "0px";
-      copy.style.paddingTop = "0px";
-      copy.style.paddingBottom = "0px";
-      copy.style.overflow = "hidden";
-      copy.style.willChange = "height, padding";
-      void copy.offsetHeight;
-
-      const current = copy.animate(
-        [
-          {
-            height: "0px",
-            paddingTop: "0px",
-            paddingBottom: "0px",
-          },
-          {
-            height: `${naturalHeight}px`,
-            paddingTop: `${naturalPaddingTop}px`,
-            paddingBottom: `${naturalPaddingBottom}px`,
-          },
-        ],
-        {
-          duration: openingDuration,
-          easing: "linear",
-          fill: "both",
-        },
-      );
-      animation = current;
-
-      current.finished
-        .then(() => {
-          if (animation !== current) return;
-          animation = null;
-          current.cancel();
-          clearCopyStyles();
-          clearJobStyles();
-        })
-        .catch(() => {});
-    };
-
-    const closeJob = () => {
-      const startHeight = job.getBoundingClientRect().height;
-      const endHeight = collapsedHeight();
-
-      job.classList.remove("is-opening");
-      job.classList.add("is-closing");
-      job.style.height = `${startHeight}px`;
-      job.style.overflow = "hidden";
-      void job.offsetHeight;
-
-      const current = job.animate(
-        [
-          { height: `${startHeight}px` },
-          { height: `${endHeight}px` },
-        ],
-        {
-          duration: closingDuration,
-          easing: closingEasing,
-          fill: "both",
-        },
-      );
-      animation = current;
-
-      current.finished
-        .then(() => {
-          if (animation !== current) return;
-          animation = null;
-          job.open = false;
-          current.cancel();
-          clearCopyStyles();
-          clearJobStyles();
-        })
-        .catch(() => {});
-    };
-
-    summary.addEventListener("click", (event) => {
-      if (reducedMotion.matches || typeof job.animate !== "function") return;
 
       event.preventDefault();
-      if (animation) return;
+      this.el.style.overflow = "hidden";
 
-      if (job.open) closeJob();
-      else openJob();
-    });
+      if (this.isClosing || !this.el.open) {
+        this.open();
+      } else if (this.isExpanding || this.el.open) {
+        this.shrink();
+      }
+    }
+
+    shrink() {
+      this.isClosing = true;
+      this.el.classList.remove("is-opening");
+      this.el.classList.add("is-closing");
+
+      const startHeight = `${this.el.offsetHeight}px`;
+      const endHeight = `${this.summary.offsetHeight}px`;
+
+      if (this.animation) {
+        this.animation.cancel();
+      }
+
+      this.animation = this.el.animate(
+        { height: [startHeight, endHeight] },
+        { duration, easing },
+      );
+
+      this.animation.onfinish = () => this.onAnimationFinish(false);
+      this.animation.oncancel = () => {
+        this.isClosing = false;
+      };
+    }
+
+    open() {
+      // Lock the currently collapsed height before setting [open]. This is the
+      // key part of the reference implementation: content becomes measurable
+      // without being allowed to paint at full height first.
+      this.el.style.height = `${this.el.offsetHeight}px`;
+      this.el.classList.remove("is-closing");
+      this.el.classList.add("is-opening");
+      this.el.open = true;
+
+      window.requestAnimationFrame(() => this.expand());
+    }
+
+    expand() {
+      this.isExpanding = true;
+
+      const startHeight = `${this.el.offsetHeight}px`;
+      const endHeight = `${
+        this.summary.offsetHeight + this.content.offsetHeight
+      }px`;
+
+      if (this.animation) {
+        this.animation.cancel();
+      }
+
+      this.animation = this.el.animate(
+        { height: [startHeight, endHeight] },
+        { duration, easing },
+      );
+
+      this.animation.onfinish = () => this.onAnimationFinish(true);
+      this.animation.oncancel = () => {
+        this.isExpanding = false;
+      };
+    }
+
+    onAnimationFinish(open) {
+      this.el.open = open;
+      this.animation = null;
+      this.isClosing = false;
+      this.isExpanding = false;
+      this.el.classList.remove("is-opening", "is-closing");
+      this.el.style.height = "";
+      this.el.style.overflow = "";
+    }
   }
+
+  jobs.forEach((job) => new ExperienceAccordion(job));
 }
 
 installExperienceAccordionMotion();
