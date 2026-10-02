@@ -1272,6 +1272,14 @@ td {
 .gallery-page {
   overflow-x: clip;
 }
+.home-section#photography .photo-3d-stage {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-top: 12px;
+}
+.home-section#photography .section-end {
+  margin-top: 34px;
+}
 .photo-3d-stage {
   position: relative;
   overflow: clip;
