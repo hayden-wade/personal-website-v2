@@ -324,12 +324,13 @@ function installPhotographyStaggeredGrid() {
       (viewportHeight - rect.top) / Math.max(1, viewportHeight - endTop),
     );
     const middleColumn = (columns - 1) / 2;
-    const maxDistance = Math.max(1, middleColumn);
 
     items.forEach((item, index) => {
       const columnIndex = index % columns;
       const distance = Math.abs(columnIndex - middleColumn);
-      const delay = (distance / maxDistance) * 0.22;
+      // Match the Codrops grid--full timing more closely: each step away
+      // from centre starts 0.2 later, producing the steeper pyramid profile.
+      const delay = Math.min(0.6, distance * 0.2);
       const localProgress = clamp01((progress - delay) / (1 - delay));
       const eased = Math.sin((localProgress * Math.PI) / 2);
       const yPercent = 450 * (1 - eased);
