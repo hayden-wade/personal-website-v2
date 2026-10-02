@@ -378,16 +378,16 @@ function installHeroWordmarkProxy() {
 if (document.readyState === "complete") installHeroWordmarkProxy();
 else window.addEventListener("load", installHeroWordmarkProxy, { once: true });
 
-// Smooth two-way Experience accordion motion. The native details opening is kept
-// intact, then animated from the summary height to the expanded height. Closing
-// stays open until the reverse animation finishes so the accent line can retract.
+// Experience accordion: opening is driven by the content height itself so the
+// copy is progressively revealed at full size instead of popping from 0 to 100%.
 function installExperienceAccordionMotion() {
-  const jobs = [...document.querySelectorAll(".job")];
+  const jobs = [...document.querySelectorAll(".experience-list .job")];
   if (!jobs.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const duration = 420;
-  const easing = "cubic-bezier(.65,0,.35,1)";
+  const openingDuration = 560;
+  const closingDuration = 420;
+  const closingEasing = "cubic-bezier(.65,0,.35,1)";
 
   if (!document.getElementById("experience-accordion-motion")) {
     const style = document.createElement("style");
@@ -403,25 +403,38 @@ function installExperienceAccordionMotion() {
   background: var(--accent);
   transform: scaleY(0);
   transform-origin: top;
-  transition: transform ${duration}ms ${easing};
   pointer-events: none;
   will-change: transform;
 }
 .job[open]::before { transform: scaleY(1); }
-.job.is-closing::before { transform: scaleY(0); }
+.job.is-opening::before {
+  animation: experience-rail-open ${openingDuration}ms linear both;
+}
+.job.is-closing::before {
+  animation: experience-rail-close ${closingDuration}ms ${closingEasing} both;
+}
+@keyframes experience-rail-open {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes experience-rail-close {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .job::before { transition: none; }
+  .job.is-opening::before,
+  .job.is-closing::before { animation: none; }
 }
 `;
     document.head.appendChild(style);
   }
 
-  jobs.forEach((job) => {
+  for (const job of jobs) {
     const summary = job.querySelector("summary");
-    if (!summary) return;
+    const copy = job.querySelector(".job-copy");
+    if (!summary || !copy) continue;
 
     let animation = null;
-    let openingPending = false;
 
     const collapsedHeight = () => {
       const styles = getComputedStyle(job);
@@ -432,37 +445,68 @@ function installExperienceAccordionMotion() {
       );
     };
 
-    const clearInlineState = () => {
+    const clearCopyStyles = () => {
+      copy.style.height = "";
+      copy.style.paddingTop = "";
+      copy.style.paddingBottom = "";
+      copy.style.overflow = "";
+      copy.style.boxSizing = "";
+      copy.style.willChange = "";
+    };
+
+    const clearJobStyles = () => {
       job.style.height = "";
       job.style.overflow = "";
       job.classList.remove("is-opening", "is-closing");
-      openingPending = false;
     };
 
-    const stopAnimation = () => {
-      if (!animation) return;
-      const current = animation;
-      animation = null;
-      current.cancel();
-    };
-
-    const animateOpen = (startHeight) => {
-      if (!job.open) {
-        clearInlineState();
-        return;
+    const finishAnimation = () => {
+      if (animation) {
+        const current = animation;
+        animation = null;
+        current.cancel();
       }
+    };
 
-      job.style.height = "auto";
-      const endHeight = job.getBoundingClientRect().height;
-      job.style.height = `${startHeight}px`;
-      job.style.overflow = "hidden";
+    const openJob = () => {
       job.classList.remove("is-closing");
       job.classList.add("is-opening");
-      openingPending = false;
 
-      const current = job.animate(
-        [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
-        { duration, easing, fill: "both" },
+      // Open the details element synchronously, then immediately collapse only
+      // the copy before the browser gets a chance to paint the fully-open state.
+      job.open = true;
+      copy.style.boxSizing = "border-box";
+
+      const naturalHeight = copy.getBoundingClientRect().height;
+      const copyStyles = getComputedStyle(copy);
+      const naturalPaddingTop = parseFloat(copyStyles.paddingTop) || 0;
+      const naturalPaddingBottom = parseFloat(copyStyles.paddingBottom) || 0;
+
+      copy.style.height = "0px";
+      copy.style.paddingTop = "0px";
+      copy.style.paddingBottom = "0px";
+      copy.style.overflow = "hidden";
+      copy.style.willChange = "height, padding";
+      void copy.offsetHeight;
+
+      const current = copy.animate(
+        [
+          {
+            height: "0px",
+            paddingTop: "0px",
+            paddingBottom: "0px",
+          },
+          {
+            height: `${naturalHeight}px`,
+            paddingTop: `${naturalPaddingTop}px`,
+            paddingBottom: `${naturalPaddingBottom}px`,
+          },
+        ],
+        {
+          duration: openingDuration,
+          easing: "linear",
+          fill: "both",
+        },
       );
       animation = current;
 
@@ -471,47 +515,32 @@ function installExperienceAccordionMotion() {
           if (animation !== current) return;
           animation = null;
           current.cancel();
-          clearInlineState();
+          clearCopyStyles();
+          clearJobStyles();
         })
         .catch(() => {});
     };
 
-    summary.addEventListener("click", (event) => {
-      if (reducedMotion.matches || typeof job.animate !== "function") return;
-
-      if (!job.open) {
-        // Keep the closed row at its collapsed height while the browser performs
-        // the native details toggle. The next frame expands it smoothly.
-        const startHeight = collapsedHeight();
-        openingPending = true;
-        job.style.height = `${startHeight}px`;
-        job.style.overflow = "hidden";
-        job.classList.add("is-opening");
-
-        requestAnimationFrame(() => {
-          if (!openingPending) return;
-          animateOpen(startHeight);
-        });
-        return;
-      }
-
-      // Closing must be intercepted so the details contents remain measurable
-      // until the reverse height and accent-line animations have finished.
-      event.preventDefault();
-      openingPending = false;
-
+    const closeJob = () => {
       const startHeight = job.getBoundingClientRect().height;
-      if (animation) stopAnimation();
+      const endHeight = collapsedHeight();
 
-      job.style.height = `${startHeight}px`;
-      job.style.overflow = "hidden";
       job.classList.remove("is-opening");
       job.classList.add("is-closing");
+      job.style.height = `${startHeight}px`;
+      job.style.overflow = "hidden";
+      void job.offsetHeight;
 
-      const endHeight = collapsedHeight();
       const current = job.animate(
-        [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
-        { duration, easing, fill: "both" },
+        [
+          { height: `${startHeight}px` },
+          { height: `${endHeight}px` },
+        ],
+        {
+          duration: closingDuration,
+          easing: closingEasing,
+          fill: "both",
+        },
       );
       animation = current;
 
@@ -521,11 +550,22 @@ function installExperienceAccordionMotion() {
           animation = null;
           job.open = false;
           current.cancel();
-          clearInlineState();
+          clearCopyStyles();
+          clearJobStyles();
         })
         .catch(() => {});
+    };
+
+    summary.addEventListener("click", (event) => {
+      if (reducedMotion.matches || typeof job.animate !== "function") return;
+
+      event.preventDefault();
+      if (animation) return;
+
+      if (job.open) closeJob();
+      else openJob();
     });
-  });
+  }
 }
 
 installExperienceAccordionMotion();
