@@ -765,3 +765,197 @@ function installExperienceAccordionMotion() {
 }
 
 installExperienceAccordionMotion();
+
+
+// Animated technical grid background adapted from Buf1421's CodePen:
+// https://codepen.io/Buf1421/pen/JoEpYKw
+function installAnimatedGridBackground() {
+  const canvas = document.querySelector("[data-animated-grid-bg]");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const root = getComputedStyle(document.documentElement);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const config = {
+    bgColor: root.getPropertyValue("--bg").trim() || "#171a18",
+    gridColor: "rgba(255, 255, 255, 0.02)",
+    gridColorBold: "rgba(255, 255, 255, 0.04)",
+    crossColorSmall: "rgba(255, 255, 255, 0.016)",
+    crossColorLarge: "rgba(255, 255, 255, 0.22)",
+    gridSize: 50,
+    boldEvery: 3,
+    crossSizeSmall: 5,
+    crossSizeLarge: 8,
+    crossThickness: 1,
+    scrollSpeed: 0.06,
+    twinkleMin: 0.1,
+    twinkleMax: 1,
+    twinkleSpeed: 0.0008,
+  };
+
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let offset = 0;
+  let crosses = [];
+  let frameId = 0;
+
+  const parseColor = (value) => {
+    const rgba = value.match(/rgba?\(([^)]+)\)/);
+    if (rgba) {
+      const parts = rgba[1].split(",").map((part) => parseFloat(part.trim()));
+      return {
+        r: parts[0] || 0,
+        g: parts[1] || 0,
+        b: parts[2] || 0,
+        a: parts[3] ?? 1,
+      };
+    }
+
+    if (value.startsWith("#")) {
+      let hex = value.slice(1);
+      if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+      const number = parseInt(hex, 16);
+      return {
+        r: (number >> 16) & 255,
+        g: (number >> 8) & 255,
+        b: number & 255,
+        a: 1,
+      };
+    }
+
+    return { r: 255, g: 255, b: 255, a: 1 };
+  };
+
+  const smallCross = parseColor(config.crossColorSmall);
+  const largeCross = parseColor(config.crossColorLarge);
+
+  const rebuildCrosses = () => {
+    const step = config.gridSize * config.boldEvery;
+    const cols = Math.ceil(width / step) + 2;
+    const rows = Math.ceil(height / step) + 2;
+    crosses = [];
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        crosses.push({
+          baseX: col * step,
+          baseY: row * step,
+          phase: Math.random() * Math.PI * 2,
+          speed: config.twinkleSpeed * (0.5 + Math.random()),
+          isLarge: (row + col) % 2 === 0,
+        });
+      }
+    }
+  };
+
+  const resize = () => {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    rebuildCrosses();
+  };
+
+  const draw = () => {
+    const size = config.gridSize;
+    const step = size * config.boldEvery;
+    const ox = -(offset % step);
+    const oy = -((offset * 0.7) % step);
+
+    ctx.fillStyle = config.bgColor;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = config.gridColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = ox; x < width; x += size) {
+      ctx.moveTo(x + 0.5, 0);
+      ctx.lineTo(x + 0.5, height);
+    }
+    for (let y = oy; y < height; y += size) {
+      ctx.moveTo(0, y + 0.5);
+      ctx.lineTo(width, y + 0.5);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = config.gridColorBold;
+    ctx.beginPath();
+    for (let x = ox; x < width; x += step) {
+      ctx.moveTo(x + 0.5, 0);
+      ctx.lineTo(x + 0.5, height);
+    }
+    for (let y = oy; y < height; y += step) {
+      ctx.moveTo(0, y + 0.5);
+      ctx.lineTo(width, y + 0.5);
+    }
+    ctx.stroke();
+
+    const now = performance.now();
+    for (const cross of crosses) {
+      const x = cross.baseX + ox;
+      const y = cross.baseY + oy;
+      if (x < -20 || x > width + 20 || y < -20 || y > height + 20) continue;
+
+      const phase = Math.sin(now * cross.speed + cross.phase);
+      const normalized = (phase + 1) / 2;
+      const twinkle =
+        config.twinkleMin +
+        (config.twinkleMax - config.twinkleMin) * Math.pow(normalized, 2);
+      const color = cross.isLarge ? largeCross : smallCross;
+      const crossSize = cross.isLarge
+        ? config.crossSizeLarge
+        : config.crossSizeSmall;
+
+      ctx.strokeStyle =
+        "rgba(" +
+        color.r +
+        ", " +
+        color.g +
+        ", " +
+        color.b +
+        ", " +
+        color.a * twinkle +
+        ")";
+      ctx.lineWidth = config.crossThickness;
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, y - crossSize);
+      ctx.lineTo(x + 0.5, y + crossSize);
+      ctx.moveTo(x - crossSize, y + 0.5);
+      ctx.lineTo(x + crossSize, y + 0.5);
+      ctx.stroke();
+    }
+  };
+
+  const tick = () => {
+    draw();
+    if (!reducedMotion.matches) offset += config.scrollSpeed;
+    frameId = requestAnimationFrame(tick);
+  };
+
+  const restart = () => {
+    cancelAnimationFrame(frameId);
+    draw();
+    if (!document.hidden) frameId = requestAnimationFrame(tick);
+  };
+
+  resize();
+  restart();
+
+  window.addEventListener("resize", () => {
+    resize();
+    draw();
+  }, { passive: true });
+
+  reducedMotion.addEventListener("change", restart);
+  document.addEventListener("visibilitychange", restart);
+}
+
+installAnimatedGridBackground();
