@@ -170,16 +170,21 @@ function move(root, delta) {
   current = (current + delta + photos.length) % photos.length;
   renderViewer(root);
 }
+function viewerTriggersFor(trigger) {
+  const gallery = trigger.closest(".home-photos,.photo-mosaic,.photo-index");
+  return gallery ? [...gallery.querySelectorAll("[data-enlarge]")] : triggers;
+}
 triggers.forEach((trigger) =>
   trigger.addEventListener("click", (e) => {
     if (!dialog?.showModal) return;
     e.preventDefault();
     opener = trigger;
-    photos = triggers.map((t) => ({
+    const activeTriggers = viewerTriggersFor(trigger);
+    photos = activeTriggers.map((t) => ({
       src: t.dataset.enlarge,
       caption: t.dataset.caption || "",
     }));
-    current = triggers.indexOf(trigger);
+    current = activeTriggers.indexOf(trigger);
     renderViewer(dialog);
     window.__siteLenis?.stop();
     dialog.showModal();
