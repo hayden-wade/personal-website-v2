@@ -636,7 +636,13 @@ figcaption,
 .home-reveal-shell {
   position: relative;
   z-index: 10;
-  background: transparent;
+  isolation: isolate;
+  background: var(--bg);
+}
+
+.home-reveal-shell > :not(.animated-grid-bg) {
+  position: relative;
+  z-index: 1;
 }
 .home-reveal-shell::after {
   content: "";
