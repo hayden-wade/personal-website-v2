@@ -2,7 +2,7 @@
 
 ## Codrops — OnScrollTypographyAnimations
 
-The Photography heading animation adapts the "Waking Life" / `data-effect20` example from:
+The Photography heading animation adapts the "Waking Life" / `data-effect20` example, and the pinned Photography outro adapts `data-effect25`, from:
 
 - Project: OnScrollTypographyAnimations
 - Repository: https://github.com/codrops/OnScrollTypographyAnimations
