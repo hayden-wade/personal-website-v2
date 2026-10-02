@@ -1509,27 +1509,23 @@ td {
 .photo-title-stage {
   position: relative;
   width: 100%;
-  height: 165svh;
-}
-.photo-title-sticky {
-  position: sticky;
-  top: 74px;
-  height: calc(100svh - 74px);
+  min-height: clamp(560px, 86svh, 920px);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  perspective: 1200px;
-  perspective-origin: 50% 48%;
+  overflow: clip;
+  padding: clamp(110px, 16vh, 180px) var(--gutter) clamp(90px, 12vh, 140px);
+}
+.photo-title-sticky {
+  position: relative;
+  width: 100%;
 }
 .photo-title-frame {
   width: 100%;
-  min-height: 72vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-inline: var(--gutter);
   transform-style: preserve-3d;
 }
 .photo-cinematic-title {
@@ -1540,28 +1536,24 @@ td {
   justify-content: center;
   white-space: nowrap;
   color: var(--text);
-  font: 400 clamp(62px, 11.7vw, 190px) / 0.82 var(--serif);
+  font: 400 clamp(68px, 12vw, 194px) / 0.82 var(--serif);
   letter-spacing: -0.055em;
   text-align: center;
+  perspective: 1000px;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 .photo-cinematic-title [data-photo-letter] {
   display: inline-block;
-  transform-origin: 50% 60%;
+  transform-origin: 50% 100%;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  will-change: transform, opacity, filter;
 }
 .photo-cinematic-subtitle {
-  margin-top: clamp(30px, 5vh, 58px);
+  margin-top: clamp(34px, 5vh, 56px);
   color: var(--text);
   font: 400 clamp(26px, 2.5vw, 42px) / 1.05 var(--serif);
   letter-spacing: -0.025em;
   text-align: center;
-  opacity: 0;
-  transform: translateY(24px);
-  will-change: transform, opacity;
 }
 .photo-cinematic-subtitle em {
   font-weight: 400;
@@ -1573,9 +1565,7 @@ td {
   margin-top: clamp(20px, 3vh, 30px);
   background: var(--accent);
   opacity: 0.9;
-  transform: scaleX(0);
   transform-origin: 0 50%;
-  will-change: transform;
 }
 .home-section#photography {
   width: 100vw;
@@ -1697,15 +1687,8 @@ td {
 }
 @media (max-width: 700px) {
   .photo-title-stage {
-    height: 145svh;
-  }
-  .photo-title-sticky {
-    top: 64px;
-    height: calc(100svh - 64px);
-  }
-  .photo-title-frame {
-    min-height: 68vh;
-    padding-inline: 12px;
+    min-height: 72svh;
+    padding: 90px 12px 72px;
   }
   .photo-cinematic-title {
     font-size: clamp(46px, 11.3vw, 88px);
@@ -1720,7 +1703,6 @@ td {
   .photo-title-rule {
     margin-top: 22px;
   }
-
   .home-section#photography {
     padding-bottom: 110px;
   }
@@ -1745,19 +1727,9 @@ td {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .photo-title-stage {
-    height: auto;
-  }
-  .photo-title-sticky {
-    position: relative;
-    top: auto;
-    height: auto;
-    min-height: 68svh;
-  }
   .photo-cinematic-title [data-photo-letter] {
     transform: none !important;
     opacity: 1 !important;
-    filter: none !important;
   }
   .photo-cinematic-subtitle {
     opacity: 1 !important;
