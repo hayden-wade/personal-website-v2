@@ -754,7 +754,7 @@ figcaption,
   justify-content: center;
   align-items: center;
 }
-.svg-animation path {
+.svg-animation .svg-letter {
   opacity: 1;
   fill: var(--color-accent);
 }
