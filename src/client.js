@@ -364,6 +364,164 @@ tabs.forEach((tab, i) => {
   });
 });
 
+function installProjectReel() {
+  const stage = document.querySelector("[data-project-reel]");
+  const track = stage?.querySelector("[data-project-reel-track]");
+  const slides = track ? [...track.querySelectorAll("[data-project-slide]")] : [];
+  const caption = stage?.querySelector("[data-project-reel-caption]");
+  const progressBar = stage?.querySelector("[data-project-reel-progress]");
+
+  if (!stage || !track || !slides.length || !caption) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const desktop = window.matchMedia("(min-width: 901px)");
+  let trigger = null;
+  let activeIndex = -1;
+
+  const captionIndex = caption.querySelector(".project-reel-caption-index");
+  const captionTitle = caption.querySelector("h3");
+  const captionMeta = caption.querySelector(".project-reel-caption-meta");
+  const captionDescription = caption.querySelector(
+    ".project-reel-caption-description",
+  );
+  const captionLink = caption.querySelector(".project-reel-caption-link");
+
+  const updateCaption = (index, animate = true) => {
+    const slide = slides[index];
+    if (!slide || index === activeIndex) return;
+    activeIndex = index;
+
+    const apply = () => {
+      captionIndex.textContent =
+        `${String(index + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+      captionTitle.textContent = slide.dataset.projectName || "";
+      captionMeta.textContent =
+        `${slide.dataset.projectCategory || ""} · ${slide.dataset.projectPeriod || ""}`;
+      captionDescription.textContent = slide.dataset.projectDescription || "";
+      const url = slide.dataset.projectUrl;
+      captionLink.href = url || "/projects/";
+      captionLink.firstChild.textContent = url ? "View project " : "All projects ";
+    };
+
+    if (!animate || typeof caption.animate !== "function") {
+      apply();
+      return;
+    }
+
+    const fade = caption.animate(
+      [
+        { opacity: 1, transform: "translateY(0)" },
+        { opacity: 0.12, transform: "translateY(8px)", offset: 0.46 },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      {
+        duration: 360,
+        easing: "cubic-bezier(.16,1,.3,1)",
+      },
+    );
+    window.setTimeout(apply, 150);
+    fade.onfinish = () => fade.cancel();
+  };
+
+  const resetParallax = () => {
+    slides.forEach((slide) => {
+      slide
+        .querySelectorAll(
+          ".project-reel-media--support-a,.project-reel-media--support-b",
+        )
+        .forEach((media) => media.style.removeProperty("--reel-parallax"));
+    });
+  };
+
+  const destroy = () => {
+    trigger?.kill();
+    trigger = null;
+    if (typeof window.gsap !== "undefined")
+      window.gsap.set(track, { clearProps: "transform" });
+    else track.style.transform = "";
+    if (progressBar) progressBar.style.transform = "";
+    resetParallax();
+    activeIndex = -1;
+    updateCaption(0, false);
+  };
+
+  const init = () => {
+    destroy();
+
+    if (
+      !desktop.matches ||
+      reducedMotion.matches ||
+      typeof window.gsap === "undefined" ||
+      typeof window.ScrollTrigger === "undefined"
+    )
+      return;
+
+    const { gsap, ScrollTrigger } = window;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const getDistance = () =>
+      Math.max(1, track.scrollWidth - window.innerWidth + window.innerWidth * 0.08);
+
+    const tween = gsap.to(track, {
+      x: () => -getDistance(),
+      ease: "none",
+      paused: true,
+    });
+
+    trigger = ScrollTrigger.create({
+      id: "homepage-project-reel",
+      trigger: stage,
+      start: "top top",
+      end: () => `+=${Math.max(window.innerHeight * 3.8, getDistance() * 0.9)}`,
+      pin: true,
+      scrub: 0.65,
+      invalidateOnRefresh: true,
+      animation: tween,
+      onUpdate: (self) => {
+        const position = self.progress * (slides.length - 1);
+        const index = Math.max(
+          0,
+          Math.min(slides.length - 1, Math.round(position)),
+        );
+        updateCaption(index);
+
+        if (progressBar)
+          progressBar.style.transform = `scaleX(${self.progress.toFixed(4)})`;
+
+        slides.forEach((slide, slideIndex) => {
+          const delta = position - slideIndex;
+          const a = slide.querySelector(".project-reel-media--support-a");
+          const b = slide.querySelector(".project-reel-media--support-b");
+          if (a)
+            a.style.setProperty(
+              "--reel-parallax",
+              `translate3d(${(delta * -18).toFixed(2)}px, ${(delta * 5).toFixed(2)}px, 0)`,
+            );
+          if (b)
+            b.style.setProperty(
+              "--reel-parallax",
+              `translate3d(${(delta * 22).toFixed(2)}px, ${(delta * -6).toFixed(2)}px, 0)`,
+            );
+        });
+      },
+      onRefresh: () => updateCaption(0, false),
+    });
+
+    updateCaption(0, false);
+  };
+
+  desktop.addEventListener("change", init);
+  reducedMotion.addEventListener("change", init);
+  window.addEventListener("load", () => {
+    if (trigger && typeof window.ScrollTrigger !== "undefined")
+      window.ScrollTrigger.refresh();
+  });
+
+  init();
+}
+
+installProjectReel();
+
 function installPhotographyTitleTransition() {
   const title = document.querySelector("[data-photo-title]");
   const subtitle = document.querySelector("[data-photo-subtitle]");
