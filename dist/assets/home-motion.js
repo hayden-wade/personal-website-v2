@@ -77,7 +77,11 @@ function liquidWordmarkMarkup() {
 }
 
 function runSiteLoader() {
-  if (!shouldShowSiteLoader()) return Promise.resolve(false);
+  const root = document.documentElement;
+  if (!shouldShowSiteLoader()) {
+    root.classList.remove("site-loader-pending");
+    return Promise.resolve(false);
+  }
   createLoaderStyles();
   const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
@@ -95,6 +99,7 @@ function runSiteLoader() {
 
   loader.innerHTML = `<div class="site-loader__louvres">${louvres}</div><div class="site-loader__ui"><div class="site-loader__meta site-loader__meta--top"><span>Hayden Wade</span><span>Brisbane / AU</span></div><div class="site-loader__center">${liquidWordmarkMarkup()}<div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div><div class="site-loader__meta site-loader__meta--bottom"><span>Cybersecurity · Engineering · Old cars</span><span>Portfolio / 2026</span></div></div>`;
   document.body.prepend(loader);
+  root.classList.remove("site-loader-pending");
 
   const liquid = loader.querySelector("[data-loader-liquid]");
   const count = loader.querySelector(".site-loader__count");
