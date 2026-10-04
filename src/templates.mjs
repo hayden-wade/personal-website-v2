@@ -159,9 +159,9 @@ export function home() {
     </div>
     <div class="footer__svg-animation">
       <svg width="100%" viewBox="0 0 280 94" fill="none" xmlns="http://www.w3.org/2000/svg" class="svg-animation" aria-hidden="true">
-        <text class="svg-letter" x="0" y="94" font-family="Switzer, Inter, Arial, sans-serif" font-size="128" font-weight="500">H</text>
-        <text class="svg-letter" x="86" y="94" font-family="Switzer, Inter, Arial, sans-serif" font-size="128" font-weight="500">B</text>
-        <text class="svg-letter" x="176" y="94" font-family="Switzer, Inter, Arial, sans-serif" font-size="128" font-weight="500">W</text>
+        <text class="svg-letter" x="0" y="94" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="500">H</text>
+        <text class="svg-letter" x="86" y="94" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="500">B</text>
+        <text class="svg-letter" x="176" y="94" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="128" font-weight="500">W</text>
       </svg>
     </div>
   </div>
