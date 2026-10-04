@@ -1043,15 +1043,16 @@ figcaption,
 .home-reveal-shell::after {
   content: "";
   display: block;
-  height: 10px;
-  background: rgb(141, 168, 146);
+  height: 1px;
+  background: rgba(229, 224, 214, 0.16);
 }
 .footer {
-  --color-foreground--100: rgb(141, 168, 146);
-  --color-background--100: rgb(49, 49, 49);
-  --color-accent: rgb(243, 234, 196);
-  --font-primary: "Inter", sans-serif;
-  --font-secondary: "JetBrains Mono", monospace;
+  --color-foreground--100: #a7aaa3;
+  --color-background--100: #2c211d;
+  --color-accent: #e5e0d6;
+  --footer-accent: #c06b49;
+  --font-primary: var(--sans);
+  --font-secondary: var(--sans);
   position: fixed;
   bottom: 0;
   left: 0;
@@ -1067,19 +1068,6 @@ figcaption,
   padding: 2rem 6rem;
   font-family: var(--font-primary);
   line-height: 1.4;
-}
-.footer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 2px,
-    #0000002d 4px
-  );
-  background-size: auto 100%;
-  pointer-events: none;
-  z-index: 9999;
 }
 .footer__text {
   text-align: center;
@@ -1130,6 +1118,8 @@ figcaption,
   display: flex;
   white-space: nowrap;
   font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 500;
+  letter-spacing: 0.055em;
 }
 .footer__marquee-content span {
   margin-right: 2rem;
@@ -1152,18 +1142,21 @@ figcaption,
 }
 .footer__contact-copy {
   margin: 0;
-  line-height: 1.28;
+  line-height: 1.18;
+  font-family: var(--serif);
+  letter-spacing: -0.02em;
 }
 .footer__contact-copy a {
   color: var(--color-accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(243, 234, 196, 0.55);
+  border-bottom: 1px solid rgba(192, 107, 73, 0.7);
   transition:
     color 0.25s ease,
     border-color 0.25s ease;
 }
 .footer__contact-copy a:hover {
-  border-color: var(--color-accent);
+  color: var(--footer-accent);
+  border-color: var(--footer-accent);
 }
 .footer__socials {
   display: flex;
@@ -1183,11 +1176,11 @@ figcaption,
     transform 0.25s ease;
 }
 .footer__social-link:hover {
-  color: var(--color-accent);
+  color: var(--footer-accent);
   transform: translateY(-2px);
 }
 .footer__social-link:focus-visible {
-  outline: 1px solid var(--color-accent);
+  outline: 1px solid var(--footer-accent);
   outline-offset: 5px;
 }
 .footer__social-link svg {
