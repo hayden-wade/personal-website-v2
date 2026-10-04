@@ -2025,21 +2025,7 @@ td {
   padding: clamp(84px, 11vh, 140px) 0 clamp(68px, 9vh, 110px);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border-top: 1px solid var(--line);
-}
-.photo-outro-meta,
-.photo-outro-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  line-height: 1.35;
-  text-transform: uppercase;
+  justify-content: center;
 }
 .photo-outro-title {
   margin: clamp(72px, 10vh, 120px) 0 clamp(70px, 9vh, 110px);
@@ -2126,10 +2112,6 @@ td {
   color: var(--accent);
   transform: translate3d(0.07em, 0, 0) scale(0.985);
   filter: brightness(1.35);
-}
-.photo-outro-foot {
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
 }
 .photo-3d-stage {
   position: relative;
@@ -2226,11 +2208,6 @@ td {
     width: calc(100% - 40px);
     min-height: 66svh;
     padding: 62px 0 52px;
-  }
-  .photo-outro-meta,
-  .photo-outro-foot {
-    font-size: 8px;
-    letter-spacing: 0.8px;
   }
   .photo-outro-title {
     margin: 58px 0 64px;
