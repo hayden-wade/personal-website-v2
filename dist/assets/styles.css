@@ -3800,15 +3800,15 @@ body.infinite-photo-active {
   }
 }
 
-/* Dark retro canvas palette — warm 1970s / mid-century colour on an espresso field. */
+/* Dark retro canvas palette — warm 1970s / mid-century colour on a soft graphite field. */
 :root {
   color-scheme: dark;
-  --bg: #211c18;
-  --deep: #17130f;
-  --surface: #2b211b;
+  --bg: #20211f;
+  --deep: #171816;
+  --surface: #2a2b28;
   --text: #f3e4c7;
   --muted: #d8c7a8;
-  --line: #5b4a3c;
+  --line: #50524d;
   --accent: #d18a3f;
   --accent-yellow: #f2c84b;
   --accent-coral: #e66b4e;
@@ -3825,7 +3825,7 @@ body,
   background-image:
     radial-gradient(ellipse at 14% 4%, rgba(243, 228, 199, 0.055) 0%, rgba(243, 228, 199, 0) 36%),
     radial-gradient(ellipse at 78% 38%, rgba(93, 167, 161, 0.035) 0%, rgba(93, 167, 161, 0) 42%),
-    linear-gradient(132deg, #261f1a 0%, #211c18 48%, #1b1714 100%);
+    linear-gradient(132deg, #262724 0%, #20211f 48%, #1a1b19 100%);
   background-attachment: fixed;
 }
 
@@ -3851,7 +3851,7 @@ body::before {
 .about-cinema-sticky,
 .project-reel-stage,
 .home-section#photography .photo-3d-stage {
-  background-color: rgba(33, 28, 24, 0.96);
+  background-color: rgba(32, 33, 31, 0.96);
 }
 
 /* The hero remains photographic; warm cream and ochre tie it into the palette. */
@@ -3870,19 +3870,19 @@ body::before {
   background: linear-gradient(
     90deg,
     var(--bg) 0%,
-    rgba(33, 28, 24, 0.92) 2.25%,
-    rgba(33, 28, 24, 0.42) 5.75%,
-    rgba(33, 28, 24, 0) 10%,
-    rgba(33, 28, 24, 0) 90%,
-    rgba(33, 28, 24, 0.42) 94.25%,
-    rgba(33, 28, 24, 0.92) 97.75%,
+    rgba(32, 33, 31, 0.92) 2.25%,
+    rgba(32, 33, 31, 0.42) 5.75%,
+    rgba(32, 33, 31, 0) 10%,
+    rgba(32, 33, 31, 0) 90%,
+    rgba(32, 33, 31, 0.42) 94.25%,
+    rgba(32, 33, 31, 0.92) 97.75%,
     var(--bg) 100%
   );
 }
 .project-reel-viewport::after {
   background: linear-gradient(
     transparent,
-    rgba(33, 28, 24, 0.28) 36%,
+    rgba(32, 33, 31, 0.28) 36%,
     var(--bg) 100%
   );
 }
@@ -3890,12 +3890,12 @@ body::before {
   background: linear-gradient(
     90deg,
     var(--bg) 0%,
-    rgba(33, 28, 24, 0.92) 4%,
-    rgba(33, 28, 24, 0.42) 10%,
-    rgba(33, 28, 24, 0) 18%,
-    rgba(33, 28, 24, 0) 82%,
-    rgba(33, 28, 24, 0.42) 90%,
-    rgba(33, 28, 24, 0.92) 96%,
+    rgba(32, 33, 31, 0.92) 4%,
+    rgba(32, 33, 31, 0.42) 10%,
+    rgba(32, 33, 31, 0) 18%,
+    rgba(32, 33, 31, 0) 82%,
+    rgba(32, 33, 31, 0.42) 90%,
+    rgba(32, 33, 31, 0.92) 96%,
     var(--bg) 100%
   );
 }
@@ -3931,9 +3931,9 @@ body::before {
 
 /* Preserve the warm ochre contact/footer as the big final colour moment. */
 .footer {
-  --color-foreground--100: #211c18;
+  --color-foreground--100: #20211f;
   --color-background--100: #d18a3f;
-  --color-accent: #211c18;
+  --color-accent: #20211f;
   --footer-accent: #f3e4c7;
 }
 
@@ -3941,12 +3941,12 @@ body::before {
 body.infinite-photo-active,
 .lightbox {
   color-scheme: dark;
-  --bg: #211c18;
-  --deep: #17130f;
-  --surface: #2b211b;
+  --bg: #20211f;
+  --deep: #171816;
+  --surface: #2a2b28;
   --text: #f3e4c7;
   --muted: #d8c7a8;
-  --line: #5b4a3c;
+  --line: #50524d;
   --accent: #d18a3f;
 }
 body.infinite-photo-active {
