@@ -3526,7 +3526,7 @@ body.infinite-photo-active {
 }
 .about-cinema-stage {
   position: relative;
-  height: 235vh;
+  height: 285vh;
 }
 .about-cinema-sticky {
   position: sticky;
@@ -3673,7 +3673,36 @@ body.infinite-photo-active {
   color: var(--text);
 }
 .about-cinematic + #experience {
-  padding-top: 122px;
+  padding-top: 0;
+}
+
+/* Cinematic pacing between homepage chapters.
+   The empty lead-in is intentional: the next section label arrives only
+   after a short stretch of negative space, creating a restrained pause. */
+#experience,
+#projects,
+#photography {
+  padding-top: 0;
+}
+#experience::before,
+#projects::before,
+#photography::before {
+  content: "";
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+#experience::before {
+  height: clamp(260px, 36vh, 430px);
+}
+#projects::before {
+  height: clamp(300px, 40vh, 500px);
+}
+#photography::before {
+  height: clamp(320px, 44vh, 560px);
+}
+#experience {
+  padding-bottom: clamp(120px, 14vh, 190px);
 }
 @media (max-width: 900px) {
   .about-cinematic {
@@ -3746,7 +3775,15 @@ body.infinite-photo-active {
     padding: 15px 0;
   }
   .about-cinematic + #experience {
-    padding-top: 100px;
+    padding-top: 0;
+  }
+  #experience::before,
+  #projects::before,
+  #photography::before {
+    height: clamp(110px, 18vh, 180px);
+  }
+  #experience {
+    padding-bottom: 90px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
