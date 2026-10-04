@@ -270,7 +270,11 @@ function installContactReveal() {
       scrollTrigger: {
         trigger: main,
         start: "bottom 80%",
-        end: "bottom top",
+        // Finish the HBW reveal slightly before the absolute end of the page.
+        // "bottom top" can sit beyond the maximum scroll position when the
+        // fixed footer is a little shorter than the viewport, leaving the
+        // final H partially translated at full scroll.
+        end: "bottom 10%",
         scrub: true,
         toggleActions: "play none none reverse",
         markers: false,
