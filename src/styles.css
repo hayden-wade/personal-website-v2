@@ -1975,7 +1975,7 @@ td {
 .home-section#photography {
   width: 100vw;
   margin-left: calc(50% - 50vw);
-  padding-bottom: clamp(220px, 26vh, 360px);
+  padding-bottom: clamp(440px, 52vh, 720px);
 }
 .home-section#photography > .section-label,
 .home-section#photography > h2,
@@ -2222,7 +2222,7 @@ td {
     gap: 10px;
   }
   .home-section#photography {
-    padding-bottom: 140px;
+    padding-bottom: 280px;
   }
   .home-section#photography > .section-label,
   .home-section#photography > h2,
