@@ -248,6 +248,11 @@ function installContactReveal() {
   const homeNav = document.querySelector(".home-nav");
   if (!footer || !main) return;
 
+  // The footer trigger must be measured after the upstream pinned homepage
+  // scenes (About, Projects and Photography) have registered with
+  // ScrollTrigger. Otherwise their pin spacing is missing from this trigger's
+  // initial geometry and the nav can disappear far too early.
+  homeNav?.classList.remove("footer-active");
   footerBehindContent();
   window.addEventListener("resize", footerBehindContent);
 
@@ -323,7 +328,10 @@ function installContactReveal() {
   window.ScrollTrigger.refresh();
 }
 
-installContactReveal();
+// Wait until load so every upstream GSAP/ScrollTrigger pin has been created
+// before the fixed-footer reveal calculates where the page actually ends.
+if (document.readyState === "complete") installContactReveal();
+else window.addEventListener("load", installContactReveal, { once: true });
 
 document.querySelectorAll("[data-filter]").forEach((button) =>
   button.addEventListener("click", () => {
