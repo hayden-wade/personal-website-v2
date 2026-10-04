@@ -1047,10 +1047,10 @@ figcaption,
   background: rgba(229, 224, 214, 0.16);
 }
 .footer {
-  --color-foreground--100: #a7aaa3;
-  --color-background--100: #1d2326;
-  --color-accent: #e5e0d6;
-  --footer-accent: #c06b49;
+  --color-foreground--100: #2c2923;
+  --color-background--100: #d18a3f;
+  --color-accent: #171a18;
+  --footer-accent: #f3e6d0;
   --font-primary: var(--sans);
   --font-secondary: var(--sans);
   position: fixed;
@@ -1149,7 +1149,7 @@ figcaption,
 .footer__contact-copy a {
   color: var(--color-accent);
   text-decoration: none;
-  border-bottom: 1px solid rgba(192, 107, 73, 0.7);
+  border-bottom: 1px solid rgba(23, 26, 24, 0.42);
   transition:
     color 0.25s ease,
     border-color 0.25s ease;
