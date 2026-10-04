@@ -3800,3 +3800,134 @@ body.infinite-photo-active {
   }
 }
 
+
+
+/* Warm archival paper experiment — 1970s print texture, no orange cast. */
+:root {
+  color-scheme: light;
+  --bg: #c8beaa;
+  --deep: #aaa08e;
+  --surface: #d4cab7;
+  --text: #2b2924;
+  --muted: #69645b;
+  --line: #928a7d;
+  --accent: #b96643;
+}
+
+/* A neutral warm-paper field. The colour stays parchment/stone rather than
+   orange; the orange remains an accent elsewhere in the design. */
+body,
+.home-reveal-shell {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 14% 4%, rgba(255, 252, 242, 0.34) 0%, rgba(255, 252, 242, 0) 36%),
+    radial-gradient(ellipse at 78% 38%, rgba(84, 77, 67, 0.07) 0%, rgba(84, 77, 67, 0) 42%),
+    linear-gradient(132deg, #d3cab8 0%, #c9bfab 46%, #beb39f 100%);
+  background-attachment: fixed;
+}
+
+/* Printed-canvas / photographic grain. This is procedural SVG noise rather
+   than a bitmap asset, so it remains crisp and never visibly tiles. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.23;
+  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch' seed='17'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='.42 .62'/%3E%3CfeFuncG type='table' tableValues='.42 .62'/%3E%3CfeFuncB type='table' tableValues='.42 .62'/%3E%3CfeFuncA type='table' tableValues='0 .62'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg, rgba(52, 48, 41, 0.055) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(90deg, rgba(52, 48, 41, 0.035) 0 1px, transparent 1px 6px);
+  background-size: 180px 180px, 5px 5px, 6px 6px;
+}
+
+/* Keep the sticky/full-width homepage surfaces on the same paper stock. */
+.home-nav,
+.about-cinema-sticky,
+.project-reel-stage,
+.home-section#photography .photo-3d-stage {
+  background-color: rgba(200, 190, 170, 0.96);
+}
+
+/* The hero stays photographic and dark; its typography should not inherit
+   the dark ink used on the paper sections below. */
+.hero,
+.hero p,
+.hero-role,
+.hero .text-link {
+  color: #eee6d8;
+}
+.hero .text-link:hover {
+  color: #d18a3f;
+}
+
+/* Paper-coloured edge fades for the horizontal project and photo scenes. */
+.project-reel-viewport::before {
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    rgba(200, 190, 170, 0.92) 2.25%,
+    rgba(200, 190, 170, 0.42) 5.75%,
+    rgba(200, 190, 170, 0) 10%,
+    rgba(200, 190, 170, 0) 90%,
+    rgba(200, 190, 170, 0.42) 94.25%,
+    rgba(200, 190, 170, 0.92) 97.75%,
+    var(--bg) 100%
+  );
+}
+.project-reel-viewport::after {
+  background: linear-gradient(
+    transparent,
+    rgba(200, 190, 170, 0.26) 36%,
+    var(--bg) 100%
+  );
+}
+.home-section#photography .photo-3d-stage::after {
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    rgba(200, 190, 170, 0.92) 4%,
+    rgba(200, 190, 170, 0.42) 10%,
+    rgba(200, 190, 170, 0) 18%,
+    rgba(200, 190, 170, 0) 82%,
+    rgba(200, 190, 170, 0.42) 90%,
+    rgba(200, 190, 170, 0.92) 96%,
+    var(--bg) 100%
+  );
+}
+
+.home-reveal-shell::after {
+  background: rgba(43, 41, 36, 0.15);
+}
+.job:hover {
+  background: rgba(43, 41, 36, 0.035);
+}
+.job-logo-boeing {
+  filter: grayscale(1);
+}
+.project-reel-media {
+  border-color: rgba(43, 41, 36, 0.11);
+}
+
+/* Image-led photography views remain deliberately dark and immersive. */
+body.infinite-photo-active {
+  color-scheme: dark;
+  --bg: #171a18;
+  --deep: #0f1210;
+  --surface: #252a25;
+  --text: #e5e0d6;
+  --muted: #a7aaa3;
+  --line: #3a3f39;
+  background: var(--bg);
+}
+.lightbox {
+  color-scheme: dark;
+  --bg: #171a18;
+  --deep: #0f1210;
+  --surface: #252a25;
+  --text: #e5e0d6;
+  --muted: #a7aaa3;
+  --line: #3a3f39;
+}
