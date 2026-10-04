@@ -1132,7 +1132,7 @@ figcaption,
   gap: 1rem;
 }
 .footer__center-content {
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.75rem, 3.4vw, 2.35rem);
   flex: 0 0 40%;
   padding-right: 1rem;
 }
@@ -1161,12 +1161,12 @@ figcaption,
 .footer__socials {
   display: flex;
   align-items: center;
-  gap: 1.35rem;
-  margin-top: 1.7rem;
+  gap: 1.5rem;
+  margin-top: 1.9rem;
 }
 .footer__social-link {
-  width: 27px;
-  height: 27px;
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
