@@ -1127,14 +1127,17 @@ figcaption,
 .footer__center {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   width: 100%;
-  gap: 1rem;
+  gap: clamp(2rem, 4vw, 4.5rem);
+  min-width: 0;
 }
 .footer__center-content {
   font-size: clamp(1.75rem, 3.4vw, 2.35rem);
-  flex: 0 0 40%;
-  padding-right: 1rem;
+  flex: 0 1 32%;
+  max-width: 430px;
+  padding-right: 0;
+  min-width: 0;
 }
 .footer__center-content p {
   width: 80%;
@@ -1200,10 +1203,18 @@ figcaption,
   stroke: none;
 }
 .footer__svg-animation {
-  flex: 0 0 60%;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+.footer__svg-animation .svg-animation {
+  display: block;
+  width: 100%;
+  max-width: min(64vw, 980px);
+  height: auto;
+  overflow: visible;
 }
 .svg-animation .svg-letter {
   opacity: 1;
