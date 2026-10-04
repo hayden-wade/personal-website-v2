@@ -20,12 +20,14 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 100px;
+  overflow-x: clip;
 }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font: 16px/1.55 var(--sans);
+  overflow-x: clip;
 }
 
 h1,
