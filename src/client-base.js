@@ -1,4 +1,14 @@
 const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+
+// Codespaces preview convenience: iOS Safari restores the previous scroll offset
+// on reload, which makes a successful refresh look like nothing changed.
+// Keep production behaviour untouched and only reset the GitHub preview to top.
+const isCodespacesPreview=location.hostname.endsWith('.app.github.dev');
+if(isCodespacesPreview&&!location.hash){
+ try{history.scrollRestoration='manual';}catch{}
+ window.scrollTo(0,0);
+ window.addEventListener('pageshow',()=>requestAnimationFrame(()=>window.scrollTo(0,0)),{once:true});
+}
 const finePointer=window.matchMedia('(pointer:fine)');
 
 function createLoaderStyles(){
