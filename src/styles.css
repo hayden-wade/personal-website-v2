@@ -3452,8 +3452,8 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   .hero {
-    height: 100svh;
-    min-height: 540px;
+    height: 100dvh;
+    min-height: 100dvh;
   }
   .hero h1 {
     font-size: clamp(100px, 33vw, 180px);
