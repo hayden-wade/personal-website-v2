@@ -1,4 +1,18 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
+// In the Codespaces phone preview, reload from the top instead of letting
+// iOS Safari restore the previous scroll offset and make a fresh build look stale.
+if (location.hostname.endsWith(".app.github.dev") && !location.hash) {
+  try {
+    history.scrollRestoration = "manual";
+  } catch {}
+  window.scrollTo(0, 0);
+  window.addEventListener(
+    "pageshow",
+    () => requestAnimationFrame(() => window.scrollTo(0, 0)),
+    { once: true },
+  );
+}
+
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
