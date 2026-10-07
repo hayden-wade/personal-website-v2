@@ -465,6 +465,7 @@ function setupCinematicAbout() {
   const section = document.querySelector("[data-about-cinematic]");
   if (
     !section ||
+    window.matchMedia("(max-width: 700px)").matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
   )
