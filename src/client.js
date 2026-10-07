@@ -1,19 +1,4 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
-const isMobileCodespacesPreview =
-  location.hostname.endsWith(".app.github.dev") &&
-  window.matchMedia("(max-width: 700px)").matches &&
-  !location.hash;
-
-if (isMobileCodespacesPreview) {
-  try {
-    history.scrollRestoration = "manual";
-  } catch {}
-  window.addEventListener(
-    "load",
-    () => requestAnimationFrame(() => window.scrollTo(0, 0)),
-    { once: true },
-  );
-}
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
