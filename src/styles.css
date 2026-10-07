@@ -3452,8 +3452,10 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   .hero {
-    height: 100dvh;
-    min-height: 100dvh;
+    /* Use the large mobile viewport so the next section never peeks out
+       underneath Safari's floating browser chrome on initial load. */
+    height: 100lvh;
+    min-height: 100lvh;
   }
   .hero h1 {
     font-size: clamp(100px, 33vw, 180px);
