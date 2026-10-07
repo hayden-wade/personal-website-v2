@@ -3452,17 +3452,22 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   .hero {
-    /* Use the large mobile viewport so the next section never peeks out
-       underneath Safari's floating browser chrome on initial load. */
+    /* Fill the large iPhone viewport, but keep the lower metadata clear of
+       Safari's floating toolbar. */
     height: 100lvh;
     min-height: 100lvh;
+    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+  .hero-image {
+    /* Bias the mobile crop toward the E30 without changing desktop framing. */
+    object-position: 58% 60%;
   }
   .hero h1 {
     font-size: clamp(100px, 33vw, 180px);
-    margin-top: 8svh;
+    margin-top: 5svh;
   }
   .hero-role {
-    margin-top: 40px;
+    margin-top: 34px;
   }
   .job summary {
     grid-template-columns: 28px minmax(0, 1fr) 20px;
