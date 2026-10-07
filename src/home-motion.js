@@ -1,13 +1,5 @@
 // Dark portfolio loader with a liquid-fill wordmark and louvre handoff into the hero.
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-const isCodespacesPreview =
-  location.hostname.endsWith(".app.github.dev") && !location.hash;
-
-if (isCodespacesPreview) {
-  try {
-    history.scrollRestoration = "manual";
-  } catch {}
-}
 
 function createLoaderStyles() {
   if (document.getElementById("site-loader-styles")) return;
@@ -41,20 +33,9 @@ function createLoaderStyles() {
 
 function shouldShowSiteLoader() {
   const hero = document.querySelector(".hero");
-  const navigation = performance.getEntriesByType?.("navigation")?.[0];
-  const previewReload =
-    isCodespacesPreview && navigation?.type === "reload";
-
-  // iOS Safari may restore the old scroll position after the head script ran.
-  // For the Codespaces preview, a reload should always be treated as a fresh
-  // visit to the hero, regardless of the temporarily restored scrollY.
-  if (
-    !hero ||
-    reduced.matches ||
-    location.hash ||
-    (!previewReload && window.scrollY > 80)
-  )
+  if (!hero || reduced.matches || location.hash || window.scrollY > 80)
     return false;
+  const navigation = performance.getEntriesByType?.("navigation")?.[0];
   if (navigation?.type === "reload") return true;
   if (!document.referrer) return true;
   try {
@@ -105,14 +86,6 @@ function runSiteLoader() {
   const previousOverflow = document.body.style.overflow;
   document.body.style.overflow = "hidden";
 
-  const forcePreviewTop = () => {
-    if (!isCodespacesPreview) return;
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  };
-  forcePreviewTop();
-
   const loader = document.createElement("div");
   loader.className = "site-loader";
   loader.setAttribute("aria-hidden", "true");
@@ -161,10 +134,6 @@ function runSiteLoader() {
 
   return new Promise((resolve) => {
     const tick = (now) => {
-      // Safari can apply scroll restoration late in the page lifecycle.
-      // Holding the preview at y=0 while the loader is covering the page makes
-      // the reload deterministic without affecting the production site.
-      forcePreviewTop();
       const elapsed = now - start;
       const timeTarget = Math.min(92, (elapsed / 1560) * 92);
       const target =
@@ -197,12 +166,7 @@ function runSiteLoader() {
           }, 1180);
 
           window.setTimeout(() => {
-            forcePreviewTop();
             loader.remove();
-            requestAnimationFrame(() => {
-              forcePreviewTop();
-              window.ScrollTrigger?.refresh(true);
-            });
             resolve(true);
           }, 1340);
         }, 180);
