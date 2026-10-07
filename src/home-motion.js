@@ -33,7 +33,8 @@ function createLoaderStyles() {
 
 function shouldShowSiteLoader() {
   const hero = document.querySelector(".hero");
-  if (!hero || reduced.matches || location.hash || window.scrollY > 80)
+  const topHash = location.hash === "" || location.hash === "#top";
+  if (!hero || reduced.matches || !topHash || window.scrollY > 80)
     return false;
   const navigation = performance.getEntriesByType?.("navigation")?.[0];
   if (navigation?.type === "reload") return true;
