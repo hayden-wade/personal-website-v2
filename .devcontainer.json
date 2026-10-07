@@ -14,5 +14,5 @@
     }
   },
   "postCreateCommand": "npm install --package-lock=false --no-audit --no-fund",
-  "postStartCommand": "nohup bash -c 'npm run preview > /tmp/personal-website-preview.log 2>&1 < /dev/null &'"
+  "postStartCommand": "bash -lc 'git pull --ff-only || echo \"Auto-pull skipped (local changes or offline).\"; nohup npm run preview > /tmp/personal-website-preview.log 2>&1 < /dev/null &'"
 }
