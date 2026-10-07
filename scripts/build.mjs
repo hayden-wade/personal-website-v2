@@ -2,10 +2,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as T from "../src/templates.mjs";
+import crypto from "node:crypto";
 import { posts } from "../src/site.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const out = path.join(root, "dist");
 const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
+const assetVersion = (p) =>
+  crypto.createHash("sha1").update(read(p)).digest("hex").slice(0, 10);
+const assetVersions = {
+  "styles.css": assetVersion("src/styles.css"),
+  "client.js": assetVersion("src/client.js"),
+  "home-motion.js": assetVersion("src/home-motion.js"),
+};
 export const slug = (s) =>
   s
     .toLowerCase()
@@ -72,6 +80,12 @@ export function build() {
         "</head>",
         `<script src="${prefix}/assets/nav-indicator.js" defer></script></head>`,
       );
+    }
+
+    // Content-hashed asset query strings prevent Safari/Codespaces from serving
+    // an older CSS/JS file after a rebuild while keeping builds deterministic.
+    for (const [name, version] of Object.entries(assetVersions)) {
+      html = html.replaceAll(`/assets/${name}`, `/assets/${name}?v=${version}`);
     }
 
     // Relative links keep exported pages usable under any subdirectory and from disk.
