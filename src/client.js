@@ -24,13 +24,12 @@ if (header && window.matchMedia("(max-width: 700px)").matches) {
 
   const updateMobileHeader = () => {
     const y = window.scrollY;
-    const movingDown = y > lastY + 5;
-    const movingUp = y < lastY - 5;
+    const delta = y - lastY;
     const menuOpen = header.classList.contains("menu-open");
 
-    if (!menuOpen && y > 110 && movingDown) {
+    if (!menuOpen && y > 110 && delta > 0) {
       header.classList.add("header-hidden");
-    } else if (movingUp || y <= 110 || menuOpen) {
+    } else if (delta < 0 || y <= 110 || menuOpen) {
       header.classList.remove("header-hidden");
     }
 
