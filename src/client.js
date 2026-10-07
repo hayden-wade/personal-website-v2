@@ -1,14 +1,39 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
-// In the Codespaces phone preview, reload from the top instead of letting
-// iOS Safari restore the previous scroll offset and make a fresh build look stale.
+// In the Codespaces phone preview, force iOS Safari back to the hero after
+// reload. Safari can restore the old scroll offset after deferred scripts run,
+// so reset at several lifecycle points and refresh ScrollTrigger afterwards.
 if (location.hostname.endsWith(".app.github.dev") && !location.hash) {
   try {
     history.scrollRestoration = "manual";
   } catch {}
-  window.scrollTo(0, 0);
+
+  const resetPreviewScroll = () => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  resetPreviewScroll();
+  document.addEventListener("DOMContentLoaded", resetPreviewScroll, { once: true });
   window.addEventListener(
     "pageshow",
-    () => requestAnimationFrame(() => window.scrollTo(0, 0)),
+    () => {
+      resetPreviewScroll();
+      requestAnimationFrame(resetPreviewScroll);
+      setTimeout(resetPreviewScroll, 80);
+      setTimeout(() => {
+        resetPreviewScroll();
+        window.ScrollTrigger?.refresh(true);
+      }, 260);
+    },
+    { once: true },
+  );
+  window.addEventListener(
+    "load",
+    () => {
+      resetPreviewScroll();
+      setTimeout(resetPreviewScroll, 120);
+    },
     { once: true },
   );
 }
@@ -744,6 +769,7 @@ function installPhotographyOutroTransition() {
   if (!title || !section || !chars.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobile = window.matchMedia("(max-width: 700px)");
 
   const reset = () => {
     chars.forEach((char) => {
@@ -751,9 +777,17 @@ function installPhotographyOutroTransition() {
       char.style.opacity = "1";
       char.style.willChange = "auto";
     });
+    section.style.removeProperty("position");
+    section.style.removeProperty("top");
+    section.style.removeProperty("left");
+    section.style.removeProperty("width");
+    section.style.removeProperty("transform");
   };
 
+  // The pinned outro is a desktop effect. On iOS Safari a restored scroll
+  // position can leave GSAP's pin styles stuck over the hero after a reload.
   if (
+    mobile.matches ||
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
