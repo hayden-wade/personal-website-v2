@@ -2729,10 +2729,35 @@ body.infinite-photo-active {
     padding-inline: 20px;
   }
   .menu-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .menu-icon {
+    width: 22px;
+    height: 16px;
     display: flex;
-    gap: 12px;
-    font-size: 11px;
-    padding: 12px 0;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .menu-icon > span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transform-origin: center;
+    transition: transform 220ms ease, opacity 180ms ease;
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(1) {
+    transform: translateY(7.25px) rotate(45deg);
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(2) {
+    opacity: 0;
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(3) {
+    transform: translateY(-7.25px) rotate(-45deg);
   }
   .site-header nav {
     display: none;
