@@ -1,43 +1,4 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
-// In the Codespaces phone preview, force iOS Safari back to the hero after
-// reload. Safari can restore the old scroll offset after deferred scripts run,
-// so reset at several lifecycle points and refresh ScrollTrigger afterwards.
-if (location.hostname.endsWith(".app.github.dev") && !location.hash) {
-  try {
-    history.scrollRestoration = "manual";
-  } catch {}
-
-  const resetPreviewScroll = () => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  };
-
-  resetPreviewScroll();
-  document.addEventListener("DOMContentLoaded", resetPreviewScroll, { once: true });
-  window.addEventListener(
-    "pageshow",
-    () => {
-      resetPreviewScroll();
-      requestAnimationFrame(resetPreviewScroll);
-      setTimeout(resetPreviewScroll, 80);
-      setTimeout(() => {
-        resetPreviewScroll();
-        window.ScrollTrigger?.refresh(true);
-      }, 260);
-    },
-    { once: true },
-  );
-  window.addEventListener(
-    "load",
-    () => {
-      resetPreviewScroll();
-      setTimeout(resetPreviewScroll, 120);
-    },
-    { once: true },
-  );
-}
-
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
