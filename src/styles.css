@@ -3460,7 +3460,7 @@ body.infinite-photo-active {
   }
   .hero-image {
     /* Restore a more natural mobile crop while keeping the E30 in frame. */
-    object-position: 56% 60%;
+    object-position: 60% 60%;
   }
   .hero-top {
     display: none;
