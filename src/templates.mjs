@@ -25,7 +25,7 @@ const placeholder = (text, cls = "") =>
 const figure = (src, caption, cls = "", eager = false) =>
   `<figure class="media ${cls}"><button class="image-button" data-enlarge="${src}" data-caption="${esc(caption)}" aria-label="Enlarge: ${esc(caption)}">${img(src, caption, "", eager)}</button><figcaption>${caption}</figcaption></figure>`;
 const header = (home = false) =>
-  `<header class="site-header ${home ? "home-nav" : ""}"><a class="wordmark" href="/">HAYDEN WADE</a><button class="menu-toggle" aria-expanded="false" aria-controls="site-nav">MENU <span aria-hidden="true">+</span></button><nav id="site-nav" aria-label="Main navigation">${(home
+  `<header class="site-header ${home ? "home-nav" : ""}"><a class="wordmark" href="/">HAYDEN WADE</a><button class="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu"><span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span></button><nav id="site-nav" aria-label="Main navigation">${(home
     ? [
         ["/#about", "About"],
         ["/#experience", "Experience"],
