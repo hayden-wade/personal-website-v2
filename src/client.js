@@ -4,15 +4,50 @@ const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
   header?.classList.remove("menu-open");
   menu?.setAttribute("aria-expanded", "false");
+  menu?.setAttribute("aria-label", "Open menu");
+  document.documentElement.classList.remove("nav-open");
 }
 menu?.addEventListener("click", () => {
   const open = menu.getAttribute("aria-expanded") !== "true";
   header.classList.toggle("menu-open", open);
   menu.setAttribute("aria-expanded", String(open));
+  menu.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  document.documentElement.classList.toggle("nav-open", open);
 });
 header
   ?.querySelectorAll("nav a")
   .forEach((a) => a.addEventListener("click", closeMenu));
+
+if (header && window.matchMedia("(max-width: 700px)").matches) {
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  const updateMobileHeader = () => {
+    const y = window.scrollY;
+    const movingDown = y > lastY + 5;
+    const movingUp = y < lastY - 5;
+    const menuOpen = header.classList.contains("menu-open");
+
+    if (!menuOpen && y > 110 && movingDown) {
+      header.classList.add("header-hidden");
+    } else if (movingUp || y <= 110 || menuOpen) {
+      header.classList.remove("header-hidden");
+    }
+
+    lastY = y;
+    ticking = false;
+  };
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(updateMobileHeader);
+    },
+    { passive: true },
+  );
+}
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && header?.classList.contains("menu-open")) {
     closeMenu();
