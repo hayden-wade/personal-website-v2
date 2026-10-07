@@ -2747,6 +2747,19 @@ body.infinite-photo-active {
   .home-nav:after {
     display: none;
   }
+  .site-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--mobile-safe-top);
+    background: #171a18;
+    pointer-events: none;
+  }
+  .site-header.menu-open::before {
+    background: #0f1210;
+  }
   .site-header.header-hidden {
     transform: translateY(-100%);
     opacity: 0;
