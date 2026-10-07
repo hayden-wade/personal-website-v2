@@ -2722,15 +2722,23 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   html {
-    scroll-padding-top: calc(58px + env(safe-area-inset-top, 0px));
+    --mobile-safe-top: env(safe-area-inset-top, 0px);
+    scroll-padding-top: calc(58px + var(--mobile-safe-top));
+  }
+  @supports (-webkit-touch-callout: none) {
+    html {
+      /* iPhone Safari can report a zero top safe-area while browsing normally.
+         Keep sticky navigation below the status/Dynamic Island region. */
+      --mobile-safe-top: max(env(safe-area-inset-top, 0px), 50px);
+    }
   }
   .site-header {
-    height: calc(58px + env(safe-area-inset-top, 0px));
-    padding-top: env(safe-area-inset-top, 0px);
+    height: 58px;
+    padding-top: 0;
     padding-left: max(20px, env(safe-area-inset-left, 0px));
     padding-right: max(20px, env(safe-area-inset-right, 0px));
     position: sticky;
-    top: 0;
+    top: var(--mobile-safe-top);
     z-index: 100;
     max-width: none;
     background: rgba(23, 26, 24, 0.76);
@@ -2792,8 +2800,8 @@ body.infinite-photo-active {
   .site-header nav {
     display: none;
     position: fixed;
-    inset: calc(58px + env(safe-area-inset-top, 0px)) 0 0;
-    height: calc(100dvh - 58px - env(safe-area-inset-top, 0px));
+    inset: calc(58px + var(--mobile-safe-top)) 0 0;
+    height: calc(100dvh - 58px - var(--mobile-safe-top));
     background:
       linear-gradient(180deg, rgba(15, 18, 16, 0.97), rgba(23, 26, 24, 0.985));
     padding: clamp(52px, 10vh, 90px) max(28px, env(safe-area-inset-right, 0px)) calc(42px + env(safe-area-inset-bottom, 0px)) max(28px, env(safe-area-inset-left, 0px));
@@ -2838,7 +2846,7 @@ body.infinite-photo-active {
   }
   .home-nav {
     position: sticky;
-    height: calc(58px + env(safe-area-inset-top, 0px));
+    height: 58px;
     background: rgba(23, 26, 24, 0.76);
     border-bottom: 1px solid rgba(229, 224, 214, 0.12);
   }
