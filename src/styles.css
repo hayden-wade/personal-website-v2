@@ -3452,22 +3452,32 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   .hero {
-    /* Fill the large iPhone viewport, but keep the lower metadata clear of
-       Safari's floating toolbar. */
+    /* Fill the mobile page viewport. Safari's own browser chrome remains
+       outside the webpage in a normal tab. */
     height: 100lvh;
     min-height: 100lvh;
-    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+    padding-bottom: calc(118px + env(safe-area-inset-bottom));
   }
   .hero-image {
-    /* Bias the mobile crop toward the E30 without changing desktop framing. */
-    object-position: 58% 60%;
+    /* Restore a more natural mobile crop while keeping the E30 in frame. */
+    object-position: 51% 60%;
+  }
+  .hero-top {
+    display: none;
   }
   .hero h1 {
     font-size: clamp(100px, 33vw, 180px);
-    margin-top: 5svh;
+    margin-top: 7svh;
   }
   .hero-role {
     margin-top: 34px;
+  }
+  .hero-bottom {
+    justify-content: center;
+  }
+  .hero-bottom > span:first-child,
+  .hero-bottom > span:last-child {
+    display: none;
   }
   .job summary {
     grid-template-columns: 28px minmax(0, 1fr) 20px;
