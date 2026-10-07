@@ -1,4 +1,19 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
+const isMobileCodespacesPreview =
+  location.hostname.endsWith(".app.github.dev") &&
+  window.matchMedia("(max-width: 700px)").matches &&
+  !location.hash;
+
+if (isMobileCodespacesPreview) {
+  try {
+    history.scrollRestoration = "manual";
+  } catch {}
+  window.addEventListener(
+    "load",
+    () => requestAnimationFrame(() => window.scrollTo(0, 0)),
+    { once: true },
+  );
+}
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
@@ -255,6 +270,10 @@ function installContactReveal() {
   homeNav?.classList.remove("footer-active");
   footerBehindContent();
   window.addEventListener("resize", footerBehindContent);
+
+  // Keep iPhone scrolling native; ScrollTrigger refresh/pinning can move
+  // Safari's restored scroll position during page load.
+  if (window.matchMedia("(max-width: 700px)").matches) return;
 
   if (
     typeof window.gsap === "undefined" ||
@@ -617,6 +636,7 @@ function installPhotographyTitleTransition() {
   if (!title || !chars.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobile = window.matchMedia("(max-width: 700px)");
 
   const reset = () => {
     chars.forEach((char) => {
@@ -632,6 +652,7 @@ function installPhotographyTitleTransition() {
   };
 
   if (
+    mobile.matches ||
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
