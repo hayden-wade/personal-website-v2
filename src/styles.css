@@ -4240,3 +4240,17 @@ body.infinite-photo-active {
 .runway-credit{opacity:.48;font-size:10px;margin-top:42px}
 @media(max-width:900px){.runway-track{height:2550px}}
 @media(max-width:700px){.runway-track{height:2050px}}
+
+
+/* Continue the Runway exit past the bounded SVG viewport without scaling markers. */
+.runway-exit-extension{
+  position:absolute;left:100%;top:calc(100% * 3250 / 3400 - 15px);
+  width:calc(50vw + 250px);height:30px;display:block;
+  background:#4a5357;pointer-events:none;z-index:1;
+}
+.runway-exit-extension::after{
+  content:"";position:absolute;inset:0;background:#f9a600;
+  transform:scaleX(var(--runway-exit-progress,0));
+  transform-origin:left center;
+}
+@media(max-width:900px){.runway-exit-extension{height:18px;top:calc(100% * 3250 / 3400 - 9px)}}
