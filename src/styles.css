@@ -4231,3 +4231,10 @@ body.infinite-photo-active {
 .runway-description{font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){.runway-experience .runway-career{opacity:1!important;transform:none!important}.runway-checkmark{opacity:1}}
+
+
+/* Keep the extended final bend below Boeing and clip its off-screen exit. */
+.runway-track{height:3400px;overflow:hidden}
+.runway-credit{opacity:.48;font-size:10px;margin-top:42px}
+@media(max-width:900px){.runway-track{height:2550px}}
+@media(max-width:700px){.runway-track{height:2050px}}
