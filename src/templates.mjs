@@ -60,6 +60,28 @@ function card(p, i, home = false) {
 }
 const jobList = () =>
   `<div class="experience-list">${jobs.map((j, i) => `<details class="job" ${i === 0 ? "open" : ""}><summary><span class="job-number">0${i + 1}</span><img class="job-logo job-logo-${["boeing", "adha", "raaf"][i]}" src="/assets/logos/${["boeing", "adha", "raaf"][i]}.svg" alt="" width="28" height="28"><span class="job-title"><strong>${j.name}</strong><span>${j.role}</span></span><time>${j.date}</time><span class="job-toggle" aria-hidden="true"></span></summary><div class="job-copy">${i === 0 ? label("Brisbane, Australia · Defence / Cyber / Engineering") : ""}<p>${j.copy}</p><div class="job-tags">${(i === 0 ? ["Product security", "Systems engineering", "Defence", "Cyber"] : i === 1 ? ["Cybersecurity", "Project coordination"] : ["Engineering", "Capability", "Cyber"]).map((t) => `<span>${t}</span>`).join("")}</div></div></details>`).join("")}</div>`;
+const runwayExperience = () => {
+  const career = [...jobs].reverse();
+  const positions = [795, 1700, 2605];
+  const path = "M720 0 V210 C720 425 545 500 330 500 H280 C135 500 105 570 105 680 V1140 C105 1305 190 1395 355 1395 H820 C1010 1395 1090 1495 1090 1670 V2000 C1090 2190 1000 2300 815 2300 H385 C195 2300 105 2400 105 2580 V2890";
+  return `<section class="home-section runway-experience" id="experience" data-runway-experience>
+    <div class="section-label">${label("02 / experience")}<span aria-hidden="true">↘</span></div>
+    <h2 class="serif runway-heading">A technical foundation.<br><em>A broader perspective.</em></h2>
+    <div class="runway-track">
+      <svg class="runway-svg" viewBox="0 0 1200 3000" preserveAspectRatio="none" aria-hidden="true">
+        <path class="runway-base" d="${path}"/>
+        <path class="runway-draw" data-runway-path d="${path}"/>
+        ${[[105,795],[1090,1700],[105,2605]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="38"/><circle class="runway-checkpoint-inner" r="28"/><path class="runway-checkmark" d="M-15 0 L-3 12 L18 -14"/></g>`).join("")}
+      </svg>
+      ${career.map((j,i)=>`<article class="runway-career runway-career--${i+1}" data-runway-career="${i}" style="--runway-y:${positions[i]/30}%">
+        <span class="runway-date">${esc(j.date)}</span>
+        <h3>${esc(j.name)}</h3>
+        <p class="runway-role">${esc(j.role)}</p><p class="runway-description">${esc(j.copy)}</p>
+      </article>`).join("")}
+    </div>
+    <p class="runway-credit">Animation approach adapted from <a href="https://github.com/paulpierre/runway-svg-animation" target="_blank" rel="noopener noreferrer">Runway SVG Animation</a>.</p>
+  </section>`;
+};
 const homeSection = (id, n, title, body) =>
   `<section class="home-section" id="${id}"><div class="section-label">${label("0" + n + " / " + id)}<span aria-hidden="true">↘</span></div><h2 class="serif">${title}</h2>${body}</section>`;
 const projectReelMedia = {
@@ -157,7 +179,7 @@ export function home() {
   return shell(
     "Hayden Wade",
     "Product Security Engineer in Brisbane. Engineering, old cars and projects in progress.",
-    `<div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${aboutSection()}${homeSection("experience", 2, "A technical foundation.<br> <em>A broader perspective.</em>", jobList())}${projectReelSection()}${photographySection()}</main></div><footer class="footer" id="contact">
+    `<div class="home-reveal-shell"><header class="hero">${img("/images/hero/alpine-e30.jpg", "Red E30 in an alpine landscape — concept artwork", "hero-image", true)}<div class="hero-top"><span>CYBERSECURITY · ENGINEERING · OLD CARS</span>${link("#contact", "Let’s talk ↗")}</div><h1 class="hero-title"><span>Hayden</span><em>Wade</em></h1><p class="hero-role">PRODUCT SECURITY ENGINEER<br> + BUILDER</p><div class="hero-bottom"><span>BASED IN BRISBANE,<br> AUSTRALIA</span>${link("#about", "↓ &nbsp; EXPLORE")}<span>SELECTED WORK<br> 2026</span></div></header>${header(true)}<main id="main" class="home-main">${aboutSection()}${runwayExperience()}${projectReelSection()}${photographySection()}</main></div><footer class="footer" id="contact">
   <div class="footer__marquee">
     <div class="footer__marquee-content rail">
       <span>ENGINEERING — OLD BMWs — SOFTWARE — PHOTOGRAPHY — RENOVATION — PROJECTS — NOTES — BUILT, BROKEN &amp; REBUILT —</span>
