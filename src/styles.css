@@ -4174,3 +4174,14 @@ body.infinite-photo-active {
 .about-flow .about-expand-aside{order:2}
 .about-flow .about-expand-bio{padding-top:65px}
 }
+
+/* Vertical About portrait capsule — keep the same scroll timing. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-flow .about-cinema-stage{height:190vh}
+.about-flow-photo{object-position:center 50%}
+.about-flow-image{border-radius:120px}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-flow-image{flex:0 1 76%;width:76%;height:auto;aspect-ratio:3/4;max-height:570px;border-radius:100px}
+.about-flow-photo{object-position:center 50%}
+}
