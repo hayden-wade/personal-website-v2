@@ -133,7 +133,7 @@ const aboutSection = () =>
           <div class="about-flow-sentence">
             <span class="about-flow-word"><em>Compulsive</em></span>
             <figure class="about-flow-image" data-about-image>
-              ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-flow-photo", true)}
+              ${img("/images/about/DSCF2152.JPG", "Sunset portrait beside the water", "about-flow-photo", true)}
             </figure>
             <span class="about-flow-trailing"><span class="about-flow-trailing-main"><em>project-starter</em></span><span class="about-flow-trailing-sub"><em>by nature.</em></span></span>
           </div>
