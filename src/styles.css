@@ -4185,3 +4185,49 @@ body.infinite-photo-active {
 .about-flow-image{flex:0 1 76%;width:76%;height:auto;aspect-ratio:3/4;max-height:570px;border-radius:100px}
 .about-flow-photo{object-position:center 50%}
 }
+
+
+/* Runway-inspired scrolling SVG path. Original concept: paulpierre/runway-svg-animation (MIT). */
+.runway-experience{position:relative;width:100%;max-width:none;overflow:visible;padding-bottom:clamp(90px,12vh,160px)!important}
+.runway-experience .section-label,.runway-experience>.runway-heading{max-width:1264px;margin-inline:auto}
+.runway-heading{font-size:clamp(52px,7vw,120px);line-height:1.03;margin-bottom:clamp(100px,16vh,190px)!important}
+.runway-track{position:relative;width:100%;height:3000px;max-width:1400px;margin:0 auto}
+.runway-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.runway-base,.runway-draw{fill:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.runway-base{stroke:#4a5357}
+.runway-draw{stroke:#f9a600}
+.runway-checkpoint-disc{fill:#4a5357;stroke:#f9a600;stroke-width:5;vector-effect:non-scaling-stroke;transition:fill .4s}
+.runway-checkpoint-inner{fill:#192227}
+.runway-checkmark{fill:none;stroke:#fdfcfc;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .4s}
+.runway-checkpoint.is-active .runway-checkpoint-disc{fill:#f9a600}
+.runway-checkpoint.is-active .runway-checkmark{opacity:1}
+.runway-career{position:absolute;top:var(--runway-y);width:min(35%,440px);padding:16px 24px;opacity:1;transition:opacity .6s,transform .6s}
+.runway-career--1,.runway-career--3{left:18%}
+.runway-career--2{right:18%;text-align:right}
+.runway-date{font-size:12px;color:#f9a600;letter-spacing:.16em}
+.runway-career h3{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(31px,3.6vw,57px);font-weight:400;line-height:1.02;letter-spacing:-.03em;margin:13px 0}
+.runway-role{font-weight:600;font-size:15px;margin-bottom:15px}
+.runway-description{font-size:15px;line-height:1.6;color:var(--muted);max-width:45ch}
+.runway-career--2 .runway-description{margin-left:auto}
+.runway-experience.runway-enhanced .runway-career{opacity:.12;transform:translateY(30px)}
+.runway-experience.runway-enhanced .runway-career.is-active{opacity:1;transform:translateY(0)}
+.runway-credit{text-align:center;font-size:11px;color:var(--muted)}
+.runway-credit a{color:inherit;text-decoration:underline}
+@media(max-width:900px){
+.runway-track{height:2250px}
+.runway-svg{width:100%;height:100%}
+.runway-base,.runway-draw{stroke-width:18}
+.runway-career{width:45%}
+.runway-career--1,.runway-career--3{left:16%}
+.runway-career--2{right:15%}
+}
+@media(max-width:700px){
+.runway-track{height:1850px}
+.runway-career{width:68%;padding:14px 10px;background:rgba(32,33,31,.88);border-radius:6px}
+.runway-career--1,.runway-career--3{left:27%}
+.runway-career--2{right:27%;text-align:left}
+.runway-career--2 .runway-description{margin-left:0}
+.runway-career h3{font-size:clamp(27px,7vw,43px)}
+.runway-description{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.runway-experience .runway-career{opacity:1!important;transform:none!important}.runway-checkmark{opacity:1}}
