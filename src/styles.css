@@ -4109,3 +4109,32 @@ body.infinite-photo-active {
 .about-expand-bio{padding:65px 0 10px;min-height:0}
 .about-expand-bio-content h3{font-size:clamp(50px,11vw,75px)}
 }
+
+
+/* Project One: asymmetrical editorial About with embedded pill photograph. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-expand .about-cinema-stage{height:300vh}
+.about-expand .about-cinema-sticky{background:#20211f}
+.about-expand-typography{inset:0;display:block;z-index:3;pointer-events:none}
+.about-expand-line{position:absolute;text-align:left;font-size:clamp(72px,7.7vw,142px);letter-spacing:-.047em;line-height:.9;white-space:normal}
+.about-expand-line--first{left:5vw;top:clamp(85px,14vh,160px)}
+.about-expand-line--last{left:42vw;top:57%;font-size:clamp(58px,6.3vw,112px)}
+.about-expand-middle{position:absolute;left:5vw;right:5vw;top:43%;width:auto;justify-content:flex-start;gap:0;font-size:clamp(50px,5.75vw,105px);line-height:.96;white-space:nowrap}
+.about-expand-word{flex:0 0 auto;line-height:.95}
+.about-expand-gap{display:block;flex:0 0 clamp(195px,22vw,400px);height:clamp(115px,17vh,200px)}
+.about-expand-image{top:0;left:0;transform:translate(-50%,-50%);width:22vw;height:17vh;min-height:0;border-radius:85px;z-index:4;overflow:hidden}
+.about-expand-aside{position:absolute;top:19%;right:5vw;width:min(27vw,420px);margin:0;font:500 clamp(12px,.92vw,15px)/1.45 "DM Sans",Arial,sans-serif;color:var(--muted);z-index:3}
+.about-expand-image figcaption{opacity:1;border-radius:2px}
+.about-expand-scroll{left:auto;right:5vw;transform:none;bottom:6vh}
+}
+@media(min-width:701px) and (max-width:1100px){
+.about-expand-aside{top:13%;right:5vw;width:27vw}
+.about-expand-line--first{top:16%}
+.about-expand-middle{top:49%;font-size:5.5vw}
+.about-expand-line--last{top:67%}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-expand-aside{position:relative;inset:auto;order:2;margin:0 0 30px;font-size:15px;line-height:1.55;max-width:56ch;color:var(--muted)}
+.about-expand-image{order:3;border-radius:36px!important}
+.about-expand-middle{line-height:1.1}
+}
