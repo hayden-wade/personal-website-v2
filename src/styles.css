@@ -4159,7 +4159,7 @@ body.infinite-photo-active {
 .about-flow-trailing-main,.about-flow-trailing-sub{display:block}
 .about-flow-trailing-sub{margin-top:-.02em}
 .about-flow-image{position:relative;display:block;flex:0 0 0px;width:0;height:0;min-width:0;min-height:0;overflow:hidden;border-radius:85px;margin:0!important;will-change:width,height,flex-basis;align-self:flex-start;margin-top:.08em!important}
-.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 66%}
 .about-flow .about-expand-aside{top:auto;bottom:17%;right:5vw;max-width:360px;z-index:2}
 }
 @media(max-width:700px),(prefers-reduced-motion:reduce){
