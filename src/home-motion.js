@@ -521,6 +521,7 @@ function setupCinematicAbout() {
     return Math.max(0,target-word.left);
   };
   timeline.to(profession,{x:professionMove,duration:0.75},0)
+    .to(aside,{y:()=>Math.min(0,Math.max(58,sticky.clientHeight*0.085)-elementBounds(aside).top),duration:0.75},0)
     .to(left,{y:leftMove,duration:0.75},0)
     .to(right,{x:rightMove,duration:0.75},0)
     .to(image,{
