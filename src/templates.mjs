@@ -124,25 +124,22 @@ const photoOutroWord = (text) =>
     )
     .join("")}</span>`;
 const aboutSection = () =>
-  `<section class="home-section about-cinematic about-expand" id="about" data-about-cinematic>
+  `<section class="home-section about-cinematic about-expand about-flow" id="about" data-about-cinematic>
     <div class="about-cinema-stage">
       <div class="about-cinema-sticky">
         <div class="about-cinema-meta">${label("01 / about")}<span aria-hidden="true">↘</span></div>
-        <div class="about-expand-typography">
-          <h2 class="serif about-expand-line about-expand-line--first" data-about-top><span class="about-expand-first-row">Engineer by</span><br><span class="about-expand-second-row" data-about-profession><em>profession.</em></span></h2>
-          <div class="about-expand-middle">
-            <span class="serif about-expand-word" data-about-left><em>Compulsive</em></span>
-            <span class="about-expand-gap" data-about-gap aria-hidden="true"></span>
-            <span class="serif about-expand-word" data-about-right><em>project-starter.</em></span>
+        <div class="about-flow-layout">
+          <h2 class="serif about-flow-heading">Engineer by <em>profession.</em></h2>
+          <div class="about-flow-sentence">
+            <span class="about-flow-word"><em>Compulsive</em></span>
+            <figure class="about-flow-image" data-about-image>
+              ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-flow-photo", true)}
+            </figure>
+            <span class="about-flow-trailing"><em>project-starter by nature.</em></span>
           </div>
-          <p class="serif about-expand-line about-expand-line--last" data-about-bottom><em>By nature.</em></p>
         </div>
-        <p class="about-expand-aside" data-about-aside>I work across engineering, cyber, software and complex technical systems. Outside work, I'm usually rebuilding an old BMW, renovating the house or taking photographs.</p>
-        <figure class="about-expand-image" data-about-image>
-          ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-expand-photo", true)}
-          <figcaption>Blue Mountains / Away from the workshop</figcaption>
-        </figure>
-        <span class="about-expand-scroll" data-about-scroll>Scroll to explore ↓</span>
+        <p class="about-expand-aside">I work across engineering, cyber, software and complex technical systems. Outside work, I'm usually rebuilding an old BMW, renovating the house or taking photographs.</p>
+        <span class="about-expand-scroll">Scroll to explore ↓</span>
       </div>
     </div>
     <div class="about-expand-bio" data-about-bio>
