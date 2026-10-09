@@ -63,7 +63,7 @@ const jobList = () =>
 const runwayExperience = () => {
   const career = [...jobs].reverse();
   const positions = [795, 1700, 2605];
-  const path = "M720 0 V210 C720 425 545 500 330 500 H280 C135 500 105 570 105 680 V1140 C105 1305 190 1395 355 1395 H820 C1010 1395 1090 1495 1090 1670 V2000 C1090 2190 1000 2300 815 2300 H385 C195 2300 105 2400 105 2580 V2890";
+  const path = "M720 0 V210 C720 425 545 500 330 500 H280 C135 500 105 570 105 680 V1140 C105 1305 190 1395 355 1395 H820 C1010 1395 1090 1495 1090 1670 V2000 C1090 2190 1000 2300 815 2300 H385 C195 2300 105 2400 105 2580 V2680 C105 2845 245 2920 410 2920 H1320";
   return `<section class="home-section runway-experience" id="experience" data-runway-experience>
     <div class="section-label">${label("02 / experience")}<span aria-hidden="true">↘</span></div>
     <h2 class="serif runway-heading">A technical foundation.<br><em>A broader perspective.</em></h2>
