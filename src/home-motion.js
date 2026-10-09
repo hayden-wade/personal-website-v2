@@ -32,18 +32,11 @@ function createLoaderStyles() {
 }
 
 function shouldShowSiteLoader() {
-  const hero = document.querySelector(".hero");
-  const topHash = location.hash === "" || location.hash === "#top";
-  if (!hero || reduced.matches || !topHash || window.scrollY > 80)
-    return false;
-  const navigation = performance.getEntriesByType?.("navigation")?.[0];
-  if (navigation?.type === "reload") return true;
-  if (!document.referrer) return true;
-  try {
-    return new URL(document.referrer).origin !== location.origin;
-  } catch {
-    return true;
-  }
+  // The early head script decides whether the intro is needed before first paint.
+  // Reusing that decision prevents restored scroll/referrer state from exposing the hero.
+  return !!document.querySelector(".hero") &&
+    document.documentElement.classList.contains("site-loader-pending") &&
+    !reduced.matches;
 }
 
 function liquidWordmarkMarkup() {
