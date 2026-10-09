@@ -4144,3 +4144,28 @@ body.infinite-photo-active {
 
 /* Keep the headline visually identical at rest while letting its second line move independently. */
 .about-expand-second-row{display:inline-block}
+
+
+/* About: the rounded photograph expands within the sentence itself. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-flow .about-cinema-stage{height:155vh}
+.about-flow .about-cinema-sticky{padding:0;background:#20211f}
+.about-flow-layout{position:absolute;left:5vw;right:3vw;top:17%;z-index:3;color:var(--text);pointer-events:none}
+.about-flow-heading{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(70px,7.5vw,136px);font-weight:400;letter-spacing:-.05em;line-height:.95;margin:0 0 clamp(30px,7vh,85px);white-space:nowrap}
+.about-flow-heading em,.about-flow-word em,.about-flow-trailing em{font-weight:400}
+.about-flow-sentence{display:flex;align-items:center;justify-content:flex-start;gap:0;min-width:0;width:max-content;max-width:none;white-space:nowrap;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(49px,5.6vw,101px);line-height:.95;letter-spacing:-.05em}
+.about-flow-word,.about-flow-trailing{display:inline-block;flex:0 0 auto}
+.about-flow-image{position:relative;display:block;flex:0 0 0px;width:0;height:0;min-width:0;min-height:0;overflow:hidden;border-radius:85px;margin:0!important;will-change:width,height,flex-basis;align-self:center}
+.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.about-flow .about-expand-aside{top:auto;bottom:17%;right:5vw;max-width:360px;z-index:2}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-flow-layout{position:relative;order:1;display:block;width:100%;margin:0 0 28px}
+.about-flow-heading{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(46px,10vw,70px);line-height:1;letter-spacing:-.04em;margin:0 0 28px}
+.about-flow-sentence{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(40px,9vw,62px);line-height:1}
+.about-flow-word,.about-flow-trailing{flex:0 1 auto}
+.about-flow-image{order:0;flex:1 1 100%;width:100%;height:clamp(220px,58vw,440px);border-radius:42px;overflow:hidden;margin:0!important}
+.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover}
+.about-flow .about-expand-aside{order:2}
+.about-flow .about-expand-bio{padding-top:65px}
+}
