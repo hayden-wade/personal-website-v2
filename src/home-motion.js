@@ -459,30 +459,51 @@ if (homeHero) {
 
 function setupCinematicAbout() {
   const section = document.querySelector("[data-about-cinematic]");
-  if (!section || reduced.matches || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined" || window.matchMedia("(max-width: 700px)").matches) return;
+  if (!section || reduced.matches || typeof window.gsap === "undefined" ||
+      typeof window.ScrollTrigger === "undefined" || matchMedia("(max-width: 700px)").matches) return;
+  const {gsap,ScrollTrigger}=window;
   gsap.registerPlugin(ScrollTrigger);
-  const stage = section.querySelector(".about-cinema-stage");
-  const image = section.querySelector("[data-about-image]");
-  const top = section.querySelector("[data-about-top]");
-  const bottom = section.querySelector("[data-about-bottom]");
-  const left = section.querySelector("[data-about-left]");
-  const right = section.querySelector("[data-about-right]");
-  const meta = section.querySelector(".about-cinema-meta");
-  const scroll = section.querySelector("[data-about-scroll]");
-  if (![stage,image,top,bottom,left,right].every(Boolean)) return;
-  const timeline = gsap.timeline({
-    defaults: {ease:"none"},
-    scrollTrigger: {id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",scrub:0.8,invalidateOnRefresh:true}
-  });
-  // Large type peels away from the centre while the photo grows to the full viewport.
-  timeline.to(top,{yPercent:-170,opacity:0,duration:0.58},0)
-    .to(bottom,{yPercent:180,opacity:0,duration:0.6},0)
-    .to(left,{xPercent:-85,opacity:0,duration:0.6},0)
-    .to(right,{xPercent:85,opacity:0,duration:0.6},0)
-    .fromTo(image,{width:"22vw",height:"23vh",borderRadius:"4px"},{width:"100vw",height:"100vh",borderRadius:"0px",duration:0.78,immediateRender:false},0.08)
-    .to([meta,scroll].filter(Boolean),{opacity:0,duration:0.25},0.05);
-  // Mobile and reduced-motion layouts are handled by CSS, with no pinning.
-  window.addEventListener("load",()=>ScrollTrigger.refresh(),{once:true});
+  const stage=section.querySelector(".about-cinema-stage");
+  const sticky=section.querySelector(".about-cinema-sticky");
+  const image=section.querySelector("[data-about-image]");
+  const gap=section.querySelector("[data-about-gap]");
+  const top=section.querySelector("[data-about-top]");
+  const bottom=section.querySelector("[data-about-bottom]");
+  const left=section.querySelector("[data-about-left]");
+  const right=section.querySelector("[data-about-right]");
+  const aside=section.querySelector("[data-about-aside]");
+  const meta=section.querySelector(".about-cinema-meta");
+  const scroll=section.querySelector("[data-about-scroll]");
+  if (![stage,sticky,image,gap,top,bottom,left,right].every(Boolean)) return;
+  // Resolve the capsule's centre from the real typeset text, not guessed viewport offsets.
+  const initialPosition=()=>{
+    const rect=gap.getBoundingClientRect();
+    const parent=sticky.getBoundingClientRect();
+    return {left:rect.left-parent.left+rect.width/2,top:rect.top-parent.top+rect.height/2};
+  };
+  const measure=initialPosition();
+  gsap.set(image,{left:measure.left,top:measure.top,xPercent:-50,yPercent:-50,
+    width:()=>Math.max(120,gap.getBoundingClientRect().width),
+    height:()=>Math.max(95,gap.getBoundingClientRect().height),
+    borderRadius:"85px"});
+  const timeline=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
+    id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
+    scrub:0.8,invalidateOnRefresh:true}});
+  timeline.to(top,{yPercent:-155,opacity:0,duration:0.65},0)
+    .to(bottom,{yPercent:175,opacity:0,duration:0.65},0)
+    .to(left,{xPercent:-115,opacity:0,duration:0.65},0)
+    .to(right,{xPercent:110,opacity:0,duration:0.65},0)
+    .to(aside,{x:90,opacity:0,duration:0.4},0.02)
+    .to([meta,scroll].filter(Boolean),{opacity:0,duration:0.33},0.06)
+    .to(image,{left:()=>sticky.clientWidth/2,top:()=>sticky.clientHeight/2,
+      width:()=>sticky.clientWidth-32,height:()=>sticky.clientHeight-32,
+      borderRadius:"30px",duration:0.8},0.08);
+  const refresh=()=>{if(!timeline.scrollTrigger)return; const pos=initialPosition();
+    // GSAP's refresh resolves function-based end values as the viewport changes.
+    if(timeline.progress()===0)gsap.set(image,{left:pos.left,top:pos.top});
+    ScrollTrigger.refresh();
+  };
+  window.addEventListener("load",refresh,{once:true});
 }
 
 setupCinematicAbout();
