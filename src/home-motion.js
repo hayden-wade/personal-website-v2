@@ -458,84 +458,25 @@ if (homeHero) {
 }
 
 function setupCinematicAbout() {
-  const section = document.querySelector("[data-about-cinematic]");
-  if (!section || reduced.matches || typeof window.gsap === "undefined" ||
-      typeof window.ScrollTrigger === "undefined" || matchMedia("(max-width: 700px)").matches) return;
+  const section=document.querySelector("[data-about-cinematic]");
+  if(!section || reduced.matches || matchMedia("(max-width:700px)").matches ||
+      !window.gsap || !window.ScrollTrigger) return;
   const {gsap,ScrollTrigger}=window;
   gsap.registerPlugin(ScrollTrigger);
   const stage=section.querySelector(".about-cinema-stage");
-  const sticky=section.querySelector(".about-cinema-sticky");
   const image=section.querySelector("[data-about-image]");
-  const gap=section.querySelector("[data-about-gap]");
-  const top=section.querySelector("[data-about-top]");
-  const profession=section.querySelector("[data-about-profession]");
-  const bottom=section.querySelector("[data-about-bottom]");
-  const left=section.querySelector("[data-about-left]");
-  const right=section.querySelector("[data-about-right]");
-  const aside=section.querySelector("[data-about-aside]");
-  const meta=section.querySelector(".about-cinema-meta");
-  const scroll=section.querySelector("[data-about-scroll]");
-  if (![stage,sticky,image,gap,top,bottom,left,right].every(Boolean)) return;
-  // Resolve the capsule's centre from the real typeset text, not guessed viewport offsets.
-  const initialPosition=()=>{
-    const rect=gap.getBoundingClientRect();
-    const parent=sticky.getBoundingClientRect();
-    return {left:rect.left-parent.left+rect.width/2,top:rect.top-parent.top+rect.height/2};
-  };
-  const measure=initialPosition();
-  gsap.set(image,{left:measure.left,top:measure.top,xPercent:-50,yPercent:-50,
-    width:()=>Math.max(120,gap.getBoundingClientRect().width),
-    height:()=>Math.max(95,gap.getBoundingClientRect().height),
-    borderRadius:"85px"});
-  const timeline=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
+  if(!stage || !image)return;
+  // In normal flex flow the capsule's width physically pushes the words on its right.
+  // The old final capsule dimensions remain 1.95x the original 22vw x 17vh slot.
+  const expandedWidth=()=>Math.max(195,Math.min(window.innerWidth*.22,400))*1.95;
+  const expandedHeight=()=>Math.max(115,Math.min(window.innerHeight*.17,200))*1.95;
+  gsap.set(image,{width:0,height:0,flexBasis:0,opacity:0,borderRadius:"85px"});
+  gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
     id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
-    scrub:0.8,invalidateOnRefresh:true}});
-  // Preserve the original composition at progress zero. Only the words move
-  // far enough to clear the capsule at its EXISTING 1.95x maximum size.
-  const photoBounds=()=>{
-    const rect=gap.getBoundingClientRect();
-    const stickyRect=sticky.getBoundingClientRect();
-    const w=Math.max(120,rect.width)*1.95, h=Math.max(95,rect.height)*1.95;
-    const cx=rect.left-stickyRect.left+rect.width/2;
-    const cy=rect.top-stickyRect.top+rect.height/2;
-    return {left:cx-w/2,right:cx+w/2,top:cy-h/2,bottom:cy+h/2};
-  };
-  const elementBounds=(element)=>{
-    const rect=element.getBoundingClientRect();
-    const parent=sticky.getBoundingClientRect();
-    return {left:rect.left-parent.left,top:rect.top-parent.top,
-      width:rect.width,height:rect.height};
-  };
-  const professionMove=()=>{
-    const photo=photoBounds(), word=elementBounds(profession);
-    const target=Math.min(photo.right+28,sticky.clientWidth-word.width-24);
-    return Math.max(0,target-word.left);
-  };
-  const leftMove=()=>{
-    const photo=photoBounds(), word=elementBounds(left);
-    return Math.max(0,photo.bottom+22-word.top);
-  };
-  const rightMove=()=>{
-    const photo=photoBounds(), word=elementBounds(right);
-    const target=Math.min(photo.right+24,sticky.clientWidth-word.width-24);
-    return Math.max(0,target-word.left);
-  };
-  timeline.to(profession,{x:professionMove,duration:0.75},0)
-    .to(aside,{y:()=>Math.min(0,Math.max(58,sticky.clientHeight*0.085)-elementBounds(aside).top),duration:0.75},0)
-    .to(left,{y:leftMove,duration:0.75},0)
-    .to(right,{x:rightMove,duration:0.75},0)
-    .to(image,{
-      width:()=>Math.max(120,gap.getBoundingClientRect().width)*1.95,
-      height:()=>Math.max(95,gap.getBoundingClientRect().height)*1.95,
-      borderRadius:"85px",duration:0.75
-    },0);
-
-  const refresh=()=>{if(!timeline.scrollTrigger)return; const pos=initialPosition();
-    // GSAP's refresh resolves function-based end values as the viewport changes.
-    if(timeline.progress()===0)gsap.set(image,{left:pos.left,top:pos.top});
-    ScrollTrigger.refresh();
-  };
-  window.addEventListener("load",refresh,{once:true});
+    scrub:0.8,invalidateOnRefresh:true
+  }}).to(image,{width:expandedWidth,height:expandedHeight,flexBasis:expandedWidth,
+    opacity:1,borderRadius:"85px",duration:0.75},0);
+  window.addEventListener("load",()=>ScrollTrigger.refresh(),{once:true});
 }
 
 setupCinematicAbout();
