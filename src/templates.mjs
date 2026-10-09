@@ -73,7 +73,6 @@ const runwayExperience = () => {
         <path class="runway-draw" data-runway-path d="${path}"/>
         ${[[105,795],[1090,1700],[105,2605]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="38"/><circle class="runway-checkpoint-inner" r="28"/><path class="runway-checkmark" d="M-15 0 L-3 12 L18 -14"/></g>`).join("")}
       </svg>
-      <span class="runway-exit-extension" data-runway-exit aria-hidden="true"></span>
       ${career.map((j,i)=>`<article class="runway-career runway-career--${i+1}" data-runway-career="${i}" style="--runway-y:${positions[i]/34}%">
         <span class="runway-date">${esc(j.date)}</span>
         <h3>${esc(j.name)}</h3>
