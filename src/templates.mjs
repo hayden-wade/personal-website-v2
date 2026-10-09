@@ -135,7 +135,7 @@ const aboutSection = () =>
             <figure class="about-flow-image" data-about-image>
               ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-flow-photo", true)}
             </figure>
-            <span class="about-flow-trailing"><em>project-starter by nature.</em></span>
+            <span class="about-flow-trailing"><span class="about-flow-trailing-main"><em>project-starter</em></span><span class="about-flow-trailing-sub"><em>by nature.</em></span></span>
           </div>
         </div>
         <p class="about-expand-aside">I work across engineering, cyber, software and complex technical systems. Outside work, I'm usually rebuilding an old BMW, renovating the house or taking photographs.</p>
