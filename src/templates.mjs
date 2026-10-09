@@ -63,17 +63,17 @@ const jobList = () =>
 const runwayExperience = () => {
   const career = [...jobs].reverse();
   const positions = [795, 1700, 2605];
-  const path = "M720 0 V210 C720 425 545 500 330 500 H280 C135 500 105 570 105 680 V1140 C105 1305 190 1395 355 1395 H820 C1010 1395 1090 1495 1090 1670 V2000 C1090 2190 1000 2300 815 2300 H385 C195 2300 105 2400 105 2580 V2680 C105 2845 245 2920 410 2920 H1320";
+  const path = "M720 0 V210 C720 425 545 500 330 500 H280 C135 500 105 570 105 680 V1140 C105 1305 190 1395 355 1395 H820 C1010 1395 1090 1495 1090 1670 V2000 C1090 2190 1000 2300 815 2300 H385 C195 2300 105 2400 105 2580 V2970 C105 3160 270 3250 475 3250 H1650";
   return `<section class="home-section runway-experience" id="experience" data-runway-experience>
     <div class="section-label">${label("02 / experience")}<span aria-hidden="true">↘</span></div>
     <h2 class="serif runway-heading">A technical foundation.<br><em>A broader perspective.</em></h2>
     <div class="runway-track">
-      <svg class="runway-svg" viewBox="0 0 1200 3000" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="runway-svg" viewBox="0 0 1200 3400" preserveAspectRatio="none" aria-hidden="true">
         <path class="runway-base" d="${path}"/>
         <path class="runway-draw" data-runway-path d="${path}"/>
         ${[[105,795],[1090,1700],[105,2605]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="38"/><circle class="runway-checkpoint-inner" r="28"/><path class="runway-checkmark" d="M-15 0 L-3 12 L18 -14"/></g>`).join("")}
       </svg>
-      ${career.map((j,i)=>`<article class="runway-career runway-career--${i+1}" data-runway-career="${i}" style="--runway-y:${positions[i]/30}%">
+      ${career.map((j,i)=>`<article class="runway-career runway-career--${i+1}" data-runway-career="${i}" style="--runway-y:${positions[i]/34}%">
         <span class="runway-date">${esc(j.date)}</span>
         <h3>${esc(j.name)}</h3>
         <p class="runway-role">${esc(j.role)}</p><p class="runway-description">${esc(j.copy)}</p>
