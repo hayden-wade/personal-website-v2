@@ -481,3 +481,52 @@ function setupCinematicAbout() {
 
 setupCinematicAbout();
 
+
+
+function setupRunwayExperience(){
+  const section=document.querySelector("[data-runway-experience]");
+  if(!section)return;
+  const path=section.querySelector("[data-runway-path]");
+  const track=section.querySelector(".runway-track");
+  const markers=[...section.querySelectorAll("[data-runway-checkpoint]")];
+  const careers=[...section.querySelectorAll("[data-runway-career]")];
+  if(!path||!track||markers.length!==3)return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){
+    markers.forEach(el=>el.classList.add("is-active"));
+    return;
+  }
+  const length=path.getTotalLength();
+  path.style.strokeDasharray=String(length);
+  path.style.strokeDashoffset=String(length);
+  section.classList.add("runway-enhanced");
+  const positions=[795,1700,2605];
+  const pathFractions=positions.map(y=>{
+    // The demo follows its SVG shape using stroked progress; find each check
+    // position by sampling real arc length instead of assuming uniform spacing.
+    const x= y===1700?1090:105;
+    let best=0,nearest=Infinity;
+    for(let i=0;i<=700;i++){
+      const p=path.getPointAtLength(i*length/700);
+      const distance=(p.x-x)**2+(p.y-y)**2;
+      if(distance<nearest){nearest=distance;best=i/700}
+    }
+    return best;
+  });
+  let frame=0;
+  const update=()=>{
+    frame=0;
+    const rect=track.getBoundingClientRect();
+    const start=innerHeight*.8;
+    const progress=Math.max(0,Math.min(1,(start-rect.top)/(rect.height-innerHeight*.15)));
+    path.style.strokeDashoffset=String(length*(1-progress));
+    pathFractions.forEach((threshold,i)=>{
+      markers[i].classList.toggle("is-active",progress>=threshold);
+      careers[i]?.classList.toggle("is-active",progress>=threshold);
+    });
+  };
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+  addEventListener("scroll",schedule,{passive:true});
+  addEventListener("resize",schedule,{passive:true});
+  update();
+}
+setupRunwayExperience();
