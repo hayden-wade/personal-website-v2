@@ -4138,3 +4138,6 @@ body.infinite-photo-active {
 .about-expand-image{order:3;border-radius:36px!important}
 .about-expand-middle{line-height:1.1}
 }
+
+/* Short, subtle About reveal rather than an immersive full-screen expansion. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){.about-expand .about-cinema-stage{height:155vh}}
