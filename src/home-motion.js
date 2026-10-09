@@ -489,15 +489,15 @@ function setupCinematicAbout() {
   const timeline=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
     id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
     scrub:0.8,invalidateOnRefresh:true}});
-  // A restrained editorial expansion: the pill grows about 25%, never fills the viewport.
+  // A restrained editorial expansion: the pill grows about 50%, never fills the viewport.
   // Keep the typography present instead of throwing it off screen.
   timeline.to(top,{yPercent:-12,opacity:0.82,duration:0.75},0)
     .to(bottom,{yPercent:16,opacity:0.82,duration:0.75},0)
     .to(left,{xPercent:-8,duration:0.75},0)
     .to(right,{xPercent:8,duration:0.75},0)
     .to(image,{
-      width:()=>Math.max(120,gap.getBoundingClientRect().width)*1.25,
-      height:()=>Math.max(95,gap.getBoundingClientRect().height)*1.25,
+      width:()=>Math.max(120,gap.getBoundingClientRect().width)*1.5,
+      height:()=>Math.max(95,gap.getBoundingClientRect().height)*1.5,
       borderRadius:"85px",duration:0.75
     },0);
 
