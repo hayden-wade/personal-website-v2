@@ -4242,15 +4242,13 @@ body.infinite-photo-active {
 @media(max-width:700px){.runway-track{height:2050px}}
 
 
-/* Continue the Runway exit past the bounded SVG viewport without scaling markers. */
-.runway-exit-extension{
-  position:absolute;left:100%;top:calc(100% * 3250 / 3400 - 15px);
-  width:calc(50vw + 250px);height:30px;display:block;
-  background:#4a5357;pointer-events:none;z-index:1;
+/* Full-bleed SVG viewport: the existing path continues off the actual screen edge,
+   rather than being clipped by the centred 1400px timeline column. */
+.runway-experience{
+  width:100vw;
+  max-width:none;
+  margin-left:calc(50% - 50vw);
+  overflow-x:clip;
 }
-.runway-exit-extension::after{
-  content:"";position:absolute;inset:0;background:#f9a600;
-  transform:scaleX(var(--runway-exit-progress,0));
-  transform-origin:left center;
-}
-@media(max-width:900px){.runway-exit-extension{height:18px;top:calc(100% * 3250 / 3400 - 9px)}}
+.runway-track{overflow:visible}
+.runway-svg{overflow:visible}
