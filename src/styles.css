@@ -4141,3 +4141,6 @@ body.infinite-photo-active {
 
 /* Short, subtle About reveal rather than an immersive full-screen expansion. */
 @media(min-width:701px) and (prefers-reduced-motion:no-preference){.about-expand .about-cinema-stage{height:155vh}}
+
+/* Keep the headline visually identical at rest while letting its second line move independently. */
+.about-expand-second-row{display:inline-block}
