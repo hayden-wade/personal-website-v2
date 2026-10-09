@@ -32,17 +32,11 @@ function createLoaderStyles() {
 }
 
 function shouldShowSiteLoader() {
-  const hero = document.querySelector(".hero");
-  if (!hero || reduced.matches || location.hash || window.scrollY > 80)
-    return false;
-  const navigation = performance.getEntriesByType?.("navigation")?.[0];
-  if (navigation?.type === "reload") return true;
-  if (!document.referrer) return true;
-  try {
-    return new URL(document.referrer).origin !== location.origin;
-  } catch {
-    return true;
-  }
+  // The early head script decides whether the intro is needed before first paint.
+  // Reusing that decision prevents restored scroll/referrer state from exposing the hero.
+  return !!document.querySelector(".hero") &&
+    document.documentElement.classList.contains("site-loader-pending") &&
+    !reduced.matches;
 }
 
 function liquidWordmarkMarkup() {
@@ -433,7 +427,7 @@ if (homeHero) {
 
   if (!reduced.matches && "IntersectionObserver" in window) {
     const targets = document.querySelectorAll(
-      ".home-section > h2,.about-grid > *, .experience-list .job,.home-projects .project-card,.home-photos .media,.contact h2",
+      ".home-section > h2,.about-grid > *, .experience-list .job,.home-projects .project-card,.home-photos .media,.photo-outro-meta,.photo-outro-cta,.photo-outro-foot,.contact h2",
     );
     const observer = new IntersectionObserver(
       (entries) => {
@@ -465,6 +459,7 @@ function setupCinematicAbout() {
   const section = document.querySelector("[data-about-cinematic]");
   if (
     !section ||
+    window.matchMedia("(max-width: 700px)").matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
   )
