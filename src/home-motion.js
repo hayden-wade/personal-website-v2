@@ -468,7 +468,7 @@ function setupCinematicAbout() {
   if(!stage || !image)return;
   // In normal flex flow the capsule's width physically pushes the words on its right.
   // Portrait capsule: retain the existing maximum width but use a taller 3:4 image.
-  const expandedWidth=()=>Math.max(195,Math.min(window.innerWidth*.22,400))*1.95;
+  const expandedWidth=()=>Math.min(440,Math.max(280,window.innerWidth*.25));
   const expandedHeight=()=>expandedWidth()*4/3;
   gsap.set(image,{width:0,height:0,flexBasis:0,opacity:0,borderRadius:"85px"});
   gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
