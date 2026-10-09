@@ -4068,3 +4068,44 @@ body.infinite-photo-active {
   background: var(--bg);
 }
 
+
+
+/* Codrops-inspired image expansion: latest About layout */
+.about-expand{width:100vw;max-width:none;margin-left:calc(50% - 50vw);padding:0!important;overflow:visible!important}
+.about-expand .about-cinema-stage{height:330vh;position:relative}
+.about-expand .about-cinema-sticky{position:sticky;inset:auto;top:0;height:100vh;min-height:0;padding:0;overflow:hidden;isolation:isolate;background:var(--bg,#20221f)}
+.about-expand .about-cinema-meta{z-index:8;top:clamp(27px,6vh,70px);left:max(5vw,calc((100vw - 1264px)/2));right:max(5vw,calc((100vw - 1264px)/2))}
+.about-expand-typography{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,36px);z-index:3;pointer-events:none;color:var(--text,#efe3cc)}
+.about-expand-line,.about-expand-word{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.052em;line-height:.92}
+.about-expand-line{margin:0!important;text-align:center;font-size:clamp(64px,8.5vw,148px);white-space:nowrap}
+.about-expand-line em,.about-expand-word em{font-weight:400}
+.about-expand-middle{display:flex;align-items:center;justify-content:center;gap:0;width:100%;white-space:nowrap;font-size:clamp(55px,6.5vw,112px)}
+.about-expand-word{display:block}
+.about-expand-gap{flex:0 0 22vw}
+.about-expand-image{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:22vw;height:23vh;overflow:hidden;min-width:0;min-height:0;margin:0!important;will-change:width,height;box-shadow:0 14px 48px rgba(0,0,0,.22)}
+.about-expand-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.about-expand-image figcaption{position:absolute;right:clamp(14px,3vw,44px);bottom:clamp(14px,3vw,30px);padding:5px 8px;color:#f0e4cb;background:rgba(15,18,16,.58);font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:0;transition:opacity .35s}
+.about-expand-scroll{position:absolute;z-index:7;left:50%;bottom:5vh;transform:translateX(-50%);color:var(--muted,#b5afa3);font-size:11px;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap}
+.about-expand-bio{min-height:65vh;display:grid;grid-template-columns:1fr 1.6fr;gap:8vw;align-items:start;padding:clamp(100px,15vh,190px) max(6vw,calc((100vw - 1264px)/2));background:var(--bg,#20221f);position:relative;z-index:5}
+.about-expand-bio-label{color:var(--accent,#c99558);font-size:12px;letter-spacing:.14em}
+.about-expand-bio-content{max-width:680px}
+.about-expand-bio-content h3{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(50px,6vw,95px);font-weight:400;line-height:1;letter-spacing:-.04em;margin:0 0 42px}
+.about-expand-bio-content p{font-size:clamp(17px,1.4vw,22px);line-height:1.65;max-width:56ch;color:var(--text,#f0e4cb);margin:0 0 22px}
+.about-expand + #experience{padding-top:0}
+@media(max-width:900px){.about-expand-line{font-size:clamp(55px,8vw,95px)}.about-expand-middle{font-size:clamp(40px,6.6vw,74px)}.about-expand-gap{flex-basis:24vw}.about-expand-bio{grid-template-columns:1fr;gap:32px}}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-expand{width:auto;margin-left:0;padding:75px var(--gutter)!important}
+.about-expand .about-cinema-stage{height:auto}
+.about-expand .about-cinema-sticky{position:relative;top:auto;height:auto;overflow:visible;display:flex;flex-direction:column;padding:0;background:transparent}
+.about-expand .about-cinema-meta{position:relative;inset:auto;order:0;margin-bottom:55px}
+.about-expand-typography{position:relative;inset:auto;display:block;order:1;margin-bottom:28px}
+.about-expand-line{font-size:clamp(43px,10vw,66px);text-align:left;white-space:normal;margin:0 0 8px!important}
+.about-expand-middle{display:block;font-size:clamp(38px,9vw,58px);white-space:normal}
+.about-expand-word{display:inline}
+.about-expand-gap{display:none}
+.about-expand-image{position:relative;inset:auto;transform:none;width:100%;height:clamp(330px,70vw,570px);order:2;box-shadow:none}
+.about-expand-image figcaption{opacity:1}
+.about-expand-scroll{display:none}
+.about-expand-bio{padding:65px 0 10px;min-height:0}
+.about-expand-bio-content h3{font-size:clamp(50px,11vw,75px)}
+}
