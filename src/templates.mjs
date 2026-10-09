@@ -125,33 +125,34 @@ const photoOutroWord = (text) =>
     .join("")}</span>`;
 const aboutSection = () =>
   `<section class="home-section about-cinematic about-expand" id="about" data-about-cinematic>
-  <div class="about-cinema-stage">
-    <div class="about-cinema-sticky">
-      <div class="about-cinema-meta">${label("01 / about")}<span aria-hidden="true">↘</span></div>
-      <div class="about-expand-typography" aria-label="Engineer by profession. Compulsive project-starter by nature.">
-        <h2 class="serif about-expand-line about-expand-line--first" data-about-top>Engineer by <em>profession.</em></h2>
-        <div class="about-expand-middle" data-about-middle>
-          <span class="serif about-expand-word" data-about-left>Compulsive</span>
-          <span class="about-expand-gap" aria-hidden="true"></span>
-          <span class="serif about-expand-word" data-about-right><em>project-starter.</em></span>
+    <div class="about-cinema-stage">
+      <div class="about-cinema-sticky">
+        <div class="about-cinema-meta">${label("01 / about")}<span aria-hidden="true">↘</span></div>
+        <div class="about-expand-typography">
+          <h2 class="serif about-expand-line about-expand-line--first" data-about-top>Engineer by<br><em>profession.</em></h2>
+          <div class="about-expand-middle">
+            <span class="serif about-expand-word" data-about-left><em>Compulsive</em></span>
+            <span class="about-expand-gap" data-about-gap aria-hidden="true"></span>
+            <span class="serif about-expand-word" data-about-right><em>project-starter.</em></span>
+          </div>
+          <p class="serif about-expand-line about-expand-line--last" data-about-bottom><em>By nature.</em></p>
         </div>
-        <p class="serif about-expand-line about-expand-line--last" data-about-bottom><em>By nature.</em></p>
+        <p class="about-expand-aside" data-about-aside>I work across engineering, cyber, software and complex technical systems. Outside work, I'm usually rebuilding an old BMW, renovating the house or taking photographs.</p>
+        <figure class="about-expand-image" data-about-image>
+          ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-expand-photo", true)}
+          <figcaption>Blue Mountains / Away from the workshop</figcaption>
+        </figure>
+        <span class="about-expand-scroll" data-about-scroll>Scroll to explore ↓</span>
       </div>
-      <figure class="about-expand-image" data-about-image>
-        ${img("/images/about/portrait.jpg", "Portrait in the Blue Mountains", "about-expand-photo", true)}
-        <figcaption>Blue Mountains / Away from the workshop</figcaption>
-      </figure>
-      <span class="about-expand-scroll" data-about-scroll>Scroll to discover ↓</span>
     </div>
-  </div>
-  <div class="about-expand-bio" data-about-bio>
-    <div class="about-expand-bio-label">A LITTLE ABOUT ME / 001</div>
-    <div class="about-expand-bio-content"><h3 class="serif">Curious by <em>default.</em></h3>
-      <p>I work across engineering, cyber, software and complex technical systems.</p>
-      <p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p>
+    <div class="about-expand-bio" data-about-bio>
+      <div class="about-expand-bio-label">A LITTLE ABOUT ME / 001</div>
+      <div class="about-expand-bio-content"><h3 class="serif">Curious by <em>default.</em></h3>
+        <p>I work across engineering, cyber, software and complex technical systems.</p>
+        <p>Outside work, I’m usually rebuilding an old BMW, working on the house, taking photos or starting something else I probably don’t have time for.</p>
+      </div>
     </div>
-  </div>
-</section>`;
+  </section>`;
 
 const photographySection = () =>
   `<section class="home-section photography-section" id="photography"><div class="section-label">${label("04 / photography")}<span aria-hidden="true">↘</span></div><section class="photo-title-stage" data-photo-title-stage aria-labelledby="photography-title"><div class="photo-title-sticky"><div class="photo-title-frame"><h2 class="photo-cinematic-title" id="photography-title" data-photo-title aria-label="Photography">${photographyLetters}</h2><p class="photo-cinematic-subtitle" data-photo-subtitle>Places, cars <em>&amp; other things.</em></p><span class="photo-title-rule" data-photo-rule aria-hidden="true"></span></div></div></section><section class="photo-3d-stage" aria-label="Photography gallery"><div class="photo-3d-grid" data-staggered-photo-grid>${gallery.slice(0, 35).map((g, i) => `<a class="photo-3d-item" href="/photography/viewer/?photo=${i}" data-gallery-photo="${i}" data-enlarge="${g.image}" data-caption="${esc(g.caption + " / " + g.category)}" aria-label="View ${esc(g.caption)}">${img(g.image, g.caption)}<span class="photo-3d-meta">${g.category}</span></a>`).join("")}</div></section><section class="photo-outro" aria-labelledby="photo-outro-title"><h3 class="photo-outro-title" id="photo-outro-title" data-photo-outro-title aria-label="Photography, here."><span class="photo-outro-line">${photoOutroWord("Photography,")}</span><span class="photo-outro-line"><a class="photo-outro-here" href="/photography/" aria-label="Open photography archive"><em>${photoOutroWord("here.")}</em><span class="photo-outro-here-arrow" aria-hidden="true">↗</span></a></span></h3></section></section>`;
