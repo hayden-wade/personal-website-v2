@@ -490,40 +490,14 @@ function setupCinematicAbout() {
   const timeline=gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
     id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
     scrub:0.8,invalidateOnRefresh:true}});
-  // Preserve the original composition at progress zero. Only the words move
-  // far enough to clear the capsule at its EXISTING 1.95x maximum size.
-  const photoBounds=()=>{
-    const rect=gap.getBoundingClientRect();
-    const stickyRect=sticky.getBoundingClientRect();
-    const w=Math.max(120,rect.width)*1.95, h=Math.max(95,rect.height)*1.95;
-    const cx=rect.left-stickyRect.left+rect.width/2;
-    const cy=rect.top-stickyRect.top+rect.height/2;
-    return {left:cx-w/2,right:cx+w/2,top:cy-h/2,bottom:cy+h/2};
-  };
-  const elementBounds=(element)=>{
-    const rect=element.getBoundingClientRect();
-    const parent=sticky.getBoundingClientRect();
-    return {left:rect.left-parent.left,top:rect.top-parent.top,
-      width:rect.width,height:rect.height};
-  };
-  const professionMove=()=>{
-    const photo=photoBounds(), word=elementBounds(profession);
-    const target=Math.min(photo.right+28,sticky.clientWidth-word.width-24);
-    return Math.max(0,target-word.left);
-  };
-  const leftMove=()=>{
-    const photo=photoBounds(), word=elementBounds(left);
-    return Math.max(0,photo.bottom+22-word.top);
-  };
-  const rightMove=()=>{
-    const photo=photoBounds(), word=elementBounds(right);
-    const target=Math.min(photo.right+24,sticky.clientWidth-word.width-24);
-    return Math.max(0,target-word.left);
-  };
-  timeline.to(profession,{x:professionMove,duration:0.75},0)
-    .to(aside,{y:()=>Math.min(0,Math.max(58,sticky.clientHeight*0.085)-elementBounds(aside).top),duration:0.75},0)
-    .to(left,{y:leftMove,duration:0.75},0)
-    .to(right,{x:rightMove,duration:0.75},0)
+  // Codrops-style vertical editorial drift: preserve starting coordinates and
+  // move the headline lines upward together, allowing intentional overlaps.
+  // The photo tween below remains entirely unchanged.
+  const headlineRise=()=>Math.min(300,sticky.clientHeight*0.37);
+  timeline.to([top,left,right,bottom],{
+    y:()=>-headlineRise(),duration:0.75
+  },0)
+    .to(aside,{y:()=>-Math.min(130,sticky.clientHeight*0.17),duration:0.75},0)
     .to(image,{
       width:()=>Math.max(120,gap.getBoundingClientRect().width)*1.95,
       height:()=>Math.max(95,gap.getBoundingClientRect().height)*1.95,
