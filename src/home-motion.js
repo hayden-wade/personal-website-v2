@@ -459,154 +459,31 @@ if (homeHero) {
 
 function setupCinematicAbout() {
   const section = document.querySelector("[data-about-cinematic]");
-  if (
-    !section ||
-    window.matchMedia("(max-width: 700px)").matches ||
-    typeof window.gsap === "undefined" ||
-    typeof window.ScrollTrigger === "undefined"
-  )
-    return;
-
-  const { gsap, ScrollTrigger } = window;
+  if (!section || reduced.matches || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined" || window.matchMedia("(max-width: 700px)").matches) return;
   gsap.registerPlugin(ScrollTrigger);
-
   const stage = section.querySelector(".about-cinema-stage");
-  const headline = section.querySelector(".about-cinema-headline");
-  const titleLines = gsap.utils.toArray(
-    section.querySelectorAll("[data-about-title-line]"),
-  );
-  const portrait = section.querySelector("[data-about-portrait]");
-  const image = section.querySelector(".about-cinema-image");
-  const copy = section.querySelector("[data-about-copy]");
-  const strip = section.querySelector("[data-about-strip]");
-  const interests = gsap.utils.toArray(
-    section.querySelectorAll("[data-about-interest]"),
-  );
-
-  if (!stage || !headline || !titleLines.length || !portrait || !image) return;
-
-  const mm = gsap.matchMedia();
-  mm.add(
-    "(min-width: 901px) and (prefers-reduced-motion: no-preference)",
-    () => {
-      gsap.set(titleLines, { yPercent: 112, autoAlpha: 0 });
-      gsap.set(portrait, {
-        clipPath: "inset(18% 36% 22% 36%)",
-        xPercent: 8,
-      });
-      gsap.set(image, { scale: 1.18, xPercent: -2.5, yPercent: 2 });
-      gsap.set(copy, { y: 36, autoAlpha: 0 });
-      gsap.set(strip, { y: 16, autoAlpha: 0 });
-
-      const setInterest = (index) => {
-        interests.forEach((item, itemIndex) =>
-          item.classList.toggle("is-active", itemIndex === index),
-        );
-      };
-      setInterest(0);
-
-      const timeline = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          id: "about-cinematic-scene",
-          trigger: stage,
-          start: "top top+=74",
-          end: "bottom bottom",
-          scrub: 0.65,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      timeline
-        .to(
-          titleLines,
-          {
-            yPercent: 0,
-            autoAlpha: 1,
-            duration: 0.2,
-            stagger: 0.035,
-            ease: "power3.out",
-          },
-          0,
-        )
-        .to(
-          portrait,
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            xPercent: 0,
-            duration: 0.52,
-            ease: "power2.inOut",
-          },
-          0.12,
-        )
-        .to(
-          image,
-          {
-            scale: 1.04,
-            xPercent: 0,
-            yPercent: -1.5,
-            duration: 0.62,
-            ease: "power1.inOut",
-          },
-          0.1,
-        )
-        .to(
-          headline,
-          {
-            xPercent: -3,
-            yPercent: -2,
-            duration: 0.55,
-            ease: "power1.inOut",
-          },
-          0.24,
-        )
-        .to(
-          copy,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.22,
-            ease: "power2.out",
-          },
-          0.52,
-        )
-        .to(
-          strip,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.18,
-            ease: "power2.out",
-          },
-          0.68,
-        )
-        .to(
-          image,
-          {
-            scale: 1,
-            yPercent: -3,
-            duration: 0.25,
-            ease: "power1.inOut",
-          },
-          0.75,
-        );
-
-      timeline.eventCallback("onUpdate", () => {
-        const progress = timeline.progress();
-        const index =
-          progress < 0.43 ? 0 : progress < 0.61 ? 1 : progress < 0.79 ? 2 : 3;
-        setInterest(index);
-      });
-
-      return () => {
-        timeline.scrollTrigger?.kill();
-        timeline.kill();
-        interests.forEach((item) => item.classList.remove("is-active"));
-      };
-    },
-  );
-
-  requestAnimationFrame(() => ScrollTrigger.refresh());
+  const image = section.querySelector("[data-about-image]");
+  const top = section.querySelector("[data-about-top]");
+  const bottom = section.querySelector("[data-about-bottom]");
+  const left = section.querySelector("[data-about-left]");
+  const right = section.querySelector("[data-about-right]");
+  const meta = section.querySelector(".about-cinema-meta");
+  const scroll = section.querySelector("[data-about-scroll]");
+  if (![stage,image,top,bottom,left,right].every(Boolean)) return;
+  const timeline = gsap.timeline({
+    defaults: {ease:"none"},
+    scrollTrigger: {id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",scrub:0.8,invalidateOnRefresh:true}
+  });
+  // Large type peels away from the centre while the photo grows to the full viewport.
+  timeline.to(top,{yPercent:-170,opacity:0,duration:0.58},0)
+    .to(bottom,{yPercent:180,opacity:0,duration:0.6},0)
+    .to(left,{xPercent:-85,opacity:0,duration:0.6},0)
+    .to(right,{xPercent:85,opacity:0,duration:0.6},0)
+    .fromTo(image,{width:"22vw",height:"23vh",borderRadius:"4px"},{width:"100vw",height:"100vh",borderRadius:"0px",duration:0.78,immediateRender:false},0.08)
+    .to([meta,scroll].filter(Boolean),{opacity:0,duration:0.25},0.05);
+  // Mobile and reduced-motion layouts are handled by CSS, with no pinning.
+  window.addEventListener("load",()=>ScrollTrigger.refresh(),{once:true});
 }
+
 setupCinematicAbout();
 
