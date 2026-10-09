@@ -4153,7 +4153,7 @@ body.infinite-photo-active {
 .about-flow-layout{position:absolute;left:5vw;right:3vw;top:17%;z-index:3;color:var(--text);pointer-events:none}
 .about-flow-heading{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(70px,7.5vw,136px);font-weight:400;letter-spacing:-.05em;line-height:.95;margin:0 0 clamp(30px,7vh,85px);white-space:nowrap}
 .about-flow-heading em,.about-flow-word em,.about-flow-trailing em{font-weight:400}
-.about-flow-sentence{display:flex;align-items:flex-start;justify-content:flex-start;gap:0;min-width:0;width:max-content;max-width:none;white-space:nowrap;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(49px,5.6vw,101px);line-height:.95;letter-spacing:-.05em}
+.about-flow-sentence{display:flex;align-items:flex-start;justify-content:flex-start;gap:clamp(12px,1.2vw,22px);min-width:0;width:max-content;max-width:none;white-space:nowrap;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(49px,5.6vw,101px);line-height:.95;letter-spacing:-.05em}
 .about-flow-word{display:inline-block;flex:0 0 auto;align-self:flex-start}
 .about-flow-trailing{display:flex;flex-direction:column;flex:0 0 auto;align-self:flex-start;line-height:.88;margin-top:.02em}
 .about-flow-trailing-main,.about-flow-trailing-sub{display:block}
