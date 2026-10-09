@@ -467,9 +467,9 @@ function setupCinematicAbout() {
   const image=section.querySelector("[data-about-image]");
   if(!stage || !image)return;
   // In normal flex flow the capsule's width physically pushes the words on its right.
-  // The old final capsule dimensions remain 1.95x the original 22vw x 17vh slot.
+  // Portrait capsule: retain the existing maximum width but use a taller 3:4 image.
   const expandedWidth=()=>Math.max(195,Math.min(window.innerWidth*.22,400))*1.95;
-  const expandedHeight=()=>Math.max(115,Math.min(window.innerHeight*.17,200))*1.95;
+  const expandedHeight=()=>expandedWidth()*4/3;
   gsap.set(image,{width:0,height:0,flexBasis:0,opacity:0,borderRadius:"85px"});
   gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
     id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
