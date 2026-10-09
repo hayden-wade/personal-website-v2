@@ -129,7 +129,7 @@ const aboutSection = () =>
       <div class="about-cinema-sticky">
         <div class="about-cinema-meta">${label("01 / about")}<span aria-hidden="true">↘</span></div>
         <div class="about-expand-typography">
-          <h2 class="serif about-expand-line about-expand-line--first" data-about-top>Engineer by<br><em>profession.</em></h2>
+          <h2 class="serif about-expand-line about-expand-line--first" data-about-top><span class="about-expand-first-row">Engineer by</span><br><span class="about-expand-second-row" data-about-profession><em>profession.</em></span></h2>
           <div class="about-expand-middle">
             <span class="serif about-expand-word" data-about-left><em>Compulsive</em></span>
             <span class="about-expand-gap" data-about-gap aria-hidden="true"></span>
