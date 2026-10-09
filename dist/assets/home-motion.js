@@ -74,6 +74,7 @@ function runSiteLoader() {
   const root = document.documentElement;
   if (!shouldShowSiteLoader()) {
     root.classList.remove("site-loader-pending");
+    root.classList.add("site-loader-ready");
     return Promise.resolve(false);
   }
   createLoaderStyles();
@@ -94,6 +95,7 @@ function runSiteLoader() {
   loader.innerHTML = `<div class="site-loader__louvres">${louvres}</div><div class="site-loader__ui"><div class="site-loader__center">${liquidWordmarkMarkup()}<div class="site-loader__status"><span>Initialising</span><span class="site-loader__count">00</span></div></div></div>`;
   document.body.prepend(loader);
   root.classList.remove("site-loader-pending");
+  root.classList.add("site-loader-ready");
 
   const liquid = loader.querySelector("[data-loader-liquid]");
   const count = loader.querySelector(".site-loader__count");
