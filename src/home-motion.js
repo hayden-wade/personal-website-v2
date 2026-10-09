@@ -519,7 +519,6 @@ function setupRunwayExperience(){
     const start=innerHeight*.8;
     const progress=Math.max(0,Math.min(1,(start-rect.top)/(rect.height-innerHeight*.2)));
     path.style.strokeDashoffset=String(length*(1-progress));
-    track.style.setProperty("--runway-exit-progress",String(Math.max(0,Math.min(1,(progress-.88)/.12))));
     pathFractions.forEach((threshold,i)=>{
       markers[i].classList.toggle("is-active",progress>=threshold);
       careers[i]?.classList.toggle("is-active",progress>=threshold);
