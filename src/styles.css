@@ -4305,8 +4305,8 @@ body.infinite-photo-active {
   .runway-career--3{top:76%!important}
   .runway-career h3{font-size:clamp(28px,7vw,41px);line-height:1.02;margin:10px 0 12px;overflow-wrap:normal}
   .runway-career .runway-date{font-size:10px;letter-spacing:.12em}
-  .runway-career .runway-role{font-size:13px;line-height:1.45;margin-bottom:13px}
-  .runway-career .runway-description{font-size:13px;line-height:1.55;margin:0;max-width:100%}
+  .runway-career .runway-role{font-size:14px;line-height:1.45;margin-bottom:13px}
+  .runway-career .runway-description{font-size:14px;line-height:1.55;margin:0;max-width:100%}
   .runway-career--2 .runway-description{margin-left:0}
   .runway-credit{margin-top:20px;padding-inline:20px;line-height:1.5}
   /* Project reel: browser-native swiping and legible per-slide information. */
@@ -4324,7 +4324,7 @@ body.infinite-photo-active {
   .project-reel-media,.project-reel-media--secondary{flex:0 0 calc((100% - 5px)/2);width:calc((100% - 5px)/2);height:100%;max-height:none;aspect-ratio:auto}
   .project-reel-mobile-copy{padding:20px 2px 0;min-height:0}
   .project-reel-mobile-copy h3{font-size:clamp(40px,10vw,60px);line-height:.92}
-  .project-reel-mobile-copy p{font-size:12px;line-height:1.55;letter-spacing:normal;text-transform:none}
+  .project-reel-mobile-copy p{font-size:14px;line-height:1.55;letter-spacing:normal;text-transform:none}
   .project-reel-mobile-copy a{display:inline-flex;align-items:center;min-height:44px;margin-top:9px;font-size:11px}
   /* Photography: gentler pyramid travel and readable editorial transition. */
   .photo-title-stage{min-height:60svh;padding:85px 18px 52px}
@@ -4361,4 +4361,12 @@ body.infinite-photo-active {
   .photo-title-mobile-ready [data-photo-subtitle],
   .photo-outro-mobile-ready .photo-outro-char{opacity:1!important;transform:none!important;transition:none!important}
   .about-flow-image{clip-path:none!important;transform:none!important;opacity:1!important}
+}
+
+/* Mobile touch affordances and lighter paint work. */
+@media(max-width:700px){
+  body,.home-reveal-shell{background-attachment:scroll}
+  body::before{opacity:.18}
+  .project-reel-viewport:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+  .footer__bottom-text{text-align:left}
 }
