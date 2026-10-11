@@ -1,4 +1,18 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
+// Mobile reload: Safari can restore a mid-page scroll position after the
+// loader has started. Only correct real reloads without a section hash;
+// preserve normal back/forward restoration and deep links.
+if (document.querySelector(".hero") &&
+    matchMedia("(max-width:700px)").matches &&
+    !location.hash &&
+    performance.getEntriesByType("navigation")[0]?.type === "reload") {
+  try { history.scrollRestoration = "manual"; } catch {}
+  addEventListener("pageshow", event => {
+    if (event.persisted || location.hash) return;
+    requestAnimationFrame(() => scrollTo(0, 0));
+  }, {once:true});
+}
+
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
