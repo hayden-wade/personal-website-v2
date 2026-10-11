@@ -459,8 +459,25 @@ if (homeHero) {
 
 function setupCinematicAbout() {
   const section=document.querySelector("[data-about-cinematic]");
-  if(!section || reduced.matches || matchMedia("(max-width:700px)").matches ||
-      !window.gsap || !window.ScrollTrigger) return;
+  if(!section || reduced.matches || !window.gsap || !window.ScrollTrigger) return;
+  // Keep the desktop zero-to-portrait expansion untouched. Phones get a
+  // lighter in-place capsule reveal without sticky pinning or layout shifts.
+  if (matchMedia("(max-width:700px)").matches) {
+    const portrait=section.querySelector("[data-about-image]");
+    if (!portrait) return;
+    const {gsap,ScrollTrigger}=window;
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.fromTo(portrait,{
+      clipPath:"inset(0% 47% 0% 47% round 90px)",
+      opacity:.75,scale:.96
+    },{
+      clipPath:"inset(0% 0% 0% 0% round 90px)",
+      opacity:1,scale:1,ease:"none",
+      scrollTrigger:{id:"mobile-about-portrait",trigger:portrait,
+        start:"top 88%",end:"center 44%",scrub:.45,invalidateOnRefresh:true}
+    });
+    return;
+  }
   const {gsap,ScrollTrigger}=window;
   gsap.registerPlugin(ScrollTrigger);
   const stage=section.querySelector(".about-cinema-stage");
@@ -485,48 +502,57 @@ setupCinematicAbout();
 
 function setupRunwayExperience(){
   const section=document.querySelector("[data-runway-experience]");
-  if(!section)return;
-  const path=section.querySelector("[data-runway-path]");
-  const track=section.querySelector(".runway-track");
-  const markers=[...section.querySelectorAll("[data-runway-checkpoint]")];
-  const careers=[...section.querySelectorAll("[data-runway-career]")];
-  if(!path||!track||markers.length!==3)return;
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches){
-    markers.forEach(el=>el.classList.add("is-active"));
-    return;
-  }
-  const length=path.getTotalLength();
-  path.style.strokeDasharray=String(length);
-  path.style.strokeDashoffset=String(length);
-  section.classList.add("runway-enhanced");
-  const positions=[795,1700,2605];
-  const pathFractions=positions.map(y=>{
-    // The demo follows its SVG shape using stroked progress; find each check
-    // position by sampling real arc length instead of assuming uniform spacing.
-    const x= y===1700?1090:105;
-    let best=0,nearest=Infinity;
-    for(let i=0;i<=700;i++){
-      const p=path.getPointAtLength(i*length/700);
-      const distance=(p.x-x)**2+(p.y-y)**2;
-      if(distance<nearest){nearest=distance;best=i/700}
-    }
-    return best;
-  });
-  let frame=0;
+  const track=section?.querySelector(".runway-track");
+  if(!section||!track)return;
+  const mobile=matchMedia("(max-width:700px)");
+  const reduced=matchMedia("(prefers-reduced-motion:reduce)");
+  const configurations=[
+    {selector:".runway-svg:not(.runway-svg-mobile)",coordinates:[[105,795],[1090,1700],[105,2605]]},
+    {selector:".runway-svg-mobile",coordinates:[[60,355],[54,1000],[80,1640]]}
+  ];
+  let active=null,frame=0;
+  const clamp=v=>Math.max(0,Math.min(1,v));
+  const setup=()=>{
+    const configuration=configurations[mobile.matches?1:0];
+    const svg=section.querySelector(configuration.selector);
+    const path=svg?.querySelector("[data-runway-path]");
+    if(!path)return;
+    const markers=[...svg.querySelectorAll("[data-runway-checkpoint]")];
+    const careers=[...section.querySelectorAll("[data-runway-career]")];
+    const length=path.getTotalLength();
+    path.style.strokeDasharray=String(length);
+    path.style.strokeDashoffset=String(length);
+    const fractions=configuration.coordinates.map(([x,y])=>{
+      let best=0,nearest=Infinity;
+      for(let i=0;i<=800;i++){
+        const p=path.getPointAtLength(i*length/800);
+        const d=(p.x-x)**2+(p.y-y)**2;
+        if(d<nearest){nearest=d;best=i/800}
+      }
+      return best;
+    });
+    active={path,length,markers,careers,fractions};
+    section.classList.toggle("runway-enhanced",!reduced.matches);
+    update();
+  };
   const update=()=>{
     frame=0;
+    if(!active)return;
+    const {path,length,markers,careers,fractions}=active;
     const rect=track.getBoundingClientRect();
-    const start=innerHeight*.8;
-    const progress=Math.max(0,Math.min(1,(start-rect.top)/(rect.height-innerHeight*.2)));
+    const progress=reduced.matches?1:clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
     path.style.strokeDashoffset=String(length*(1-progress));
-    pathFractions.forEach((threshold,i)=>{
-      markers[i].classList.toggle("is-active",progress>=threshold);
-      careers[i]?.classList.toggle("is-active",progress>=threshold);
+    fractions.forEach((threshold,i)=>{
+      const visible=progress>=threshold||reduced.matches;
+      markers[i]?.classList.toggle("is-active",visible);
+      careers[i]?.classList.toggle("is-active",visible);
     });
   };
   const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+  mobile.addEventListener("change",setup);
+  reduced.addEventListener("change",setup);
   addEventListener("scroll",schedule,{passive:true});
   addEventListener("resize",schedule,{passive:true});
-  update();
+  setup();
 }
 setupRunwayExperience();
