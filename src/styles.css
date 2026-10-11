@@ -4256,7 +4256,7 @@ body.infinite-photo-active {
 /* Mobile homepage integration pass / October 2026
    Restrict these changes to touch-sized layouts. Desktop remains unchanged. */
 .project-reel-mobile-hint,.runway-svg-mobile{display:none}
-@media(max-width:700px){
+@media(max-width:700px), (pointer:coarse) and (max-width:960px){
   html,body{max-width:100%;overflow-x:clip}
   :root{--gutter:20px}
   .home-main,.home-reveal-shell{max-width:100%;min-width:0}
@@ -4344,6 +4344,11 @@ body.infinite-photo-active {
   .photo-outro-line:last-child{padding-left:clamp(10px,8vw,40px)}
   .photo-outro-mobile-ready .photo-outro-char{opacity:0;transform:translateY(22px);transition:opacity .55s ease,transform .65s cubic-bezier(.16,1,.3,1)}
   .photo-outro-mobile-visible .photo-outro-char{opacity:1;transform:none}
+  /* In phone landscape, avoid the desktop fixed-footer overlay. */
+  .home-reveal-shell{margin-bottom:0!important}
+  .footer{position:relative}
+  .footer__marquee{display:none}
+  .footer__bottom{flex-direction:column;align-items:flex-start}
   /* Ochre contact area, large HBW lettering and accessible social links. */
   .footer{padding:60px max(20px,env(safe-area-inset-left,0px)) calc(28px + env(safe-area-inset-bottom,0px));overflow:clip}
   .footer__center{display:flex;flex-direction:column;align-items:stretch;gap:32px}
