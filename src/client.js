@@ -164,7 +164,7 @@ function footerBehindContent() {
   const footer = document.querySelector(".footer");
   const main = document.querySelector(".home-reveal-shell");
   if (footer && main) {
-    if (window.matchMedia("(max-width: 700px)").matches) {
+    if (window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches) {
       main.style.marginBottom = "";
     } else {
       const footerHeight = footer.offsetHeight;
@@ -306,7 +306,7 @@ function installContactReveal() {
 
   // Keep iPhone scrolling native; ScrollTrigger refresh/pinning can move
   // Safari's restored scroll position during page load.
-  if (window.matchMedia("(max-width: 700px)").matches) return;
+  if (window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches) return;
 
   if (
     typeof window.gsap === "undefined" ||
@@ -669,7 +669,7 @@ function installPhotographyTitleTransition() {
   if (!title || !chars.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const mobile = window.matchMedia("(max-width: 700px)");
+  const mobile = window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
 
   const reset = () => {
     chars.forEach((char) => {
@@ -798,7 +798,7 @@ function installPhotographyOutroTransition() {
   if (!title || !section || !chars.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const mobile = window.matchMedia("(max-width: 700px)");
+  const mobile = window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
 
   const reset = () => {
     chars.forEach((char) => {
