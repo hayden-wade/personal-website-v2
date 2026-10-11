@@ -4252,3 +4252,113 @@ body.infinite-photo-active {
 }
 .runway-track{overflow:visible}
 .runway-svg{overflow:visible}
+
+/* Mobile homepage integration pass / October 2026
+   Restrict these changes to touch-sized layouts. Desktop remains unchanged. */
+.project-reel-mobile-hint,.runway-svg-mobile{display:none}
+@media(max-width:700px){
+  html,body{max-width:100%;overflow-x:clip}
+  :root{--gutter:20px}
+  .home-main,.home-reveal-shell{max-width:100%;min-width:0}
+  .home-section{scroll-margin-top:calc(65px + env(safe-area-inset-top,0px))}
+  .home-section .section-label{font-size:10px;letter-spacing:.12em}
+  .hero{height:100svh;min-height:640px;padding:20px 20px calc(56px + env(safe-area-inset-bottom,0px))}
+  .hero-image{object-position:70% 57%;transform-origin:70% 55%}
+  .hero h1{font-size:clamp(92px,28vw,132px);letter-spacing:-.055em;max-width:100%}
+  .hero-role{margin-top:18px;font-size:9px;letter-spacing:.13em}
+  .hero-bottom{bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+  .home-nav{z-index:200}
+  .site-header nav{height:calc(100dvh - 58px - env(safe-area-inset-top,0px));max-height:none}
+  .site-header nav a{font-size:clamp(36px,11vw,58px);padding-block:13px;min-height:56px}
+  .site-header.menu-open{z-index:200}
+  .site-header .menu-toggle{min-width:44px;min-height:44px}
+  /* Portrait reveal: retain the same image, but give it its own editorial row. */
+  .about-flow{width:100%;margin-left:0;padding:72px 20px 80px!important;overflow:visible!important}
+  .about-flow .about-cinema-stage{height:auto!important}
+  .about-flow .about-cinema-sticky{position:relative;top:auto;height:auto;padding:0;overflow:visible;display:flex;flex-direction:column;min-height:0}
+  .about-flow .about-cinema-meta{position:relative;inset:auto;order:0;margin-bottom:32px}
+  .about-flow-layout{position:relative;inset:auto;width:100%;margin:0;order:1}
+  .about-flow-heading{font-size:clamp(52px,12.3vw,76px);line-height:.92;white-space:normal;letter-spacing:-.055em;margin:0 0 40px}
+  .about-flow-sentence{display:flex;flex-direction:column;align-items:stretch;gap:18px;width:100%;max-width:100%;white-space:normal;font-size:clamp(47px,11vw,66px);line-height:.94}
+  .about-flow-word{order:0;align-self:flex-start}
+  .about-flow-image{order:1;align-self:center!important;flex:none!important;width:min(76vw,330px)!important;height:auto!important;min-width:0;aspect-ratio:3/4;max-height:none;overflow:hidden;border-radius:95px!important;margin:6px 0!important;will-change:clip-path,transform}
+  .about-flow-photo{width:100%;height:100%;object-fit:cover;object-position:center 50%}
+  .about-flow-trailing{order:2;align-self:flex-end;flex:0 1 auto;max-width:100%;line-height:.93;margin-top:4px;font-size:clamp(45px,10.5vw,64px)}
+  .about-flow-trailing-sub{margin-top:0}
+  .about-flow .about-expand-aside{position:relative;inset:auto;order:2;width:100%;max-width:44ch;margin:34px 0 0;color:var(--muted);font-size:15px;line-height:1.6}
+  .about-flow .about-expand-scroll{display:none}
+  .about-flow .about-expand-bio{padding:84px 0 0;gap:20px;min-height:0}
+  .about-flow .about-expand-bio-content h3{font-size:clamp(56px,13vw,78px);margin-bottom:26px}
+  .about-flow .about-expand-bio-content p{font-size:16px;line-height:1.62}
+  /* Runway: independent mobile coordinates; do not squash the desktop SVG. */
+  .runway-experience{width:100%;margin-left:0;padding:40px 0 85px!important;overflow-x:clip}
+  .runway-experience::before{height:clamp(90px,14vh,150px)!important}
+  .runway-experience .section-label,.runway-experience>.runway-heading{width:calc(100% - 40px);padding:0;margin-inline:auto}
+  .runway-heading{font-size:clamp(42px,10.3vw,68px);line-height:.96;letter-spacing:-.035em;margin-bottom:65px!important}
+  .runway-track{width:100%;height:2100px!important;max-width:none;margin:0;overflow:hidden!important}
+  .runway-svg:not(.runway-svg-mobile){display:none}
+  .runway-svg-mobile{display:block;width:100%;height:100%;overflow:hidden}
+  .runway-base,.runway-draw{stroke-width:18px}
+  .runway-career{width:calc(100% - 28vw);max-width:none;left:28vw!important;right:auto!important;padding:0 16px 0 0;text-align:left!important;background:transparent;border:0}
+  .runway-career--1{top:15%!important}
+  .runway-career--2{top:46%!important}
+  .runway-career--3{top:76%!important}
+  .runway-career h3{font-size:clamp(28px,7vw,41px);line-height:1.02;margin:10px 0 12px;overflow-wrap:normal}
+  .runway-career .runway-date{font-size:10px;letter-spacing:.12em}
+  .runway-career .runway-role{font-size:13px;line-height:1.45;margin-bottom:13px}
+  .runway-career .runway-description{font-size:13px;line-height:1.55;margin:0;max-width:100%}
+  .runway-career--2 .runway-description{margin-left:0}
+  .runway-credit{margin-top:20px;padding-inline:20px;line-height:1.5}
+  /* Project reel: browser-native swiping and legible per-slide information. */
+  .project-reel-section{width:100%;margin-left:0;overflow:clip}
+  .project-reel-intro{width:calc(100% - 40px);padding-bottom:8px}
+  .project-reel-intro h2{font-size:clamp(43px,11vw,66px);line-height:.98}
+  .project-reel-mobile-hint{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:0;padding:12px 20px;color:var(--accent);font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase}
+  .project-reel-mobile-hint span{font-size:20px;line-height:1}
+  .project-reel-stage{height:auto;min-height:0;overflow:visible}
+  .project-reel-viewport{height:auto;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;touch-action:pan-x pan-y;scroll-padding-inline:20px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .project-reel-track{height:auto;width:max-content;gap:12px;padding:12px 20px 35px;transform:none!important;align-items:flex-start;will-change:auto}
+  .project-reel-slide{display:block;width:calc(100vw - 40px);height:auto;min-height:0;scroll-snap-align:center}
+  .project-reel-slide-number{top:0;left:0}
+  .project-reel-gallery{width:100%;height:clamp(230px,75vw,340px);overflow:hidden;gap:5px;padding-top:18px}
+  .project-reel-media,.project-reel-media--secondary{flex:0 0 calc((100% - 5px)/2);width:calc((100% - 5px)/2);height:100%;max-height:none;aspect-ratio:auto}
+  .project-reel-mobile-copy{padding:20px 2px 0;min-height:0}
+  .project-reel-mobile-copy h3{font-size:clamp(40px,10vw,60px);line-height:.92}
+  .project-reel-mobile-copy p{font-size:12px;line-height:1.55;letter-spacing:normal;text-transform:none}
+  .project-reel-mobile-copy a{display:inline-flex;align-items:center;min-height:44px;margin-top:9px;font-size:11px}
+  /* Photography: gentler pyramid travel and readable editorial transition. */
+  .photo-title-stage{min-height:60svh;padding:85px 18px 52px}
+  .photo-cinematic-title{font-size:clamp(43px,11vw,72px);max-width:100%}
+  .photo-cinematic-subtitle{max-width:290px;margin-top:26px;font-size:clamp(27px,7vw,38px)}
+  .photo-title-mobile-ready [data-photo-letter]{opacity:0;transform:translate3d(0,22px,0);transition:opacity .65s ease,transform .8s cubic-bezier(.16,1,.3,1);transition-delay:calc(var(--photo-letter) * 30ms)}
+  .photo-title-mobile-visible [data-photo-letter]{opacity:1;transform:none}
+  .photo-title-mobile-ready [data-photo-subtitle]{opacity:0;transform:translateY(15px);transition:opacity .7s ease .28s,transform .7s ease .28s}
+  .photo-title-mobile-visible [data-photo-subtitle]{opacity:1;transform:none}
+  .photo-3d-stage{padding:32px 0 65px}
+  .photo-3d-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px}
+  .photo-3d-item{aspect-ratio:.9;will-change:auto}
+  .home-section#photography .photo-3d-stage::after{background:linear-gradient(90deg,var(--bg) 0%,transparent 8%,transparent 92%,var(--bg) 100%)}
+  .home-section#photography{padding-bottom:130px}
+  .photo-outro{width:calc(100% - 40px);min-height:57svh;padding:55px 0}
+  .photo-outro-title{font-size:clamp(47px,12.6vw,82px);margin:45px 0 60px;line-height:.9;letter-spacing:-.05em}
+  .photo-outro-line:last-child{padding-left:clamp(10px,8vw,40px)}
+  .photo-outro-mobile-ready .photo-outro-char{opacity:0;transform:translateY(22px);transition:opacity .55s ease,transform .65s cubic-bezier(.16,1,.3,1)}
+  .photo-outro-mobile-visible .photo-outro-char{opacity:1;transform:none}
+  /* Ochre contact area, large HBW lettering and accessible social links. */
+  .footer{padding:60px max(20px,env(safe-area-inset-left,0px)) calc(28px + env(safe-area-inset-bottom,0px));overflow:clip}
+  .footer__center{display:flex;flex-direction:column;align-items:stretch;gap:32px}
+  .footer__center-content{width:100%;font-size:clamp(27px,6.5vw,41px);padding:0}
+  .footer__center-content p{width:100%;max-width:34ch}
+  .footer__socials{gap:12px;flex-wrap:wrap;margin-top:20px}
+  .footer__social-link{width:44px;height:44px;padding:10px}
+  .footer__social-link svg{width:24px;height:24px}
+  .footer__svg-animation{width:100%;max-width:100%;min-width:0;margin-top:0;overflow:visible}
+  .footer__svg-animation svg,.svg-animation svg{display:block;width:100%;height:auto;max-width:100%;overflow:visible}
+  .footer__bottom{gap:10px;margin-top:28px;padding-top:20px;font-size:10px}
+}
+@media(max-width:700px) and (prefers-reduced-motion:reduce){
+  .photo-title-mobile-ready [data-photo-letter],
+  .photo-title-mobile-ready [data-photo-subtitle],
+  .photo-outro-mobile-ready .photo-outro-char{opacity:1!important;transform:none!important;transition:none!important}
+  .about-flow-image{clip-path:none!important;transform:none!important;opacity:1!important}
+}
