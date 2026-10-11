@@ -462,7 +462,7 @@ function setupCinematicAbout() {
   if(!section || reduced.matches || !window.gsap || !window.ScrollTrigger) return;
   // Keep the desktop zero-to-portrait expansion untouched. Phones get a
   // lighter in-place capsule reveal without sticky pinning or layout shifts.
-  if (matchMedia("(max-width:700px)").matches) {
+  if (matchMedia("(max-width:700px), (pointer:coarse) and (max-width:960px)").matches) {
     const portrait=section.querySelector("[data-about-image]");
     if (!portrait) return;
     const {gsap,ScrollTrigger}=window;
@@ -504,7 +504,7 @@ function setupRunwayExperience(){
   const section=document.querySelector("[data-runway-experience]");
   const track=section?.querySelector(".runway-track");
   if(!section||!track)return;
-  const mobile=matchMedia("(max-width:700px)");
+  const mobile=matchMedia("(max-width:700px), (pointer:coarse) and (max-width:960px)");
   const reduced=matchMedia("(prefers-reduced-motion:reduce)");
   const configurations=[
     {selector:".runway-svg:not(.runway-svg-mobile)",coordinates:[[105,795],[1090,1700],[105,2605]]},
