@@ -670,8 +670,22 @@ function installPhotographyTitleTransition() {
     if (rule) rule.style.transform = "scaleX(1)";
   };
 
+  if (mobile.matches && !reducedMotion.matches) {
+    // Small, non-pinned editorial reveal on phones. Native touch scroll remains free.
+    const stage=title.closest(".photo-title-stage");
+    if (stage && "IntersectionObserver" in window) {
+      stage.classList.add("photo-title-mobile-ready");
+      const observer=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          stage.classList.add("photo-title-mobile-visible");
+          observer.disconnect();
+        }
+      },{threshold:.22});
+      observer.observe(stage);
+    } else reset();
+    return;
+  }
   if (
-    mobile.matches ||
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
@@ -787,8 +801,20 @@ function installPhotographyOutroTransition() {
 
   // The pinned outro is a desktop effect. On iOS Safari a restored scroll
   // position can leave GSAP's pin styles stuck over the hero after a reload.
+  if (mobile.matches && !reducedMotion.matches) {
+    if ("IntersectionObserver" in window) {
+      section.classList.add("photo-outro-mobile-ready");
+      const observer=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          section.classList.add("photo-outro-mobile-visible");
+          observer.disconnect();
+        }
+      },{threshold:.3});
+      observer.observe(section);
+    } else reset();
+    return;
+  }
   if (
-    mobile.matches ||
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
     typeof window.ScrollTrigger === "undefined"
@@ -946,10 +972,11 @@ function installPhotographyStaggeredGrid() {
       const distance = Math.abs(columnIndex - middleColumn);
       // Match the Codrops grid--full timing more closely: each step away
       // from centre starts 0.2 later, producing the steeper pyramid profile.
-      const delay = Math.min(0.6, distance * 0.2);
+      const delay = Math.min(0.6, distance * (window.innerWidth<=700 ? 0.16 : 0.2));
       const localProgress = clamp01((progress - delay) / (1 - delay));
       const eased = Math.sin((localProgress * Math.PI) / 2);
-      const yPercent = 450 * (1 - eased);
+      const mobileGrid=window.matchMedia("(max-width:700px)").matches;
+      const yPercent = (mobileGrid ? 155 : 450) * (1 - eased);
 
       item.style.transform = `translate3d(0, ${yPercent}%, 0)`;
       item.style.opacity = String(Math.min(1, localProgress * 1.35));
