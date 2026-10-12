@@ -520,8 +520,12 @@ function setupRunwayExperience(){
     const markers=[...svg.querySelectorAll("[data-runway-checkpoint]")];
     const careers=[...section.querySelectorAll("[data-runway-career]")];
     const length=path.getTotalLength();
-    path.style.strokeDasharray=String(length);
-    path.style.strokeDashoffset=String(length);
+    // The desktop path is drawn in calibrated SVG pathLength units.
+    // This makes its painted tip and getPointAtLength checkpoint fractions
+    // agree, even when preserveAspectRatio="none" stretches the SVG.
+    const dashLength=mobile.matches?length:1000;
+    path.style.strokeDasharray=String(dashLength);
+    path.style.strokeDashoffset=String(dashLength);
     const fractions=configuration.coordinates.map(([x,y])=>{
       let best=0,nearest=Infinity;
       for(let i=0;i<=800;i++){
@@ -543,14 +547,14 @@ function setupRunwayExperience(){
             fraction*viewHeight*.22;
         })
       : null;
-    active={path,svg,length,markers,careers,fractions,pathPositions,sampleCount,viewHeight};
+    active={path,svg,length,dashLength,markers,careers,fractions,pathPositions,sampleCount,viewHeight};
     section.classList.toggle("runway-enhanced",!reduced.matches);
     update();
   };
   const update=()=>{
     frame=0;
     if(!active)return;
-    const {path,svg,length,markers,careers,fractions,pathPositions,sampleCount,viewHeight}=active;
+    const {path,svg,length,dashLength,markers,careers,fractions,pathPositions,sampleCount,viewHeight}=active;
     const rect=track.getBoundingClientRect();
     let progress;
     if(reduced.matches){
@@ -573,7 +577,7 @@ function setupRunwayExperience(){
       const within=span>0?clamp((targetY-pathPositions[index-1])/span):0;
       progress=clamp((index-1+within)/sampleCount);
     }
-    path.style.strokeDashoffset=String(length*(1-progress));
+    path.style.strokeDashoffset=String(dashLength*(1-progress));
     fractions.forEach((threshold,i)=>{
       const visible=progress>=threshold||reduced.matches;
       markers[i]?.classList.toggle("is-active",visible);
