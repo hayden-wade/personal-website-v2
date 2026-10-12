@@ -531,16 +531,48 @@ function setupRunwayExperience(){
       }
       return best;
     });
-    active={path,length,markers,careers,fractions};
+    // Desktop: map each point on the winding SVG to its vertical position.
+    // A small arc-length component gives horizontal bends time to draw
+    // without a sudden jump when the path briefly travels sideways.
+    const sampleCount=600;
+    const viewHeight=svg.viewBox.baseVal.height || 3400;
+    const pathPositions=!mobile.matches
+      ? Array.from({length:sampleCount+1},(_,i)=>{
+          const fraction=i/sampleCount;
+          return path.getPointAtLength(fraction*length).y*.78 +
+            fraction*viewHeight*.22;
+        })
+      : null;
+    active={path,svg,length,markers,careers,fractions,pathPositions,sampleCount,viewHeight};
     section.classList.toggle("runway-enhanced",!reduced.matches);
     update();
   };
   const update=()=>{
     frame=0;
     if(!active)return;
-    const {path,length,markers,careers,fractions}=active;
+    const {path,svg,length,markers,careers,fractions,pathPositions,sampleCount,viewHeight}=active;
     const rect=track.getBoundingClientRect();
-    const progress=reduced.matches?1:clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
+    let progress;
+    if(reduced.matches){
+      progress=1;
+    }else if(mobile.matches){
+      // Keep the existing phone animation unchanged.
+      progress=clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
+    }else{
+      // Follow the actual desktop SVG geometry: the amber drawing tip
+      // stays close to the centre of the visible screen as the user scrolls.
+      const svgRect=svg.getBoundingClientRect();
+      const targetY=(innerHeight*.5-svgRect.top)/Math.max(1,svgRect.height)*viewHeight;
+      let lo=0,hi=sampleCount;
+      while(lo<hi){
+        const mid=Math.floor((lo+hi)/2);
+        if(pathPositions[mid]<targetY)lo=mid+1;else hi=mid;
+      }
+      const index=Math.max(1,lo);
+      const span=pathPositions[index]-pathPositions[index-1];
+      const within=span>0?clamp((targetY-pathPositions[index-1])/span):0;
+      progress=clamp((index-1+within)/sampleCount);
+    }
     path.style.strokeDashoffset=String(length*(1-progress));
     fractions.forEach((threshold,i)=>{
       const visible=progress>=threshold||reduced.matches;
