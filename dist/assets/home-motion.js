@@ -458,155 +458,395 @@ if (homeHero) {
 }
 
 function setupCinematicAbout() {
-  const section = document.querySelector("[data-about-cinematic]");
-  if (
-    !section ||
-    window.matchMedia("(max-width: 700px)").matches ||
-    typeof window.gsap === "undefined" ||
-    typeof window.ScrollTrigger === "undefined"
-  )
+  const section=document.querySelector("[data-about-cinematic]");
+  if(!section || reduced.matches || !window.gsap || !window.ScrollTrigger) return;
+  // Keep the desktop zero-to-portrait expansion untouched. Phones get a
+  // lighter in-place capsule reveal without sticky pinning or layout shifts.
+  if (matchMedia("(max-width:700px), (pointer:coarse) and (max-width:960px)").matches) {
+    const portrait=section.querySelector("[data-about-image]");
+    if (!portrait) return;
+    const {gsap,ScrollTrigger}=window;
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.fromTo(portrait,{
+      clipPath:"inset(0% 47% 0% 47% round 90px)",
+      opacity:.75,scale:.96
+    },{
+      clipPath:"inset(0% 0% 0% 0% round 90px)",
+      opacity:1,scale:1,ease:"none",
+      scrollTrigger:{id:"mobile-about-portrait",trigger:portrait,
+        start:"top 88%",end:"center 44%",scrub:.45,invalidateOnRefresh:true}
+    });
     return;
-
-  const { gsap, ScrollTrigger } = window;
+  }
+  const {gsap,ScrollTrigger}=window;
   gsap.registerPlugin(ScrollTrigger);
-
-  const stage = section.querySelector(".about-cinema-stage");
-  const headline = section.querySelector(".about-cinema-headline");
-  const titleLines = gsap.utils.toArray(
-    section.querySelectorAll("[data-about-title-line]"),
-  );
-  const portrait = section.querySelector("[data-about-portrait]");
-  const image = section.querySelector(".about-cinema-image");
-  const copy = section.querySelector("[data-about-copy]");
-  const strip = section.querySelector("[data-about-strip]");
-  const interests = gsap.utils.toArray(
-    section.querySelectorAll("[data-about-interest]"),
-  );
-
-  if (!stage || !headline || !titleLines.length || !portrait || !image) return;
-
-  const mm = gsap.matchMedia();
-  mm.add(
-    "(min-width: 901px) and (prefers-reduced-motion: no-preference)",
-    () => {
-      gsap.set(titleLines, { yPercent: 112, autoAlpha: 0 });
-      gsap.set(portrait, {
-        clipPath: "inset(18% 36% 22% 36%)",
-        xPercent: 8,
-      });
-      gsap.set(image, { scale: 1.18, xPercent: -2.5, yPercent: 2 });
-      gsap.set(copy, { y: 36, autoAlpha: 0 });
-      gsap.set(strip, { y: 16, autoAlpha: 0 });
-
-      const setInterest = (index) => {
-        interests.forEach((item, itemIndex) =>
-          item.classList.toggle("is-active", itemIndex === index),
-        );
-      };
-      setInterest(0);
-
-      const timeline = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          id: "about-cinematic-scene",
-          trigger: stage,
-          start: "top top+=74",
-          end: "bottom bottom",
-          scrub: 0.65,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      timeline
-        .to(
-          titleLines,
-          {
-            yPercent: 0,
-            autoAlpha: 1,
-            duration: 0.2,
-            stagger: 0.035,
-            ease: "power3.out",
-          },
-          0,
-        )
-        .to(
-          portrait,
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            xPercent: 0,
-            duration: 0.52,
-            ease: "power2.inOut",
-          },
-          0.12,
-        )
-        .to(
-          image,
-          {
-            scale: 1.04,
-            xPercent: 0,
-            yPercent: -1.5,
-            duration: 0.62,
-            ease: "power1.inOut",
-          },
-          0.1,
-        )
-        .to(
-          headline,
-          {
-            xPercent: -3,
-            yPercent: -2,
-            duration: 0.55,
-            ease: "power1.inOut",
-          },
-          0.24,
-        )
-        .to(
-          copy,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.22,
-            ease: "power2.out",
-          },
-          0.52,
-        )
-        .to(
-          strip,
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.18,
-            ease: "power2.out",
-          },
-          0.68,
-        )
-        .to(
-          image,
-          {
-            scale: 1,
-            yPercent: -3,
-            duration: 0.25,
-            ease: "power1.inOut",
-          },
-          0.75,
-        );
-
-      timeline.eventCallback("onUpdate", () => {
-        const progress = timeline.progress();
-        const index =
-          progress < 0.43 ? 0 : progress < 0.61 ? 1 : progress < 0.79 ? 2 : 3;
-        setInterest(index);
-      });
-
-      return () => {
-        timeline.scrollTrigger?.kill();
-        timeline.kill();
-        interests.forEach((item) => item.classList.remove("is-active"));
-      };
-    },
-  );
-
-  requestAnimationFrame(() => ScrollTrigger.refresh());
+  const stage=section.querySelector(".about-cinema-stage");
+  const image=section.querySelector("[data-about-image]");
+  if(!stage || !image)return;
+  // In normal flex flow the capsule's width physically pushes the words on its right.
+  // Portrait capsule: retain the existing maximum width but use a taller 3:4 image.
+  const expandedWidth=()=>Math.min(440,Math.max(280,window.innerWidth*.25));
+  const expandedHeight=()=>expandedWidth()*4/3;
+  gsap.set(image,{width:0,height:0,flexBasis:0,opacity:0,borderRadius:"85px"});
+  gsap.timeline({defaults:{ease:"none"},scrollTrigger:{
+    id:"about-image-expansion",trigger:stage,start:"top top",end:"bottom bottom",
+    scrub:0.8,invalidateOnRefresh:true
+  }}).to(image,{width:expandedWidth,height:expandedHeight,flexBasis:expandedWidth,
+    opacity:1,borderRadius:"85px",duration:0.75},0);
+  window.addEventListener("load",()=>ScrollTrigger.refresh(),{once:true});
 }
+
 setupCinematicAbout();
 
+
+
+function setupRunwayExperience(){
+  const section=document.querySelector("[data-runway-experience]");
+  const track=section?.querySelector(".runway-track");
+  if(!section||!track)return;
+  const mobile=matchMedia("(max-width:700px), (pointer:coarse) and (max-width:960px)");
+  const reduced=matchMedia("(prefers-reduced-motion:reduce)");
+  const configurations=[
+    {selector:".runway-svg:not(.runway-svg-mobile)",coordinates:[[105,795],[1090,1700],[105,2605]]},
+    {selector:".runway-svg-mobile",coordinates:[[60,355],[54,1000],[80,1640]]}
+  ];
+  let active=null,frame=0;
+  const clamp=v=>Math.max(0,Math.min(1,v));
+  const setup=()=>{
+    const configuration=configurations[mobile.matches?1:0];
+    const svg=section.querySelector(configuration.selector);
+    const path=svg?.querySelector("[data-runway-path]");
+    if(!path)return;
+    const markers=[...svg.querySelectorAll("[data-runway-checkpoint]")];
+    const careers=[...section.querySelectorAll("[data-runway-career]")];
+    const length=path.getTotalLength();
+    const sampleCount=1600;
+    const viewHeight=svg.viewBox.baseVal.height || 3400;
+    let dashLength=length, pathPositions=null, renderDistances=null, markerDistances=null;
+    let fractions=null;
+
+    if(mobile.matches){
+      // Preserve the original mobile dash rendering and checkpoint timing.
+      fractions=configuration.coordinates.map(([x,y])=>{
+        let best=0,nearest=Infinity;
+        for(let i=0;i<=800;i++){
+          const p=path.getPointAtLength(i*length/800);
+          const d=(p.x-x)**2+(p.y-y)**2;
+          if(d<nearest){nearest=d;best=i/800}
+        }
+        return best;
+      });
+    }else{
+      // SVG preserveAspectRatio="none" scales X and Y differently.
+      // With a non-scaling stroke, dashes follow *screen-space* distance,
+      // whereas getTotalLength() measures unstretched SVG coordinates.
+      // Compute the full rendered arc length so ticks and amber tip agree.
+      const matrix=path.getScreenCTM();
+      const points=new Array(sampleCount+1);
+      pathPositions=new Array(sampleCount+1);
+      renderDistances=new Array(sampleCount+1);
+      let drawn=0,previous=null;
+      for(let i=0;i<=sampleCount;i++){
+        const fraction=i/sampleCount;
+        const point=path.getPointAtLength(fraction*length);
+        points[i]=point;
+        if(previous){
+          const dx=point.x-previous.x,dy=point.y-previous.y;
+          drawn+=matrix
+            ? Math.hypot(dx*matrix.a+dy*matrix.c,dx*matrix.b+dy*matrix.d)
+            : Math.hypot(dx,dy);
+        }
+        renderDistances[i]=drawn;
+        pathPositions[i]=point.y*.78 + fraction*viewHeight*.22;
+        previous=point;
+      }
+      dashLength=drawn;
+      markerDistances=configuration.coordinates.map(([x,y])=>{
+        let best=0,nearest=Infinity;
+        for(let i=0;i<=sampleCount;i++){
+          const p=points[i];
+          const distance=(p.x-x)**2+(p.y-y)**2;
+          if(distance<nearest){nearest=distance;best=i}
+        }
+        return renderDistances[best];
+      });
+    }
+
+    path.style.strokeDasharray=String(dashLength);
+    path.style.strokeDashoffset=String(dashLength);
+    active={path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+      pathPositions,renderDistances,sampleCount,viewHeight};
+    section.classList.toggle("runway-enhanced",!reduced.matches);
+    update();
+  };
+  const update=()=>{
+    frame=0;
+    if(!active)return;
+    const {path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+      pathPositions,renderDistances,sampleCount,viewHeight}=active;
+    const rect=track.getBoundingClientRect();
+    let progress,drawnDistance=0;
+    if(reduced.matches){
+      progress=1;
+      drawnDistance=dashLength;
+    }else if(mobile.matches){
+      // Keep the existing phone animation unchanged.
+      progress=clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
+      drawnDistance=dashLength*progress;
+    }else{
+      // Keep the line's leading edge near the desktop viewport centre.
+      const svgRect=svg.getBoundingClientRect();
+      const targetY=(innerHeight*.5-svgRect.top)/Math.max(1,svgRect.height)*viewHeight;
+      let lo=0,hi=sampleCount;
+      while(lo<hi){
+        const mid=Math.floor((lo+hi)/2);
+        if(pathPositions[mid]<targetY)lo=mid+1;else hi=mid;
+      }
+      const index=Math.max(1,lo);
+      const span=pathPositions[index]-pathPositions[index-1];
+      const within=span>0?clamp((targetY-pathPositions[index-1])/span):0;
+      progress=clamp((index-1+within)/sampleCount);
+      // The path is drawn in actual rendered pixels; so are the checkpoints.
+      drawnDistance=renderDistances[index-1]+
+        (renderDistances[index]-renderDistances[index-1])*within;
+      drawnDistance=Math.min(dashLength,Math.max(0,drawnDistance));
+    }
+    path.style.strokeDashoffset=String(dashLength-drawnDistance);
+    markers.forEach((marker,i)=>{
+      const visible=reduced.matches||(mobile.matches
+        ? progress>=fractions[i]
+        : drawnDistance>=markerDistances[i]);
+      marker?.classList.toggle("is-active",visible);
+      careers[i]?.classList.toggle("is-active",visible);
+    });
+  };
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+  mobile.addEventListener("change",setup);
+  reduced.addEventListener("change",setup);
+  addEventListener("scroll",schedule,{passive:true});
+  addEventListener("resize",()=>{
+    // Recalculate the X/Y stretch if the desktop SVG changes dimensions.
+    if(mobile.matches) schedule();
+    else setup();
+  },{passive:true});
+  setup();
+}
+setupRunwayExperience();
+
+
+// Topographic field, inspired by GaseousAir's interactive marching-squares demo
+// (https://codepen.io/GaseousAir/pen/YPXXEBq) and the cursor-elevation approach in
+// contour-field (https://github.com/AlexGordienko/contour-field).
+// Original dependency-free implementation, drawn behind the homepage content.
+function setupContourBackground(){
+  const main=document.querySelector(".home-reveal-shell .home-main");
+  if(!main||!window.HTMLCanvasElement)return;
+  const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d",{alpha:true});
+  if(!ctx)return;
+  canvas.className="contour-backdrop";
+  canvas.setAttribute("aria-hidden","true");
+  main.prepend(canvas);
+  main.classList.add("contour-field-active");
+
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)");
+  const fine=matchMedia("(hover: hover) and (pointer: fine)");
+  const interval=.165;
+  const cursor={x:0,y:0,pressure:0};
+  const target={x:0,y:0,pressure:0};
+  let width=0,height=0,step=16,cols=0,rows=0,base=null,values=null;
+  let active=false,visible=false,frame=0,lastTime=0,lastPaint=0;
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const smooth=t=>t*t*(3-2*t);
+  const hash=(x,y)=>{
+    let n=(Math.imul(x,374761393)+Math.imul(y,668265263))|0;
+    n=Math.imul(n^(n>>>13),1274126177);
+    return ((n^(n>>>16))>>>0)/2147483647.5-1;
+  };
+  const noise=(x,y)=>{
+    const ix=Math.floor(x),iy=Math.floor(y),u=smooth(x-ix),v=smooth(y-iy);
+    const a=hash(ix,iy)*(1-u)+hash(ix+1,iy)*u;
+    const b=hash(ix,iy+1)*(1-u)+hash(ix+1,iy+1)*u;
+    return a*(1-v)+b*v;
+  };
+  // Rotated, elongated peaks and depressions create geologically plausible
+  // nested ridgelines and saddle contours rather than concentric circles.
+  const ridge=(x,y,cx,cy,rx,ry,angle,amplitude)=>{
+    const dx=x-cx,dy=y-cy,cos=Math.cos(angle),sin=Math.sin(angle);
+    const u=(dx*cos+dy*sin)/rx,v=(-dx*sin+dy*cos)/ry;
+    return amplitude*Math.exp(-.5*(u*u+v*v));
+  };
+  const elevation=(px,py)=>{
+    let x=(px-width*.48)/340,y=(py-height*.49)/340;
+    const warpX=noise(x*.75+7.2,y*.75+2.4);
+    const warpY=noise(x*.75-3.7,y*.75+9.3);
+    x+=.3*warpX;y+=.25*warpY;
+    return ridge(x,y,-1.24,-.35,1.85,.56,-.43,1.86)
+      +ridge(x,y,.95,.78,1.48,.65,.68,1.72)
+      +ridge(x,y,1.17,-.95,1.1,.48,-.53,1.02)
+      -ridge(x,y,-.15,.27,1.62,.4,-.22,.78)
+      +.20*noise(x*1.5,y*1.5)
+      +.09*noise(x*3.6+4.8,y*3.6-2.1);
+  };
+
+  const resize=()=>{
+    width=Math.max(1,innerWidth);
+    height=Math.max(1,innerHeight);
+    const dpr=Math.min(devicePixelRatio||1,1.5);
+    canvas.width=Math.round(width*dpr);
+    canvas.height=Math.round(height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    step=width>1900?18:width>850?15:17;
+    cols=Math.ceil(width/step)+1;
+    rows=Math.ceil(height/step)+1;
+    base=new Float32Array(cols*rows);
+    values=new Float32Array(cols*rows);
+    for(let row=0;row<rows;row++){
+      for(let col=0;col<cols;col++){
+        base[row*cols+col]=elevation(col*step,row*step);
+      }
+    }
+    if(!active){
+      cursor.x=target.x=width/2;
+      cursor.y=target.y=height/2;
+    }
+    paint();
+  };
+
+  // Marching squares extracts actual isolines of the elevation field.
+  // Group each altitude into a single Path2D for efficient, continuous strokes.
+  const segment=(path,a,b)=>{
+    path.moveTo(a[0],a[1]);
+    path.lineTo(b[0],b[1]);
+  };
+  const paint=()=>{
+    if(!values)return;
+    ctx.clearRect(0,0,width,height);
+    const radius=245,rad2=radius*radius;
+    let low=Infinity,high=-Infinity;
+    for(let r=0;r<rows;r++){
+      const y=r*step;
+      for(let c=0;c<cols;c++){
+        const i=r*cols+c;
+        let value=base[i];
+        if(cursor.pressure>.001){
+          const dx=(c*step-cursor.x),dy=(y-cursor.y);
+          const dist2=dx*dx+dy*dy;
+          if(dist2<rad2*3.8)
+            value-=1.04*cursor.pressure*Math.exp(-2.4*dist2/rad2);
+        }
+        values[i]=value;
+        if(value<low)low=value;
+        if(value>high)high=value;
+      }
+    }
+    const first=Math.floor(low/interval),last=Math.ceil(high/interval);
+    const paths=Array.from({length:last-first+1},()=>new Path2D());
+    for(let r=0;r<rows-1;r++){
+      const y=r*step;
+      for(let c=0;c<cols-1;c++){
+        const x=c*step,i=r*cols+c;
+        const a=values[i],b=values[i+1],d=values[i+cols],e=values[i+cols+1];
+        const lower=Math.min(a,b,d,e),upper=Math.max(a,b,d,e);
+        const start=Math.floor(lower/interval)+1;
+        const end=Math.floor(upper/interval);
+        for(let k=start;k<=end;k++){
+          const level=k*interval;
+          const cross=[];
+          const interp=(v1,v2)=>clamp((level-v1)/(v2-v1),0,1);
+          if((a>=level)!==(b>=level))cross.push([x+step*interp(a,b),y]);
+          if((b>=level)!==(e>=level))cross.push([x+step,y+step*interp(b,e)]);
+          if((d>=level)!==(e>=level))cross.push([x+step*interp(d,e),y+step]);
+          if((a>=level)!==(d>=level))cross.push([x,y+step*interp(a,d)]);
+          const path=paths[k-first];
+          if(cross.length===2)segment(path,cross[0],cross[1]);
+          else if(cross.length===4){
+            // Resolve saddle cells consistently to avoid visible topology tears.
+            if((a+b+d+e)*.25>=level){
+              segment(path,cross[0],cross[3]);
+              segment(path,cross[1],cross[2]);
+            }else{
+              segment(path,cross[0],cross[1]);
+              segment(path,cross[2],cross[3]);
+            }
+          }
+        }
+      }
+    }
+    ctx.lineJoin="round";
+    ctx.lineCap="round";
+    for(let k=first;k<=last;k++){
+      const major=(k%5===0);
+      ctx.strokeStyle=major?"rgba(224,202,168,.20)":"rgba(224,202,168,.105)";
+      ctx.lineWidth=major?1.05:.75;
+      ctx.stroke(paths[k-first]);
+    }
+  };
+
+  const request=()=>{if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(tick)};
+  const tick=time=>{
+    frame=0;
+    if(!visible||document.hidden)return;
+    const dt=lastTime?Math.min(64,time-lastTime):16;
+    lastTime=time;
+    const easing=1-Math.exp(-dt/150);
+    cursor.x+=(target.x-cursor.x)*easing;
+    cursor.y+=(target.y-cursor.y)*easing;
+    cursor.pressure+=(target.pressure-cursor.pressure)*(1-Math.exp(-dt/220));
+    const moving=Math.abs(target.x-cursor.x)+Math.abs(target.y-cursor.y)>1
+      ||Math.abs(target.pressure-cursor.pressure)>.004;
+    if(time-lastPaint>30||!moving){
+      paint();
+      lastPaint=time;
+    }
+    if(moving)request();
+  };
+
+  const canInteract=()=>fine.matches&&!reduced.matches;
+  const onPointer=event=>{
+    if(!canInteract()||event.pointerType==="touch")return;
+    target.x=event.clientX;
+    target.y=event.clientY;
+    target.pressure=1;
+    request();
+  };
+  const release=()=>{target.pressure=0;request();};
+  const visibility=flag=>{
+    visible=flag;
+    canvas.style.visibility=flag?"visible":"hidden";
+    if(!flag){
+      if(frame)cancelAnimationFrame(frame);
+      frame=0;lastTime=0;
+    }else{
+      if(!canInteract())cursor.pressure=target.pressure=0;
+      paint();
+    }
+  };
+  resize();
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(entries=>{
+      visibility(entries[0].isIntersecting&&!document.hidden);
+    },{rootMargin:"100px"}).observe(main);
+  }else{
+    const refresh=()=>{
+      const rect=main.getBoundingClientRect();
+      visibility(rect.bottom>0&&rect.top<innerHeight&&!document.hidden);
+    };
+    addEventListener("scroll",refresh,{passive:true});
+    refresh();
+  }
+  addEventListener("pointermove",onPointer,{passive:true});
+  addEventListener("mouseout",e=>{if(!e.relatedTarget)release();},{passive:true});
+  addEventListener("blur",release);
+  document.addEventListener("visibilitychange",()=>{
+    const rect=main.getBoundingClientRect();
+    visibility(!document.hidden&&rect.bottom>0&&rect.top<innerHeight);
+  });
+  addEventListener("resize",()=>{
+    resize();
+    if(visible)paint();
+  },{passive:true});
+  reduced.addEventListener("change",()=>{if(!canInteract())release();});
+  fine.addEventListener("change",()=>{if(!canInteract())release();});
+}
+setupContourBackground();
