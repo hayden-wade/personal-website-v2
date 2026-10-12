@@ -4377,65 +4377,61 @@ body.infinite-photo-active {
 }
 
 
-/* Unified homepage graphite canvas — all cinematic chapters sample exactly
-   the same viewport-fixed printed-paper gradient. The older flat fills used
-   by the sticky About scene and the galleries created visible colour jumps.
-   Keep the photographic hero, navigation chrome and ochre footer separate. */
+/* One continuous graphite backdrop for the entire homepage.
+   Previous approach gave sticky/pinned sections their own fixed gradients,
+   which visibly restarted at the Projects and Photography boundaries.
+   The shell is the ONLY background paint surface for homepage chapters. */
 :root{
   --homepage-canvas:
     radial-gradient(ellipse at 14% 4%, rgba(243,228,199,.055) 0%, rgba(243,228,199,0) 36%),
     radial-gradient(ellipse at 78% 38%, rgba(93,167,161,.035) 0%, rgba(93,167,161,0) 42%),
     linear-gradient(132deg,#262724 0%,#20211f 48%,#1a1b19 100%);
 }
-body,
-.home-reveal-shell,
-.home-reveal-shell .about-flow .about-cinema-sticky,
-.home-reveal-shell .about-expand-bio,
-.home-reveal-shell .project-reel-stage,
-.home-reveal-shell #photography .photo-3d-stage{
+
+/* Keep an opaque surface above the fixed ochre footer, so it cannot
+   show through earlier chapters as the contact reveal approaches. */
+.home-reveal-shell{
   background-color:var(--bg);
   background-image:var(--homepage-canvas);
   background-attachment:fixed;
   background-repeat:no-repeat;
 }
-/* Let the continuous canvas show through where a separate paint layer
-   serves no purpose. Do not touch photo tiles or the hero photograph. */
-.home-reveal-shell #experience,
-.home-reveal-shell .project-reel-section,
-.home-reveal-shell #photography,
+
+/* All nested chapter containers reveal the SAME shell background.
+   Don't reset background-attachment or gradients on the pinned reel. */
+.home-reveal-shell .about-flow .about-cinema-sticky,
+.home-reveal-shell .about-expand-bio,
+.home-reveal-shell .project-reel-stage,
+.home-reveal-shell #photography .photo-3d-stage,
 .home-reveal-shell .photo-title-stage,
-.home-reveal-shell .photo-outro{
-  background-color:transparent;
-  background-image:none;
+.home-reveal-shell .photo-outro,
+.home-reveal-shell #experience,
+.home-reveal-shell #projects,
+.home-reveal-shell #photography{
+  background:transparent;
 }
-/* The soft image-edge fades should not cover the graphite texture with
-   opaque rectangular bands at either side of the galleries. */
+
+/* A full-width bottom vignette was also making the project stage
+   darker at its lower edge, creating a second visible horizontal seam.
+   Keep the horizontal image edge fades, but not the bottom overlay. */
+.home-reveal-shell .project-reel-viewport::after{
+  display:none;
+}
 .home-reveal-shell .project-reel-viewport::before{
   background:linear-gradient(90deg,
-    rgba(32,33,31,.82) 0%,rgba(32,33,31,.45) 4%,
-    rgba(32,33,31,0) 11%,rgba(32,33,31,0) 89%,
-    rgba(32,33,31,.45) 96%,rgba(32,33,31,.82) 100%);
-}
-.home-reveal-shell .project-reel-viewport::after{
-  background:linear-gradient(transparent,rgba(32,33,31,.25) 45%,rgba(32,33,31,.70) 100%);
+    rgba(32,33,31,.65),transparent 10%,transparent 90%,rgba(32,33,31,.65));
 }
 .home-reveal-shell #photography .photo-3d-stage::after{
   background:linear-gradient(90deg,
-    rgba(32,33,31,.83) 0%,rgba(32,33,31,.4) 10%,
-    rgba(32,33,31,0) 18%,rgba(32,33,31,0) 82%,
-    rgba(32,33,31,.4) 90%,rgba(32,33,31,.83) 100%);
+    rgba(32,33,31,.65),transparent 16%,transparent 84%,rgba(32,33,31,.65));
 }
-/* Mobile browsers may rasterise background-attachment:fixed differently.
-   A consistent graphite stock plus the existing fixed grain overlay avoids
-   seams without introducing heavy fixed-gradient repaints on touch devices. */
-@media (max-width:700px), (pointer:coarse) and (max-width:960px){
-  .home-reveal-shell,
-  .home-reveal-shell .about-flow .about-cinema-sticky,
-  .home-reveal-shell .about-expand-bio,
-  .home-reveal-shell .project-reel-stage,
-  .home-reveal-shell #photography .photo-3d-stage{
+
+/* On mobile keep the *single* canvas, with native scrolling rather than
+   attachment-fixed rendering (which is unreliable on mobile Safari). */
+@media(max-width:700px), (pointer:coarse) and (max-width:960px){
+  .home-reveal-shell{
     background-color:var(--bg);
-    background-image:none;
+    background-image:var(--homepage-canvas);
     background-attachment:scroll;
   }
 }
