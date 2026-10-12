@@ -70,7 +70,7 @@ const runwayExperience = () => {
     <div class="runway-track">
       <svg class="runway-svg" viewBox="0 0 1200 3400" preserveAspectRatio="none" aria-hidden="true">
         <path class="runway-base" d="${path}"/>
-        <path class="runway-draw" data-runway-path d="${path}"/>
+        <path class="runway-draw" data-runway-path pathLength="1000" d="${path}"/>
         ${[[105,795],[1090,1700],[105,2605]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="38"/><circle class="runway-checkpoint-inner" r="28"/><path class="runway-checkmark" d="M-15 0 L-3 12 L18 -14"/></g>`).join("")}
       </svg>
       <svg class="runway-svg runway-svg-mobile" viewBox="0 0 390 2100" preserveAspectRatio="none" aria-hidden="true">
