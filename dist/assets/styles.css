@@ -21,6 +21,7 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 100px;
   overflow-x: clip;
+  background: var(--bg);
 }
 body {
   margin: 0;
@@ -176,8 +177,8 @@ figcaption,
   right: var(--gutter);
 }
 .wordmark {
-  font-size: 14px;
-  font-weight: 600;
+  font: 400 20px/1 var(--serif);
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 .site-header nav,
@@ -2722,42 +2723,139 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   html {
-    scroll-padding-top: 80px;
+    --mobile-safe-top: env(safe-area-inset-top, 0px);
+    scroll-padding-top: calc(58px + var(--mobile-safe-top));
   }
   .site-header {
-    height: 64px;
-    padding-inline: 20px;
+    height: calc(58px + var(--mobile-safe-top));
+    padding-top: var(--mobile-safe-top);
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    max-width: none;
+    background-color: #171a18;
+    border-bottom: 1px solid rgba(229, 224, 214, 0.12);
+    transition:
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 180ms ease,
+      background-color 220ms ease,
+      border-color 220ms ease;
+  }
+  .site-header:after,
+  .home-nav:after {
+    display: none;
+  }
+  .site-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: var(--mobile-safe-top);
+    background: #171a18;
+    pointer-events: none;
+  }
+  .site-header.menu-open::before {
+    background: #0f1210;
+  }
+  .site-header.header-hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .site-header.menu-open {
+    transform: translateY(0);
+    background-color: #0f1210;
+    border-bottom-color: rgba(229, 224, 214, 0.1);
+  }
+  .site-header .wordmark {
+    font: 400 21px/1 var(--serif);
+    letter-spacing: -0.025em;
   }
   .menu-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .menu-icon {
+    width: 20px;
+    height: 13px;
     display: flex;
-    gap: 12px;
-    font-size: 11px;
-    padding: 12px 0;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .menu-icon > span {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform-origin: center;
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease;
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(2) {
+    opacity: 0;
+  }
+  .site-header.menu-open .menu-icon > span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
   }
   .site-header nav {
     display: none;
-    position: absolute;
-    top: 64px;
-    left: 0;
-    right: 0;
-    background: var(--bg);
-    padding: 20px;
-    border-bottom: 1px solid var(--line);
-    z-index: 20;
+    position: fixed;
+    inset: calc(58px + var(--mobile-safe-top)) 0 0;
+    background:
+      linear-gradient(180deg, rgba(15, 18, 16, 0.97), rgba(23, 26, 24, 0.985));
+    padding: clamp(52px, 10vh, 90px) max(28px, env(safe-area-inset-right, 0px)) calc(42px + env(safe-area-inset-bottom, 0px)) max(28px, env(safe-area-inset-left, 0px));
+    border: 0;
+    z-index: 99;
+    counter-reset: mobile-nav;
+    overflow-y: auto;
   }
   .site-header.menu-open nav {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    justify-content: center;
     gap: 0;
   }
   .site-header nav a,
   .home-nav nav a {
     height: auto;
-    padding: 15px 0;
+    padding: 13px 0 15px;
+    border-bottom: 1px solid rgba(229, 224, 214, 0.12);
+    color: var(--text);
+    font: 400 clamp(44px, 13vw, 68px)/0.96 var(--serif);
+    letter-spacing: -0.045em;
+    counter-increment: mobile-nav;
+  }
+  .site-header nav a::before,
+  .home-nav nav a::before {
+    content: "0" counter(mobile-nav) " / ";
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent);
+    font: 500 10px/1 var(--sans);
+    letter-spacing: 0.16em;
+  }
+  .site-header nav a[aria-current]:after,
+  .home-nav nav a[aria-current]:after {
+    display: none;
+  }
+  html.nav-open,
+  html.nav-open body {
+    overflow: hidden;
   }
   .home-nav {
     position: sticky;
+    height: calc(58px + var(--mobile-safe-top));
+    background-color: #171a18;
+    border-bottom: 1px solid rgba(229, 224, 214, 0.12);
   }
   .hero {
     min-height: 620px;
@@ -3452,15 +3550,32 @@ body.infinite-photo-active {
 }
 @media (max-width: 700px) {
   .hero {
-    height: 100svh;
-    min-height: 540px;
+    /* Fill the mobile page viewport. Safari's own browser chrome remains
+       outside the webpage in a normal tab. */
+    height: 100lvh;
+    min-height: 100lvh;
+    padding-bottom: calc(118px + env(safe-area-inset-bottom));
+  }
+  .hero-image {
+    /* Restore a more natural mobile crop while keeping the E30 in frame. */
+    object-position: 75% 60%;
+  }
+  .hero-top {
+    display: none;
   }
   .hero h1 {
     font-size: clamp(100px, 33vw, 180px);
-    margin-top: 8svh;
+    margin-top: 7svh;
   }
   .hero-role {
-    margin-top: 40px;
+    margin-top: 34px;
+  }
+  .hero-bottom {
+    justify-content: center;
+  }
+  .hero-bottom > span:first-child,
+  .hero-bottom > span:last-child {
+    display: none;
   }
   .job summary {
     grid-template-columns: 28px minmax(0, 1fr) 20px;
@@ -3817,33 +3932,29 @@ body.infinite-photo-active {
   --accent-blue: #76a9c7;
 }
 
-/* Keep the site warm and tactile rather than pure black. Subtle tonal shifts
-   give the dark field the same printed-paper depth as the previous light test. */
+/* Option 1: fine-grain charcoal paper.
+   A uniform graphite field, with no radial light patches or stripe pattern.
+   The fixed, monochrome noise layer below provides the tactile film grain. */
 body,
 .home-reveal-shell {
   background-color: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 14% 4%, rgba(243, 228, 199, 0.055) 0%, rgba(243, 228, 199, 0) 36%),
-    radial-gradient(ellipse at 78% 38%, rgba(93, 167, 161, 0.035) 0%, rgba(93, 167, 161, 0) 42%),
-    linear-gradient(132deg, #262724 0%, #20211f 48%, #1a1b19 100%);
-  background-attachment: fixed;
+  background-image: none;
 }
 
-/* Printed-canvas / photographic grain. On the dark field soft-light keeps the
-   texture visible without turning the page grey or crushing the shadows. */
+/* One small, seamless black-and-white grain tile across the entire viewport.
+   The filter generates fine photographic noise without woven stripes, dots,
+   radial spotlights or extra full-width section layers. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9998;
   pointer-events: none;
-  opacity: 0.27;
+  opacity: 0.24;
   mix-blend-mode: soft-light;
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch' seed='17'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='.35 .72'/%3E%3CfeFuncG type='table' tableValues='.35 .72'/%3E%3CfeFuncB type='table' tableValues='.35 .72'/%3E%3CfeFuncA type='table' tableValues='0 .62'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(0deg, rgba(243, 228, 199, 0.025) 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(90deg, rgba(243, 228, 199, 0.018) 0 1px, transparent 1px 6px);
-  background-size: 180px 180px, 5px 5px, 6px 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23grain)' opacity='.7'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
 }
 
 /* Sticky/full-width homepage surfaces stay on the same dark stock. */
@@ -3953,3 +4064,384 @@ body.infinite-photo-active {
   background: var(--bg);
 }
 
+
+
+/* Codrops-inspired image expansion: latest About layout */
+.about-expand{width:100vw;max-width:none;margin-left:calc(50% - 50vw);padding:0!important;overflow:visible!important}
+.about-expand .about-cinema-stage{height:330vh;position:relative}
+.about-expand .about-cinema-sticky{position:sticky;inset:auto;top:0;height:100vh;min-height:0;padding:0;overflow:hidden;isolation:isolate;background:var(--bg,#20221f)}
+.about-expand .about-cinema-meta{z-index:8;top:clamp(27px,6vh,70px);left:max(5vw,calc((100vw - 1264px)/2));right:max(5vw,calc((100vw - 1264px)/2))}
+.about-expand-typography{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,36px);z-index:3;pointer-events:none;color:var(--text,#efe3cc)}
+.about-expand-line,.about-expand-word{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.052em;line-height:.92}
+.about-expand-line{margin:0!important;text-align:center;font-size:clamp(64px,8.5vw,148px);white-space:nowrap}
+.about-expand-line em,.about-expand-word em{font-weight:400}
+.about-expand-middle{display:flex;align-items:center;justify-content:center;gap:0;width:100%;white-space:nowrap;font-size:clamp(55px,6.5vw,112px)}
+.about-expand-word{display:block}
+.about-expand-gap{flex:0 0 22vw}
+.about-expand-image{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%);width:22vw;height:23vh;overflow:hidden;min-width:0;min-height:0;margin:0!important;will-change:width,height;box-shadow:0 14px 48px rgba(0,0,0,.22)}
+.about-expand-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.about-expand-image figcaption{position:absolute;right:clamp(14px,3vw,44px);bottom:clamp(14px,3vw,30px);padding:5px 8px;color:#f0e4cb;background:rgba(15,18,16,.58);font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:0;transition:opacity .35s}
+.about-expand-scroll{position:absolute;z-index:7;left:50%;bottom:5vh;transform:translateX(-50%);color:var(--muted,#b5afa3);font-size:11px;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap}
+.about-expand-bio{min-height:65vh;display:grid;grid-template-columns:1fr 1.6fr;gap:8vw;align-items:start;padding:clamp(100px,15vh,190px) max(6vw,calc((100vw - 1264px)/2));background:var(--bg,#20221f);position:relative;z-index:5}
+.about-expand-bio-label{color:var(--accent,#c99558);font-size:12px;letter-spacing:.14em}
+.about-expand-bio-content{max-width:680px}
+.about-expand-bio-content h3{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(50px,6vw,95px);font-weight:400;line-height:1;letter-spacing:-.04em;margin:0 0 42px}
+.about-expand-bio-content p{font-size:clamp(17px,1.4vw,22px);line-height:1.65;max-width:56ch;color:var(--text,#f0e4cb);margin:0 0 22px}
+.about-expand + #experience{padding-top:0}
+@media(max-width:900px){.about-expand-line{font-size:clamp(55px,8vw,95px)}.about-expand-middle{font-size:clamp(40px,6.6vw,74px)}.about-expand-gap{flex-basis:24vw}.about-expand-bio{grid-template-columns:1fr;gap:32px}}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-expand{width:auto;margin-left:0;padding:75px var(--gutter)!important}
+.about-expand .about-cinema-stage{height:auto}
+.about-expand .about-cinema-sticky{position:relative;top:auto;height:auto;overflow:visible;display:flex;flex-direction:column;padding:0;background:transparent}
+.about-expand .about-cinema-meta{position:relative;inset:auto;order:0;margin-bottom:55px}
+.about-expand-typography{position:relative;inset:auto;display:block;order:1;margin-bottom:28px}
+.about-expand-line{font-size:clamp(43px,10vw,66px);text-align:left;white-space:normal;margin:0 0 8px!important}
+.about-expand-middle{display:block;font-size:clamp(38px,9vw,58px);white-space:normal}
+.about-expand-word{display:inline}
+.about-expand-gap{display:none}
+.about-expand-image{position:relative;inset:auto;transform:none;width:100%;height:clamp(330px,70vw,570px);order:2;box-shadow:none}
+.about-expand-image figcaption{opacity:1}
+.about-expand-scroll{display:none}
+.about-expand-bio{padding:65px 0 10px;min-height:0}
+.about-expand-bio-content h3{font-size:clamp(50px,11vw,75px)}
+}
+
+
+/* Project One: asymmetrical editorial About with embedded pill photograph. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-expand .about-cinema-stage{height:300vh}
+.about-expand .about-cinema-sticky{background:#20211f}
+.about-expand-typography{inset:0;display:block;z-index:3;pointer-events:none}
+.about-expand-line{position:absolute;text-align:left;font-size:clamp(72px,7.7vw,142px);letter-spacing:-.047em;line-height:.9;white-space:normal}
+.about-expand-line--first{left:5vw;top:clamp(85px,14vh,160px)}
+.about-expand-line--last{left:42vw;top:57%;font-size:clamp(58px,6.3vw,112px)}
+.about-expand-middle{position:absolute;left:5vw;right:5vw;top:43%;width:auto;justify-content:flex-start;gap:0;font-size:clamp(50px,5.75vw,105px);line-height:.96;white-space:nowrap}
+.about-expand-word{flex:0 0 auto;line-height:.95}
+.about-expand-gap{display:block;flex:0 0 clamp(195px,22vw,400px);height:clamp(115px,17vh,200px)}
+.about-expand-image{top:0;left:0;transform:translate(-50%,-50%);width:22vw;height:17vh;min-height:0;border-radius:85px;z-index:4;overflow:hidden}
+.about-expand-aside{position:absolute;top:19%;right:5vw;width:min(27vw,420px);margin:0;font:500 clamp(12px,.92vw,15px)/1.45 "DM Sans",Arial,sans-serif;color:var(--muted);z-index:3}
+.about-expand-image figcaption{opacity:1;border-radius:2px}
+.about-expand-scroll{left:auto;right:5vw;transform:none;bottom:6vh}
+}
+@media(min-width:701px) and (max-width:1100px){
+.about-expand-aside{top:13%;right:5vw;width:27vw}
+.about-expand-line--first{top:16%}
+.about-expand-middle{top:49%;font-size:5.5vw}
+.about-expand-line--last{top:67%}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-expand-aside{position:relative;inset:auto;order:2;margin:0 0 30px;font-size:15px;line-height:1.55;max-width:56ch;color:var(--muted)}
+.about-expand-image{order:3;border-radius:36px!important}
+.about-expand-middle{line-height:1.1}
+}
+
+/* Short, subtle About reveal rather than an immersive full-screen expansion. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){.about-expand .about-cinema-stage{height:155vh}}
+
+/* Keep the headline visually identical at rest while letting its second line move independently. */
+.about-expand-second-row{display:inline-block}
+
+
+/* About: the rounded photograph expands within the sentence itself. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-flow .about-cinema-stage{height:155vh}
+.about-flow .about-cinema-sticky{padding:0;background:#20211f}
+.about-flow-layout{position:absolute;left:5vw;right:3vw;top:17%;z-index:3;color:var(--text);pointer-events:none}
+.about-flow-heading{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(70px,7.5vw,136px);font-weight:400;letter-spacing:-.05em;line-height:.95;margin:0 0 clamp(30px,7vh,85px);white-space:nowrap}
+.about-flow-heading em,.about-flow-word em,.about-flow-trailing em{font-weight:400}
+.about-flow-sentence{display:flex;align-items:flex-start;justify-content:flex-start;gap:clamp(12px,1.2vw,22px);min-width:0;width:max-content;max-width:none;white-space:nowrap;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(49px,5.6vw,101px);line-height:.95;letter-spacing:-.05em}
+.about-flow-word{display:inline-block;flex:0 0 auto;align-self:flex-start}
+.about-flow-trailing{display:flex;flex-direction:column;flex:0 0 auto;align-self:flex-start;line-height:.88;margin-top:.02em}
+.about-flow-trailing-main,.about-flow-trailing-sub{display:block}
+.about-flow-trailing-sub{margin-top:-.02em}
+.about-flow-image{position:relative;display:block;flex:0 0 0px;width:0;height:0;min-width:0;min-height:0;overflow:hidden;border-radius:85px;margin:0!important;will-change:width,height,flex-basis;align-self:flex-start;margin-top:.08em!important}
+.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover;object-position:center 66%}
+.about-flow .about-expand-aside{top:auto;bottom:17%;right:5vw;max-width:360px;z-index:2}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-flow-layout{position:relative;order:1;display:block;width:100%;margin:0 0 28px}
+.about-flow-heading{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(46px,10vw,70px);line-height:1;letter-spacing:-.04em;margin:0 0 28px}
+.about-flow-sentence{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-family:"Instrument Serif",Georgia,serif;font-size:clamp(40px,9vw,62px);line-height:1}
+.about-flow-word,.about-flow-trailing{flex:0 1 auto}
+.about-flow-trailing{display:flex;flex-direction:column;line-height:.92}
+.about-flow-trailing-sub{margin-top:-.03em}
+.about-flow-image{order:0;flex:1 1 100%;width:100%;height:clamp(220px,58vw,440px);border-radius:42px;overflow:hidden;margin:0!important}
+.about-flow-photo{display:block;width:100%;height:100%;object-fit:cover}
+.about-flow .about-expand-aside{order:2}
+.about-flow .about-expand-bio{padding-top:65px}
+}
+
+/* Vertical About portrait capsule — keep the same scroll timing. */
+@media(min-width:701px) and (prefers-reduced-motion:no-preference){
+.about-flow .about-cinema-stage{height:190vh}
+.about-flow-photo{object-position:center 50%}
+.about-flow-image{border-radius:120px}
+}
+@media(max-width:700px),(prefers-reduced-motion:reduce){
+.about-flow-image{flex:0 1 76%;width:76%;height:auto;aspect-ratio:3/4;max-height:570px;border-radius:100px}
+.about-flow-photo{object-position:center 50%}
+}
+
+
+/* Runway-inspired scrolling SVG path. Original concept: paulpierre/runway-svg-animation (MIT). */
+.runway-experience{position:relative;width:100%;max-width:none;overflow:visible;padding-bottom:clamp(90px,12vh,160px)!important}
+.runway-experience .section-label,.runway-experience>.runway-heading{max-width:1264px;margin-inline:auto}
+.runway-heading{font-size:clamp(52px,7vw,120px);line-height:1.03;margin-bottom:clamp(100px,16vh,190px)!important}
+.runway-track{position:relative;width:100%;height:3000px;max-width:1400px;margin:0 auto}
+.runway-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.runway-base,.runway-draw{fill:none;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.runway-base{stroke:#4a5357}
+.runway-draw{stroke:#f9a600}
+.runway-checkpoint-disc{fill:#4a5357;stroke:#f9a600;stroke-width:5;vector-effect:non-scaling-stroke;transition:fill .4s}
+.runway-checkpoint-inner{fill:#192227}
+.runway-checkmark{fill:none;stroke:#fdfcfc;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .4s}
+.runway-checkpoint.is-active .runway-checkpoint-disc{fill:#f9a600}
+.runway-checkpoint.is-active .runway-checkmark{opacity:1}
+.runway-career{position:absolute;top:var(--runway-y);width:min(35%,440px);padding:16px 24px;opacity:1;transition:opacity .6s,transform .6s}
+.runway-career--1,.runway-career--3{left:18%}
+.runway-career--2{right:18%;text-align:right}
+.runway-date{font-size:12px;color:#f9a600;letter-spacing:.16em}
+.runway-career h3{font-family:"Instrument Serif",Georgia,serif;font-size:clamp(31px,3.6vw,57px);font-weight:400;line-height:1.02;letter-spacing:-.03em;margin:13px 0}
+.runway-role{font-weight:600;font-size:15px;margin-bottom:15px}
+.runway-description{font-size:15px;line-height:1.6;color:var(--muted);max-width:45ch}
+.runway-career--2 .runway-description{margin-left:auto}
+.runway-experience.runway-enhanced .runway-career{opacity:.12;transform:translateY(30px)}
+.runway-experience.runway-enhanced .runway-career.is-active{opacity:1;transform:translateY(0)}
+.runway-credit{text-align:center;font-size:11px;color:var(--muted)}
+.runway-credit a{color:inherit;text-decoration:underline}
+@media(max-width:900px){
+.runway-track{height:2250px}
+.runway-svg{width:100%;height:100%}
+.runway-base,.runway-draw{stroke-width:18}
+.runway-career{width:45%}
+.runway-career--1,.runway-career--3{left:16%}
+.runway-career--2{right:15%}
+}
+@media(max-width:700px){
+.runway-track{height:1850px}
+.runway-career{width:68%;padding:14px 10px;background:rgba(32,33,31,.88);border-radius:6px}
+.runway-career--1,.runway-career--3{left:27%}
+.runway-career--2{right:27%;text-align:left}
+.runway-career--2 .runway-description{margin-left:0}
+.runway-career h3{font-size:clamp(27px,7vw,43px)}
+.runway-description{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.runway-experience .runway-career{opacity:1!important;transform:none!important}.runway-checkmark{opacity:1}}
+
+
+/* Keep the extended final bend below Boeing and clip its off-screen exit. */
+.runway-track{height:3400px;overflow:visible}
+.runway-experience{overflow-x:clip}
+.runway-svg{overflow:visible}
+.runway-credit{opacity:.48;font-size:10px;margin-top:42px}
+@media(max-width:900px){.runway-track{height:2550px}}
+@media(max-width:700px){.runway-track{height:2050px}}
+
+
+/* Full-bleed SVG viewport: the existing path continues off the actual screen edge,
+   rather than being clipped by the centred 1400px timeline column. */
+.runway-experience{
+  width:100vw;
+  max-width:none;
+  margin-left:calc(50% - 50vw);
+  overflow-x:clip;
+}
+.runway-track{overflow:visible}
+.runway-svg{overflow:visible}
+
+/* Mobile homepage integration pass / October 2026
+   Restrict these changes to touch-sized layouts. Desktop remains unchanged. */
+.project-reel-mobile-hint,.runway-svg-mobile{display:none}
+@media(max-width:700px), (pointer:coarse) and (max-width:960px){
+  html,body{max-width:100%;overflow-x:clip}
+  :root{--gutter:20px}
+  .home-main,.home-reveal-shell{max-width:100%;min-width:0}
+  .home-section{scroll-margin-top:calc(65px + env(safe-area-inset-top,0px))}
+  .home-section .section-label{font-size:10px;letter-spacing:.12em}
+  .hero{height:100svh;min-height:640px;padding:20px 20px calc(56px + env(safe-area-inset-bottom,0px))}
+  .hero-image{object-position:70% 57%;transform-origin:70% 55%}
+  .hero h1{font-size:clamp(92px,28vw,132px);letter-spacing:-.055em;max-width:100%}
+  .hero-role{margin-top:18px;font-size:9px;letter-spacing:.13em}
+  .hero-bottom{bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+  .home-nav{z-index:200}
+  .site-header nav{height:calc(100dvh - 58px - env(safe-area-inset-top,0px));max-height:none}
+  .site-header nav a{font-size:clamp(36px,11vw,58px);padding-block:13px;min-height:56px}
+  .site-header.menu-open{z-index:200}
+  .site-header .menu-toggle{min-width:44px;min-height:44px}
+  /* Portrait reveal: retain the same image, but give it its own editorial row. */
+  .about-flow{width:100%;margin-left:0;padding:72px 20px 80px!important;overflow:visible!important}
+  .about-flow .about-cinema-stage{height:auto!important}
+  .about-flow .about-cinema-sticky{position:relative;top:auto;height:auto;padding:0;overflow:visible;display:flex;flex-direction:column;min-height:0}
+  .about-flow .about-cinema-meta{position:relative;inset:auto;order:0;margin-bottom:32px}
+  .about-flow-layout{position:relative;inset:auto;width:100%;margin:0;order:1}
+  .about-flow-heading{font-size:clamp(52px,12.3vw,76px);line-height:.92;white-space:normal;letter-spacing:-.055em;margin:0 0 40px}
+  .about-flow-sentence{display:flex;flex-direction:column;align-items:stretch;gap:18px;width:100%;max-width:100%;white-space:normal;font-size:clamp(47px,11vw,66px);line-height:.94}
+  .about-flow-word{order:0;align-self:flex-start}
+  .about-flow-image{order:1;align-self:center!important;flex:none!important;width:min(76vw,330px)!important;height:auto!important;min-width:0;aspect-ratio:3/4;max-height:none;overflow:hidden;border-radius:95px!important;margin:6px 0!important;will-change:clip-path,transform}
+  .about-flow-photo{width:100%;height:100%;object-fit:cover;object-position:center 50%}
+  .about-flow-trailing{order:2;align-self:flex-end;flex:0 1 auto;max-width:100%;line-height:.93;margin-top:4px;font-size:clamp(45px,10.5vw,64px)}
+  .about-flow-trailing-sub{margin-top:0}
+  .about-flow .about-expand-aside{position:relative;inset:auto;order:2;width:100%;max-width:44ch;margin:34px 0 0;color:var(--muted);font-size:15px;line-height:1.6}
+  .about-flow .about-expand-scroll{display:none}
+  .about-flow .about-expand-bio{padding:84px 0 0;gap:20px;min-height:0}
+  .about-flow .about-expand-bio-content h3{font-size:clamp(56px,13vw,78px);margin-bottom:26px}
+  .about-flow .about-expand-bio-content p{font-size:16px;line-height:1.62}
+  /* Runway: independent mobile coordinates; do not squash the desktop SVG. */
+  .runway-experience{width:100%;margin-left:0;padding:40px 0 85px!important;overflow-x:clip}
+  .runway-experience::before{height:clamp(90px,14vh,150px)!important}
+  .runway-experience .section-label,.runway-experience>.runway-heading{width:calc(100% - 40px);padding:0;margin-inline:auto}
+  .runway-heading{font-size:clamp(42px,10.3vw,68px);line-height:.96;letter-spacing:-.035em;margin-bottom:65px!important}
+  .runway-track{width:100%;height:2100px!important;max-width:none;margin:0;overflow:hidden!important}
+  .runway-svg:not(.runway-svg-mobile){display:none}
+  .runway-svg-mobile{display:block;width:100%;height:100%;overflow:hidden}
+  .runway-base,.runway-draw{stroke-width:18px}
+  .runway-career{width:calc(100% - 28vw);max-width:none;left:28vw!important;right:auto!important;padding:0 16px 0 0;text-align:left!important;background:transparent;border:0}
+  .runway-career--1{top:15%!important}
+  .runway-career--2{top:46%!important}
+  .runway-career--3{top:76%!important}
+  .runway-career h3{font-size:clamp(28px,7vw,41px);line-height:1.02;margin:10px 0 12px;overflow-wrap:normal}
+  .runway-career .runway-date{font-size:10px;letter-spacing:.12em}
+  .runway-career .runway-role{font-size:14px;line-height:1.45;margin-bottom:13px}
+  .runway-career .runway-description{font-size:14px;line-height:1.55;margin:0;max-width:100%}
+  .runway-career--2 .runway-description{margin-left:0}
+  .runway-credit{margin-top:20px;padding-inline:20px;line-height:1.5}
+  /* Project reel: browser-native swiping and legible per-slide information. */
+  .project-reel-section{width:100%;margin-left:0;overflow:clip}
+  .project-reel-intro{width:calc(100% - 40px);padding-bottom:8px}
+  .project-reel-intro h2{font-size:clamp(43px,11vw,66px);line-height:.98}
+  .project-reel-mobile-hint{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin:0;padding:12px 20px;color:var(--accent);font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase}
+  .project-reel-mobile-hint span{font-size:20px;line-height:1}
+  .project-reel-stage{height:auto;min-height:0;overflow:visible}
+  .project-reel-viewport{height:auto;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;touch-action:pan-x pan-y;scroll-padding-inline:20px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .project-reel-track{height:auto;width:max-content;gap:12px;padding:12px 20px 35px;transform:none!important;align-items:flex-start;will-change:auto}
+  .project-reel-slide{display:block;width:calc(100vw - 40px);height:auto;min-height:0;scroll-snap-align:center}
+  .project-reel-slide-number{top:0;left:0}
+  .project-reel-gallery{width:100%;height:clamp(230px,75vw,340px);overflow:hidden;gap:5px;padding-top:18px}
+  .project-reel-media,.project-reel-media--secondary{flex:0 0 calc((100% - 5px)/2);width:calc((100% - 5px)/2);height:100%;max-height:none;aspect-ratio:auto}
+  .project-reel-mobile-copy{padding:20px 2px 0;min-height:0}
+  .project-reel-mobile-copy h3{font-size:clamp(40px,10vw,60px);line-height:.92}
+  .project-reel-mobile-copy p{font-size:14px;line-height:1.55;letter-spacing:normal;text-transform:none}
+  .project-reel-mobile-copy a{display:inline-flex;align-items:center;min-height:44px;margin-top:9px;font-size:11px}
+  /* Photography: gentler pyramid travel and readable editorial transition. */
+  .photo-title-stage{min-height:60svh;padding:85px 18px 52px}
+  .photo-cinematic-title{font-size:clamp(43px,11vw,72px);max-width:100%}
+  .photo-cinematic-subtitle{max-width:290px;margin-top:26px;font-size:clamp(27px,7vw,38px)}
+  .photo-title-mobile-ready [data-photo-letter]{opacity:0;transform:translate3d(0,22px,0);transition:opacity .65s ease,transform .8s cubic-bezier(.16,1,.3,1);transition-delay:calc(var(--photo-letter) * 30ms)}
+  .photo-title-mobile-visible [data-photo-letter]{opacity:1;transform:none}
+  .photo-title-mobile-ready [data-photo-subtitle]{opacity:0;transform:translateY(15px);transition:opacity .7s ease .28s,transform .7s ease .28s}
+  .photo-title-mobile-visible [data-photo-subtitle]{opacity:1;transform:none}
+  .photo-3d-stage{padding:32px 0 65px}
+  .photo-3d-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px}
+  .photo-3d-item{aspect-ratio:.9;will-change:auto}
+  .home-section#photography .photo-3d-stage::after{background:linear-gradient(90deg,var(--bg) 0%,transparent 8%,transparent 92%,var(--bg) 100%)}
+  .home-section#photography{padding-bottom:130px}
+  .photo-outro{width:calc(100% - 40px);min-height:57svh;padding:55px 0}
+  .photo-outro-title{font-size:clamp(47px,12.6vw,82px);margin:45px 0 60px;line-height:.9;letter-spacing:-.05em}
+  .photo-outro-line:last-child{padding-left:clamp(10px,8vw,40px)}
+  .photo-outro-mobile-ready .photo-outro-char{opacity:0;transform:translateY(22px);transition:opacity .55s ease,transform .65s cubic-bezier(.16,1,.3,1)}
+  .photo-outro-mobile-visible .photo-outro-char{opacity:1;transform:none}
+  /* In phone landscape, avoid the desktop fixed-footer overlay. */
+  .home-reveal-shell{margin-bottom:0!important}
+  .footer{position:relative}
+  .footer__marquee{display:none}
+  .footer__bottom{flex-direction:column;align-items:flex-start}
+  /* Ochre contact area, large HBW lettering and accessible social links. */
+  .footer{padding:60px max(20px,env(safe-area-inset-left,0px)) calc(28px + env(safe-area-inset-bottom,0px));overflow:clip}
+  .footer__center{display:flex;flex-direction:column;align-items:stretch;gap:32px}
+  .footer__center-content{width:100%;font-size:clamp(27px,6.5vw,41px);padding:0}
+  .footer__center-content p{width:100%;max-width:34ch}
+  .footer__socials{gap:12px;flex-wrap:wrap;margin-top:20px}
+  .footer__social-link{width:44px;height:44px;padding:10px}
+  .footer__social-link svg{width:24px;height:24px}
+  .footer__svg-animation{width:100%;max-width:100%;min-width:0;margin-top:0;overflow:visible}
+  .footer__svg-animation svg,.svg-animation svg{display:block;width:100%;height:auto;max-width:100%;overflow:visible}
+  .footer__bottom{gap:10px;margin-top:28px;padding-top:20px;font-size:10px}
+}
+@media(max-width:700px) and (prefers-reduced-motion:reduce){
+  .photo-title-mobile-ready [data-photo-letter],
+  .photo-title-mobile-ready [data-photo-subtitle],
+  .photo-outro-mobile-ready .photo-outro-char{opacity:1!important;transform:none!important;transition:none!important}
+  .about-flow-image{clip-path:none!important;transform:none!important;opacity:1!important}
+}
+
+/* Mobile touch affordances and lighter paint work. */
+@media(max-width:700px){
+  body,.home-reveal-shell{background-attachment:scroll}
+  body::before{opacity:.18}
+  .project-reel-viewport:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+  .footer__bottom-text{text-align:left}
+}
+
+
+/* One continuous charcoal-paper background across the entire homepage.
+   The shell stays opaque over the fixed ochre footer, but the grain overlay
+   is shared by every section, so nothing restarts at chapter boundaries. */
+:root{
+  /* One flat base behind all chapters; grain lives solely on body::before. */
+  --homepage-canvas:none;
+}
+
+/* Keep an opaque surface above the fixed ochre footer, so it cannot
+   show through earlier chapters as the contact reveal approaches. */
+.home-reveal-shell{
+  background-color:var(--bg);
+  background-image:var(--homepage-canvas);
+  background-attachment:fixed;
+  background-repeat:no-repeat;
+}
+
+/* All nested chapter containers reveal the SAME shell background.
+   Don't reset background-attachment or gradients on the pinned reel. */
+.home-reveal-shell .about-flow .about-cinema-sticky,
+.home-reveal-shell .about-expand-bio,
+.home-reveal-shell .project-reel-stage,
+.home-reveal-shell #photography .photo-3d-stage,
+.home-reveal-shell .photo-title-stage,
+.home-reveal-shell .photo-outro,
+.home-reveal-shell #experience,
+.home-reveal-shell #projects,
+.home-reveal-shell #photography{
+  background:transparent;
+}
+
+/* A full-width bottom vignette was also making the project stage
+   darker at its lower edge, creating a second visible horizontal seam.
+   Keep the horizontal image edge fades, but not the bottom overlay. */
+.home-reveal-shell .project-reel-viewport::after{
+  display:none;
+}
+.home-reveal-shell .project-reel-viewport::before{
+  background:linear-gradient(90deg,
+    rgba(32,33,31,.65),transparent 10%,transparent 90%,rgba(32,33,31,.65));
+}
+.home-reveal-shell #photography .photo-3d-stage::after{
+  background:linear-gradient(90deg,
+    rgba(32,33,31,.65),transparent 16%,transparent 84%,rgba(32,33,31,.65));
+}
+
+/* On mobile keep the *single* canvas, with native scrolling rather than
+   attachment-fixed rendering (which is unreliable on mobile Safari). */
+@media(max-width:700px), (pointer:coarse) and (max-width:960px){
+  .home-reveal-shell{
+    background-color:var(--bg);
+    background-image:var(--homepage-canvas);
+    background-attachment:scroll;
+  }
+}
+
+
+/* Visible charcoal-film grain: one shared background per surface.
+   A high-contrast monochrome grain tile blends into #20211f, rather than
+   barely-visible soft-light pixels or patchy chapter gradients.
+   The grain is a background, NOT a foreground overlay over photography/text. */
+body,
+.home-reveal-shell {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'144'%20height%3D'144'%20viewBox%3D'0%200%20144%20144'%3E%3Cfilter%20id%3D'g'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.91'%20numOctaves%3D'3'%20seed%3D'17'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20type%3D'saturate'%20values%3D'0'%2F%3E%3CfeComponentTransfer%3E%3CfeFuncR%20type%3D'linear'%20slope%3D'3.2'%20intercept%3D'-1.1'%2F%3E%3CfeFuncG%20type%3D'linear'%20slope%3D'3.2'%20intercept%3D'-1.1'%2F%3E%3CfeFuncB%20type%3D'linear'%20slope%3D'3.2'%20intercept%3D'-1.1'%2F%3E%3CfeFuncA%20type%3D'linear'%20slope%3D'.8'%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3Crect%20width%3D'144'%20height%3D'144'%20filter%3D'url(%23g)'%2F%3E%3C%2Fsvg%3E");
+  background-blend-mode: overlay;
+  background-repeat: repeat;
+  background-size: 144px 144px;
+  background-attachment: scroll;
+}
+/* Retire the former topmost noise layer; it tinted photos and the ochre footer. */
+body::before { content: none; }
