@@ -520,51 +520,81 @@ function setupRunwayExperience(){
     const markers=[...svg.querySelectorAll("[data-runway-checkpoint]")];
     const careers=[...section.querySelectorAll("[data-runway-career]")];
     const length=path.getTotalLength();
-    // The desktop path is drawn in calibrated SVG pathLength units.
-    // This makes its painted tip and getPointAtLength checkpoint fractions
-    // agree, even when preserveAspectRatio="none" stretches the SVG.
-    const dashLength=mobile.matches?length:1000;
+    const sampleCount=1600;
+    const viewHeight=svg.viewBox.baseVal.height || 3400;
+    let dashLength=length, pathPositions=null, renderDistances=null, markerDistances=null;
+    let fractions=null;
+
+    if(mobile.matches){
+      // Preserve the original mobile dash rendering and checkpoint timing.
+      fractions=configuration.coordinates.map(([x,y])=>{
+        let best=0,nearest=Infinity;
+        for(let i=0;i<=800;i++){
+          const p=path.getPointAtLength(i*length/800);
+          const d=(p.x-x)**2+(p.y-y)**2;
+          if(d<nearest){nearest=d;best=i/800}
+        }
+        return best;
+      });
+    }else{
+      // SVG preserveAspectRatio="none" scales X and Y differently.
+      // With a non-scaling stroke, dashes follow *screen-space* distance,
+      // whereas getTotalLength() measures unstretched SVG coordinates.
+      // Compute the full rendered arc length so ticks and amber tip agree.
+      const matrix=path.getScreenCTM();
+      const points=new Array(sampleCount+1);
+      pathPositions=new Array(sampleCount+1);
+      renderDistances=new Array(sampleCount+1);
+      let drawn=0,previous=null;
+      for(let i=0;i<=sampleCount;i++){
+        const fraction=i/sampleCount;
+        const point=path.getPointAtLength(fraction*length);
+        points[i]=point;
+        if(previous){
+          const dx=point.x-previous.x,dy=point.y-previous.y;
+          drawn+=matrix
+            ? Math.hypot(dx*matrix.a+dy*matrix.c,dx*matrix.b+dy*matrix.d)
+            : Math.hypot(dx,dy);
+        }
+        renderDistances[i]=drawn;
+        pathPositions[i]=point.y*.78 + fraction*viewHeight*.22;
+        previous=point;
+      }
+      dashLength=drawn;
+      markerDistances=configuration.coordinates.map(([x,y])=>{
+        let best=0,nearest=Infinity;
+        for(let i=0;i<=sampleCount;i++){
+          const p=points[i];
+          const distance=(p.x-x)**2+(p.y-y)**2;
+          if(distance<nearest){nearest=distance;best=i}
+        }
+        return renderDistances[best];
+      });
+    }
+
     path.style.strokeDasharray=String(dashLength);
     path.style.strokeDashoffset=String(dashLength);
-    const fractions=configuration.coordinates.map(([x,y])=>{
-      let best=0,nearest=Infinity;
-      for(let i=0;i<=800;i++){
-        const p=path.getPointAtLength(i*length/800);
-        const d=(p.x-x)**2+(p.y-y)**2;
-        if(d<nearest){nearest=d;best=i/800}
-      }
-      return best;
-    });
-    // Desktop: map each point on the winding SVG to its vertical position.
-    // A small arc-length component gives horizontal bends time to draw
-    // without a sudden jump when the path briefly travels sideways.
-    const sampleCount=600;
-    const viewHeight=svg.viewBox.baseVal.height || 3400;
-    const pathPositions=!mobile.matches
-      ? Array.from({length:sampleCount+1},(_,i)=>{
-          const fraction=i/sampleCount;
-          return path.getPointAtLength(fraction*length).y*.78 +
-            fraction*viewHeight*.22;
-        })
-      : null;
-    active={path,svg,length,dashLength,markers,careers,fractions,pathPositions,sampleCount,viewHeight};
+    active={path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+      pathPositions,renderDistances,sampleCount,viewHeight};
     section.classList.toggle("runway-enhanced",!reduced.matches);
     update();
   };
   const update=()=>{
     frame=0;
     if(!active)return;
-    const {path,svg,length,dashLength,markers,careers,fractions,pathPositions,sampleCount,viewHeight}=active;
+    const {path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+      pathPositions,renderDistances,sampleCount,viewHeight}=active;
     const rect=track.getBoundingClientRect();
-    let progress;
+    let progress,drawnDistance=0;
     if(reduced.matches){
       progress=1;
+      drawnDistance=dashLength;
     }else if(mobile.matches){
       // Keep the existing phone animation unchanged.
       progress=clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
+      drawnDistance=dashLength*progress;
     }else{
-      // Follow the actual desktop SVG geometry: the amber drawing tip
-      // stays close to the centre of the visible screen as the user scrolls.
+      // Keep the line's leading edge near the desktop viewport centre.
       const svgRect=svg.getBoundingClientRect();
       const targetY=(innerHeight*.5-svgRect.top)/Math.max(1,svgRect.height)*viewHeight;
       let lo=0,hi=sampleCount;
@@ -576,11 +606,17 @@ function setupRunwayExperience(){
       const span=pathPositions[index]-pathPositions[index-1];
       const within=span>0?clamp((targetY-pathPositions[index-1])/span):0;
       progress=clamp((index-1+within)/sampleCount);
+      // The path is drawn in actual rendered pixels; so are the checkpoints.
+      drawnDistance=renderDistances[index-1]+
+        (renderDistances[index]-renderDistances[index-1])*within;
+      drawnDistance=Math.min(dashLength,Math.max(0,drawnDistance));
     }
-    path.style.strokeDashoffset=String(dashLength*(1-progress));
-    fractions.forEach((threshold,i)=>{
-      const visible=progress>=threshold||reduced.matches;
-      markers[i]?.classList.toggle("is-active",visible);
+    path.style.strokeDashoffset=String(dashLength-drawnDistance);
+    markers.forEach((marker,i)=>{
+      const visible=reduced.matches||(mobile.matches
+        ? progress>=fractions[i]
+        : drawnDistance>=markerDistances[i]);
+      marker?.classList.toggle("is-active",visible);
       careers[i]?.classList.toggle("is-active",visible);
     });
   };
@@ -588,7 +624,11 @@ function setupRunwayExperience(){
   mobile.addEventListener("change",setup);
   reduced.addEventListener("change",setup);
   addEventListener("scroll",schedule,{passive:true});
-  addEventListener("resize",schedule,{passive:true});
+  addEventListener("resize",()=>{
+    // Recalculate the X/Y stretch if the desktop SVG changes dimensions.
+    if(mobile.matches) schedule();
+    else setup();
+  },{passive:true});
   setup();
 }
 setupRunwayExperience();
