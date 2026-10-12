@@ -3932,33 +3932,29 @@ body.infinite-photo-active {
   --accent-blue: #76a9c7;
 }
 
-/* Keep the site warm and tactile rather than pure black. Subtle tonal shifts
-   give the dark field the same printed-paper depth as the previous light test. */
+/* Option 1: fine-grain charcoal paper.
+   A uniform graphite field, with no radial light patches or stripe pattern.
+   The fixed, monochrome noise layer below provides the tactile film grain. */
 body,
 .home-reveal-shell {
   background-color: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 14% 4%, rgba(243, 228, 199, 0.055) 0%, rgba(243, 228, 199, 0) 36%),
-    radial-gradient(ellipse at 78% 38%, rgba(93, 167, 161, 0.035) 0%, rgba(93, 167, 161, 0) 42%),
-    linear-gradient(132deg, #262724 0%, #20211f 48%, #1a1b19 100%);
-  background-attachment: fixed;
+  background-image: none;
 }
 
-/* Printed-canvas / photographic grain. On the dark field soft-light keeps the
-   texture visible without turning the page grey or crushing the shadows. */
+/* One small, seamless black-and-white grain tile across the entire viewport.
+   The filter generates fine photographic noise without woven stripes, dots,
+   radial spotlights or extra full-width section layers. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9998;
   pointer-events: none;
-  opacity: 0.27;
+  opacity: 0.24;
   mix-blend-mode: soft-light;
-  background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch' seed='17'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='table' tableValues='.35 .72'/%3E%3CfeFuncG type='table' tableValues='.35 .72'/%3E%3CfeFuncB type='table' tableValues='.35 .72'/%3E%3CfeFuncA type='table' tableValues='0 .62'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.72'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(0deg, rgba(243, 228, 199, 0.025) 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(90deg, rgba(243, 228, 199, 0.018) 0 1px, transparent 1px 6px);
-  background-size: 180px 180px, 5px 5px, 6px 6px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23grain)' opacity='.7'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
 }
 
 /* Sticky/full-width homepage surfaces stay on the same dark stock. */
@@ -4377,15 +4373,12 @@ body.infinite-photo-active {
 }
 
 
-/* One continuous graphite backdrop for the entire homepage.
-   Previous approach gave sticky/pinned sections their own fixed gradients,
-   which visibly restarted at the Projects and Photography boundaries.
-   The shell is the ONLY background paint surface for homepage chapters. */
+/* One continuous charcoal-paper background across the entire homepage.
+   The shell stays opaque over the fixed ochre footer, but the grain overlay
+   is shared by every section, so nothing restarts at chapter boundaries. */
 :root{
-  --homepage-canvas:
-    radial-gradient(ellipse at 14% 4%, rgba(243,228,199,.055) 0%, rgba(243,228,199,0) 36%),
-    radial-gradient(ellipse at 78% 38%, rgba(93,167,161,.035) 0%, rgba(93,167,161,0) 42%),
-    linear-gradient(132deg,#262724 0%,#20211f 48%,#1a1b19 100%);
+  /* One flat base behind all chapters; grain lives solely on body::before. */
+  --homepage-canvas:none;
 }
 
 /* Keep an opaque surface above the fixed ochre footer, so it cannot
