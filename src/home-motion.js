@@ -632,3 +632,221 @@ function setupRunwayExperience(){
   setup();
 }
 setupRunwayExperience();
+
+
+// Topographic field, inspired by GaseousAir's interactive marching-squares demo
+// (https://codepen.io/GaseousAir/pen/YPXXEBq) and the cursor-elevation approach in
+// contour-field (https://github.com/AlexGordienko/contour-field).
+// Original dependency-free implementation, drawn behind the homepage content.
+function setupContourBackground(){
+  const main=document.querySelector(".home-reveal-shell .home-main");
+  if(!main||!window.HTMLCanvasElement)return;
+  const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d",{alpha:true});
+  if(!ctx)return;
+  canvas.className="contour-backdrop";
+  canvas.setAttribute("aria-hidden","true");
+  main.prepend(canvas);
+  main.classList.add("contour-field-active");
+
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)");
+  const fine=matchMedia("(hover: hover) and (pointer: fine)");
+  const interval=.165;
+  const cursor={x:0,y:0,pressure:0};
+  const target={x:0,y:0,pressure:0};
+  let width=0,height=0,step=16,cols=0,rows=0,base=null,values=null;
+  let active=false,visible=false,frame=0,lastTime=0,lastPaint=0;
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const smooth=t=>t*t*(3-2*t);
+  const hash=(x,y)=>{
+    let n=(Math.imul(x,374761393)+Math.imul(y,668265263))|0;
+    n=Math.imul(n^(n>>>13),1274126177);
+    return ((n^(n>>>16))>>>0)/2147483647.5-1;
+  };
+  const noise=(x,y)=>{
+    const ix=Math.floor(x),iy=Math.floor(y),u=smooth(x-ix),v=smooth(y-iy);
+    const a=hash(ix,iy)*(1-u)+hash(ix+1,iy)*u;
+    const b=hash(ix,iy+1)*(1-u)+hash(ix+1,iy+1)*u;
+    return a*(1-v)+b*v;
+  };
+  // Rotated, elongated peaks and depressions create geologically plausible
+  // nested ridgelines and saddle contours rather than concentric circles.
+  const ridge=(x,y,cx,cy,rx,ry,angle,amplitude)=>{
+    const dx=x-cx,dy=y-cy,cos=Math.cos(angle),sin=Math.sin(angle);
+    const u=(dx*cos+dy*sin)/rx,v=(-dx*sin+dy*cos)/ry;
+    return amplitude*Math.exp(-.5*(u*u+v*v));
+  };
+  const elevation=(px,py)=>{
+    let x=(px-width*.48)/340,y=(py-height*.49)/340;
+    const warpX=noise(x*.75+7.2,y*.75+2.4);
+    const warpY=noise(x*.75-3.7,y*.75+9.3);
+    x+=.3*warpX;y+=.25*warpY;
+    return ridge(x,y,-1.24,-.35,1.85,.56,-.43,1.86)
+      +ridge(x,y,.95,.78,1.48,.65,.68,1.72)
+      +ridge(x,y,1.17,-.95,1.1,.48,-.53,1.02)
+      -ridge(x,y,-.15,.27,1.62,.4,-.22,.78)
+      +.20*noise(x*1.5,y*1.5)
+      +.09*noise(x*3.6+4.8,y*3.6-2.1);
+  };
+
+  const resize=()=>{
+    width=Math.max(1,innerWidth);
+    height=Math.max(1,innerHeight);
+    const dpr=Math.min(devicePixelRatio||1,1.5);
+    canvas.width=Math.round(width*dpr);
+    canvas.height=Math.round(height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    step=width>1900?18:width>850?15:17;
+    cols=Math.ceil(width/step)+1;
+    rows=Math.ceil(height/step)+1;
+    base=new Float32Array(cols*rows);
+    values=new Float32Array(cols*rows);
+    for(let row=0;row<rows;row++){
+      for(let col=0;col<cols;col++){
+        base[row*cols+col]=elevation(col*step,row*step);
+      }
+    }
+    if(!active){
+      cursor.x=target.x=width/2;
+      cursor.y=target.y=height/2;
+    }
+    paint();
+  };
+
+  // Marching squares extracts actual isolines of the elevation field.
+  // Group each altitude into a single Path2D for efficient, continuous strokes.
+  const segment=(path,a,b)=>{
+    path.moveTo(a[0],a[1]);
+    path.lineTo(b[0],b[1]);
+  };
+  const paint=()=>{
+    if(!values)return;
+    ctx.clearRect(0,0,width,height);
+    const radius=245,rad2=radius*radius;
+    let low=Infinity,high=-Infinity;
+    for(let r=0;r<rows;r++){
+      const y=r*step;
+      for(let c=0;c<cols;c++){
+        const i=r*cols+c;
+        let value=base[i];
+        if(cursor.pressure>.001){
+          const dx=(c*step-cursor.x),dy=(y-cursor.y);
+          const dist2=dx*dx+dy*dy;
+          if(dist2<rad2*3.8)
+            value-=1.04*cursor.pressure*Math.exp(-2.4*dist2/rad2);
+        }
+        values[i]=value;
+        if(value<low)low=value;
+        if(value>high)high=value;
+      }
+    }
+    const first=Math.floor(low/interval),last=Math.ceil(high/interval);
+    const paths=Array.from({length:last-first+1},()=>new Path2D());
+    for(let r=0;r<rows-1;r++){
+      const y=r*step;
+      for(let c=0;c<cols-1;c++){
+        const x=c*step,i=r*cols+c;
+        const a=values[i],b=values[i+1],d=values[i+cols],e=values[i+cols+1];
+        const lower=Math.min(a,b,d,e),upper=Math.max(a,b,d,e);
+        const start=Math.floor(lower/interval)+1;
+        const end=Math.floor(upper/interval);
+        for(let k=start;k<=end;k++){
+          const level=k*interval;
+          const cross=[];
+          const interp=(v1,v2)=>clamp((level-v1)/(v2-v1),0,1);
+          if((a>=level)!==(b>=level))cross.push([x+step*interp(a,b),y]);
+          if((b>=level)!==(e>=level))cross.push([x+step,y+step*interp(b,e)]);
+          if((d>=level)!==(e>=level))cross.push([x+step*interp(d,e),y+step]);
+          if((a>=level)!==(d>=level))cross.push([x,y+step*interp(a,d)]);
+          const path=paths[k-first];
+          if(cross.length===2)segment(path,cross[0],cross[1]);
+          else if(cross.length===4){
+            // Resolve saddle cells consistently to avoid visible topology tears.
+            if((a+b+d+e)*.25>=level){
+              segment(path,cross[0],cross[3]);
+              segment(path,cross[1],cross[2]);
+            }else{
+              segment(path,cross[0],cross[1]);
+              segment(path,cross[2],cross[3]);
+            }
+          }
+        }
+      }
+    }
+    ctx.lineJoin="round";
+    ctx.lineCap="round";
+    for(let k=first;k<=last;k++){
+      const major=(k%5===0);
+      ctx.strokeStyle=major?"rgba(224,202,168,.20)":"rgba(224,202,168,.105)";
+      ctx.lineWidth=major?1.05:.75;
+      ctx.stroke(paths[k-first]);
+    }
+  };
+
+  const request=()=>{if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(tick)};
+  const tick=time=>{
+    frame=0;
+    if(!visible||document.hidden)return;
+    const dt=lastTime?Math.min(64,time-lastTime):16;
+    lastTime=time;
+    const easing=1-Math.exp(-dt/150);
+    cursor.x+=(target.x-cursor.x)*easing;
+    cursor.y+=(target.y-cursor.y)*easing;
+    cursor.pressure+=(target.pressure-cursor.pressure)*(1-Math.exp(-dt/220));
+    const moving=Math.abs(target.x-cursor.x)+Math.abs(target.y-cursor.y)>1
+      ||Math.abs(target.pressure-cursor.pressure)>.004;
+    if(time-lastPaint>30||!moving){
+      paint();
+      lastPaint=time;
+    }
+    if(moving)request();
+  };
+
+  const canInteract=()=>fine.matches&&!reduced.matches;
+  const onPointer=event=>{
+    if(!canInteract()||event.pointerType==="touch")return;
+    target.x=event.clientX;
+    target.y=event.clientY;
+    target.pressure=1;
+    request();
+  };
+  const release=()=>{target.pressure=0;request();};
+  const visibility=flag=>{
+    visible=flag;
+    canvas.style.visibility=flag?"visible":"hidden";
+    if(!flag){
+      if(frame)cancelAnimationFrame(frame);
+      frame=0;lastTime=0;
+    }else{
+      if(!canInteract())cursor.pressure=target.pressure=0;
+      paint();
+    }
+  };
+  resize();
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(entries=>{
+      visibility(entries[0].isIntersecting&&!document.hidden);
+    },{rootMargin:"100px"}).observe(main);
+  }else{
+    const refresh=()=>{
+      const rect=main.getBoundingClientRect();
+      visibility(rect.bottom>0&&rect.top<innerHeight&&!document.hidden);
+    };
+    addEventListener("scroll",refresh,{passive:true});
+    refresh();
+  }
+  addEventListener("pointermove",onPointer,{passive:true});
+  addEventListener("mouseout",e=>{if(!e.relatedTarget)release();},{passive:true});
+  addEventListener("blur",release);
+  document.addEventListener("visibilitychange",()=>{
+    const rect=main.getBoundingClientRect();
+    visibility(!document.hidden&&rect.bottom>0&&rect.top<innerHeight);
+  });
+  addEventListener("resize",()=>{
+    resize();
+    if(visible)paint();
+  },{passive:true});
+  reduced.addEventListener("change",()=>{if(!canInteract())release();});
+  fine.addEventListener("change",()=>{if(!canInteract())release();});
+}
+setupContourBackground();
