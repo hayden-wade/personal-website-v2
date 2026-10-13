@@ -655,7 +655,7 @@ function setupContourBackground(){
   const cursor={x:0,y:0,pressure:0};
   const target={x:0,y:0,pressure:0};
   let width=0,height=0,step=16,cols=0,rows=0,base=null,values=null;
-  let active=false,visible=false,frame=0,lastTime=0,lastPaint=0;
+  let active=false,visible=false,frame=0,boundsFrame=0,lastTime=0;
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const smooth=t=>t*t*(3-2*t);
   const hash=(x,y)=>{
@@ -696,7 +696,8 @@ function setupContourBackground(){
     canvas.width=Math.round(width*dpr);
     canvas.height=Math.round(height*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    step=width>1900?18:width>850?15:17;
+    // Slightly coarser sampling on wide displays keeps deformation fluid.
+    step=width>1900?22:width>850?18:19;
     cols=Math.ceil(width/step)+1;
     rows=Math.ceil(height/step)+1;
     base=new Float32Array(cols*rows);
@@ -795,56 +796,73 @@ function setupContourBackground(){
     cursor.pressure+=(target.pressure-cursor.pressure)*(1-Math.exp(-dt/220));
     const moving=Math.abs(target.x-cursor.x)+Math.abs(target.y-cursor.y)>1
       ||Math.abs(target.pressure-cursor.pressure)>.004;
-    if(time-lastPaint>30||!moving){
-      paint();
-      lastPaint=time;
-    }
+    // Use every available animation frame instead of the previous 30ms gate
+    // (which effectively limited the interaction to about 30 FPS).
+    paint();
     if(moving)request();
   };
 
   const canInteract=()=>fine.matches&&!reduced.matches;
+  const release=()=>{
+    if(target.pressure===0)return;
+    target.pressure=0;
+    request();
+  };
   const onPointer=event=>{
-    if(!canInteract()||event.pointerType==="touch")return;
+    if(!canInteract()||event.pointerType==="touch"||!visible)return;
+    // Don't let pointer activity on the hero or footer deform the field.
+    const rect=main.getBoundingClientRect();
+    if(event.clientY<Math.max(0,rect.top)||
+       event.clientY>Math.min(innerHeight,rect.bottom)){
+      release();
+      return;
+    }
     target.x=event.clientX;
     target.y=event.clientY;
     target.pressure=1;
     request();
   };
-  const release=()=>{target.pressure=0;request();};
   const visibility=flag=>{
+    if(flag===visible)return;
     visible=flag;
     canvas.style.visibility=flag?"visible":"hidden";
     if(!flag){
       if(frame)cancelAnimationFrame(frame);
       frame=0;lastTime=0;
+      cursor.pressure=target.pressure=0;
     }else{
       if(!canInteract())cursor.pressure=target.pressure=0;
       paint();
     }
   };
+
+  // The canvas remains fixed to the viewport so the contours don't jump.
+  // Only the slice underneath <main> is allowed to show. Without this,
+  // the fixed canvas can leak over the photographic hero and ochre footer.
+  const syncBounds=()=>{
+    const rect=main.getBoundingClientRect();
+    const top=clamp(rect.top,0,innerHeight);
+    const bottom=clamp(innerHeight-rect.bottom,0,innerHeight);
+    canvas.style.clipPath=`inset(${top}px 0px ${bottom}px 0px)`;
+    visibility(!document.hidden&&rect.top<innerHeight&&rect.bottom>0);
+  };
+  const scheduleBounds=()=>{
+    if(boundsFrame)return;
+    boundsFrame=requestAnimationFrame(()=>{
+      boundsFrame=0;
+      syncBounds();
+    });
+  };
   resize();
-  if("IntersectionObserver" in window){
-    new IntersectionObserver(entries=>{
-      visibility(entries[0].isIntersecting&&!document.hidden);
-    },{rootMargin:"100px"}).observe(main);
-  }else{
-    const refresh=()=>{
-      const rect=main.getBoundingClientRect();
-      visibility(rect.bottom>0&&rect.top<innerHeight&&!document.hidden);
-    };
-    addEventListener("scroll",refresh,{passive:true});
-    refresh();
-  }
+  syncBounds();
+  addEventListener("scroll",scheduleBounds,{passive:true});
   addEventListener("pointermove",onPointer,{passive:true});
   addEventListener("mouseout",e=>{if(!e.relatedTarget)release();},{passive:true});
   addEventListener("blur",release);
-  document.addEventListener("visibilitychange",()=>{
-    const rect=main.getBoundingClientRect();
-    visibility(!document.hidden&&rect.bottom>0&&rect.top<innerHeight);
-  });
+  document.addEventListener("visibilitychange",scheduleBounds);
   addEventListener("resize",()=>{
     resize();
-    if(visible)paint();
+    syncBounds();
   },{passive:true});
   reduced.addEventListener("change",()=>{if(!canInteract())release();});
   fine.addEventListener("change",()=>{if(!canInteract())release();});
