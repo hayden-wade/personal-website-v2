@@ -1,18 +1,66 @@
 // Progressive enhancements: page navigation and article links work without JavaScript.
+// Mobile reload: Safari can restore a mid-page scroll position after the
+// loader has started. Only correct real reloads without a section hash;
+// preserve normal back/forward restoration and deep links.
+if (document.querySelector(".hero") &&
+    matchMedia("(max-width:700px)").matches &&
+    !location.hash &&
+    performance.getEntriesByType("navigation")[0]?.type === "reload") {
+  try { history.scrollRestoration = "manual"; } catch {}
+  addEventListener("pageshow", event => {
+    if (event.persisted || location.hash) return;
+    requestAnimationFrame(() => scrollTo(0, 0));
+  }, {once:true});
+}
+
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 function closeMenu() {
   header?.classList.remove("menu-open");
   menu?.setAttribute("aria-expanded", "false");
+  menu?.setAttribute("aria-label", "Open menu");
+  document.documentElement.classList.remove("nav-open");
 }
 menu?.addEventListener("click", () => {
   const open = menu.getAttribute("aria-expanded") !== "true";
   header.classList.toggle("menu-open", open);
   menu.setAttribute("aria-expanded", String(open));
+  menu.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  document.documentElement.classList.toggle("nav-open", open);
 });
 header
   ?.querySelectorAll("nav a")
   .forEach((a) => a.addEventListener("click", closeMenu));
+
+if (header && window.matchMedia("(max-width: 700px)").matches) {
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  const updateMobileHeader = () => {
+    const y = window.scrollY;
+    const delta = y - lastY;
+    const menuOpen = header.classList.contains("menu-open");
+
+    if (!menuOpen && y > 110 && delta > 0) {
+      header.classList.add("header-hidden");
+    } else if (delta < 0 || y <= 110 || menuOpen) {
+      header.classList.remove("header-hidden");
+    }
+
+    lastY = y;
+    ticking = false;
+  };
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(updateMobileHeader);
+    },
+    { passive: true },
+  );
+}
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && header?.classList.contains("menu-open")) {
     closeMenu();
@@ -91,6 +139,41 @@ if (smoothScrollEligible) {
   else window.addEventListener("load", startAfterLoader, { once: true });
 }
 
+// Homepage Photography navigation targets the readable title position, not
+// the section's intentionally long cinematic lead-in. Keep standard anchors
+// on touch layouts, and let Lenis handle desktop scrolling when available.
+function installPhotographyNavLanding(){
+  const link=document.querySelector('.home-nav nav a[href$="#photography"]');
+  const title=document.querySelector("#photography [data-photo-title]");
+  if(!link||!title)return;
+
+  const jump=()=>{
+    // ScrollTrigger pin-spacers upstream are part of the live document
+    // geometry. Measure them now rather than caching a fixed pixel offset.
+    const titleRect=title.getBoundingClientRect();
+    const destination=window.scrollY+titleRect.top+titleRect.height*.5-
+      window.innerHeight*.55;
+    const maxScroll=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+    const top=Math.max(0,Math.min(maxScroll,destination));
+    if(window.__siteLenis){
+      window.__siteLenis.scrollTo(top,{duration:1.25});
+    }else{
+      window.scrollTo({top,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+    }
+  };
+
+  link.addEventListener("click",event=>{
+    if(event.defaultPrevented||event.button!==0||
+       event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||
+       matchMedia("(max-width: 900px), (pointer: coarse)").matches)return;
+    event.preventDefault();
+    event.stopPropagation();
+    history.pushState(null,"","#photography");
+    jump();
+  });
+}
+installPhotographyNavLanding();
+
 const sections = [...document.querySelectorAll(".home-section,.contact-reveal-spacer")];
 if (sections.length) {
   const nav = [...document.querySelectorAll(".home-nav nav a")];
@@ -116,7 +199,7 @@ function footerBehindContent() {
   const footer = document.querySelector(".footer");
   const main = document.querySelector(".home-reveal-shell");
   if (footer && main) {
-    if (window.matchMedia("(max-width: 700px)").matches) {
+    if (window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches) {
       main.style.marginBottom = "";
     } else {
       const footerHeight = footer.offsetHeight;
@@ -248,8 +331,17 @@ function installContactReveal() {
   const homeNav = document.querySelector(".home-nav");
   if (!footer || !main) return;
 
+  // The footer trigger must be measured after the upstream pinned homepage
+  // scenes (About, Projects and Photography) have registered with
+  // ScrollTrigger. Otherwise their pin spacing is missing from this trigger's
+  // initial geometry and the nav can disappear far too early.
+  homeNav?.classList.remove("footer-active");
   footerBehindContent();
   window.addEventListener("resize", footerBehindContent);
+
+  // Keep iPhone scrolling native; ScrollTrigger refresh/pinning can move
+  // Safari's restored scroll position during page load.
+  if (window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches) return;
 
   if (
     typeof window.gsap === "undefined" ||
@@ -265,7 +357,11 @@ function installContactReveal() {
       scrollTrigger: {
         trigger: main,
         start: "bottom 80%",
-        end: "bottom top",
+        // Finish exactly at the actual bottom of the scrollable page.
+        // Content-relative endpoints can be unreachable after GSAP pinning
+        // or fixed-footer spacing; "max" tracks the true scroll limit.
+        // This guarantees the last letter (H) can reach full opacity.
+        end: "max",
         scrub: true,
         toggleActions: "play none none reverse",
         markers: false,
@@ -323,7 +419,10 @@ function installContactReveal() {
   window.ScrollTrigger.refresh();
 }
 
-installContactReveal();
+// Wait until load so every upstream GSAP/ScrollTrigger pin has been created
+// before the fixed-footer reveal calculates where the page actually ends.
+if (document.readyState === "complete") installContactReveal();
+else window.addEventListener("load", installContactReveal, { once: true });
 
 document.querySelectorAll("[data-filter]").forEach((button) =>
   button.addEventListener("click", () => {
@@ -363,6 +462,477 @@ tabs.forEach((tab, i) => {
     tabs[n].focus();
   });
 });
+
+function installProjectReel() {
+  const stage = document.querySelector("[data-project-reel]");
+  const viewport = stage?.querySelector(".project-reel-viewport");
+  const track = stage?.querySelector("[data-project-reel-track]");
+  const slides = track ? [...track.querySelectorAll("[data-project-slide]")] : [];
+  const images = track
+    ? [...track.querySelectorAll(".project-reel-parallax-image")]
+    : [];
+  const caption = stage?.querySelector("[data-project-reel-caption]");
+
+  if (!stage || !track || !slides.length || !caption) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const desktop = window.matchMedia("(min-width: 901px)");
+  let trigger = null;
+  let activeIndex = -1;
+
+  const captionIndex = caption.querySelector(".project-reel-caption-index");
+  const captionTitle = caption.querySelector("h3");
+  const captionMeta = caption.querySelector(".project-reel-caption-meta");
+  const captionDescription = caption.querySelector(
+    ".project-reel-caption-description",
+  );
+  const captionLink = caption.querySelector(".project-reel-caption-link");
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  let captionTransitionToken = 0;
+
+  const updateCaption = (index, animate = true) => {
+    const slide = slides[index];
+    if (!slide || index === activeIndex) return;
+    activeIndex = index;
+    const token = ++captionTransitionToken;
+
+    const apply = () => {
+      captionIndex.textContent =
+        `${String(index + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+      captionTitle.textContent = slide.dataset.projectName || "";
+      captionMeta.textContent =
+        `${slide.dataset.projectCategory || ""} · ${slide.dataset.projectPeriod || ""}`;
+      captionDescription.textContent = slide.dataset.projectDescription || "";
+      const url = slide.dataset.projectUrl;
+      captionLink.href = url || "/projects/";
+      captionLink.firstChild.textContent = url ? "View project " : "All projects ";
+    };
+
+    const pieces = [
+      captionIndex,
+      captionTitle,
+      captionMeta,
+      captionDescription,
+      captionLink,
+    ].filter(Boolean);
+
+    if (!animate || typeof caption.animate !== "function") {
+      apply();
+      return;
+    }
+
+    pieces.forEach((piece, pieceIndex) => {
+      piece.animate(
+        [
+          { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          { opacity: 0, transform: "translate3d(0, 8px, 0)" },
+        ],
+        {
+          duration: 170,
+          delay: pieceIndex * 12,
+          easing: "cubic-bezier(.4,0,1,1)",
+          fill: "forwards",
+        },
+      );
+    });
+
+    window.setTimeout(() => {
+      if (token !== captionTransitionToken) return;
+      apply();
+
+      pieces.forEach((piece, pieceIndex) => {
+        piece.getAnimations().forEach((animation) => animation.cancel());
+        piece.animate(
+          [
+            { opacity: 0, transform: "translate3d(0, 14px, 0)" },
+            { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          ],
+          {
+            duration: 420,
+            delay: pieceIndex * 28,
+            easing: "cubic-bezier(.16,1,.3,1)",
+            fill: "both",
+          },
+        );
+      });
+    }, 205);
+  };
+
+  // DOM parallax adapted from David Faure / Codrops' Horizontal Parallax
+  // Gallery. Each image is 125% wide with a -12.5% inset; its horizontal
+  // counter-motion is derived from the frame's position relative to the
+  // viewport centre. MIT licensed; see THIRD_PARTY_NOTICES.md.
+  const applyParallaxEffect = () => {
+    const viewportWidth = window.innerWidth;
+    const viewportCenter = viewportWidth * 0.5;
+
+    images.forEach((image) => {
+      const frame = image.closest(".project-reel-media");
+      if (!frame) return;
+
+      const rect = frame.getBoundingClientRect();
+      const elementCenter = rect.left + rect.width * 0.5;
+      const t = clamp(
+        (elementCenter - viewportCenter) / viewportCenter,
+        -1,
+        1,
+      );
+
+      const maxShift = 10;
+      const shift = -t * maxShift;
+      image.style.transform = `translate3d(${shift.toFixed(3)}%, 0, 0)`;
+    });
+  };
+
+  const closestProjectIndex = () => {
+    const viewportCenter = window.innerWidth * 0.5;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    slides.forEach((slide, index) => {
+      const rect = slide.getBoundingClientRect();
+      const slideCenter = rect.left + rect.width * 0.5;
+      const distance = Math.abs(slideCenter - viewportCenter);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    return closestIndex;
+  };
+
+  const reset = () => {
+    trigger?.kill();
+    trigger = null;
+
+    if (typeof window.gsap !== "undefined")
+      window.gsap.set(track, { clearProps: "transform" });
+    else track.style.transform = "";
+
+    images.forEach((image) => {
+      image.style.transform = reducedMotion.matches
+        ? "none"
+        : "translate3d(0%, 0, 0)";
+    });
+
+    activeIndex = -1;
+    updateCaption(0, false);
+  };
+
+  const init = () => {
+    reset();
+
+    if (
+      !desktop.matches ||
+      reducedMotion.matches ||
+      typeof window.gsap === "undefined" ||
+      typeof window.ScrollTrigger === "undefined"
+    ) {
+      if (!reducedMotion.matches) applyParallaxEffect();
+      return;
+    }
+
+    const { gsap, ScrollTrigger } = window;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const getDistance = () =>
+      Math.max(
+        1,
+        track.scrollWidth - window.innerWidth + window.innerWidth * 0.1,
+      );
+
+    const tween = gsap.to(track, {
+      x: () => -getDistance(),
+      ease: "none",
+      paused: true,
+    });
+
+    trigger = ScrollTrigger.create({
+      id: "homepage-project-reel",
+      trigger: stage,
+      start: "top top",
+      end: () =>
+        `+=${Math.max(window.innerHeight * 4.2, getDistance() * 0.86)}`,
+      pin: true,
+      scrub: 0.7,
+      invalidateOnRefresh: true,
+      animation: tween,
+      onUpdate: (self) => {
+        applyParallaxEffect();
+        updateCaption(closestProjectIndex());
+      },
+      onRefresh: () => {
+        applyParallaxEffect();
+        activeIndex = -1;
+        updateCaption(closestProjectIndex(), false);
+      },
+    });
+
+    applyParallaxEffect();
+    updateCaption(0, false);
+  };
+
+  desktop.addEventListener("change", init);
+  reducedMotion.addEventListener("change", init);
+  viewport?.addEventListener("scroll", () => {
+    if (!desktop.matches && !reducedMotion.matches) applyParallaxEffect();
+  }, { passive: true });
+  window.addEventListener("resize", () => {
+    if (!reducedMotion.matches) applyParallaxEffect();
+  });
+  window.addEventListener("load", () => {
+    if (trigger && typeof window.ScrollTrigger !== "undefined")
+      window.ScrollTrigger.refresh();
+  });
+
+  init();
+}
+
+installProjectReel();
+
+function installPhotographyTitleTransition() {
+  const title = document.querySelector("[data-photo-title]");
+  const subtitle = document.querySelector("[data-photo-subtitle]");
+  const rule = document.querySelector("[data-photo-rule]");
+  const chars = title
+    ? [...title.querySelectorAll("[data-photo-letter]")]
+    : [];
+
+  if (!title || !chars.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobile = window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
+
+  const reset = () => {
+    chars.forEach((char) => {
+      char.style.transform = "none";
+      char.style.opacity = "1";
+      char.style.willChange = "auto";
+    });
+    if (subtitle) {
+      subtitle.style.opacity = "1";
+      subtitle.style.transform = "none";
+    }
+    if (rule) rule.style.transform = "scaleX(1)";
+  };
+
+  if (mobile.matches && !reducedMotion.matches) {
+    // Small, non-pinned editorial reveal on phones. Native touch scroll remains free.
+    const stage=title.closest(".photo-title-stage");
+    if (stage && "IntersectionObserver" in window) {
+      stage.classList.add("photo-title-mobile-ready");
+      const observer=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          stage.classList.add("photo-title-mobile-visible");
+          observer.disconnect();
+        }
+      },{threshold:.22});
+      observer.observe(stage);
+    } else reset();
+    return;
+  }
+  if (
+    reducedMotion.matches ||
+    typeof window.gsap === "undefined" ||
+    typeof window.ScrollTrigger === "undefined"
+  ) {
+    reset();
+    return;
+  }
+
+  const { gsap, ScrollTrigger } = window;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Adapted directly from Codrops' "Waking Life" (data-effect20)
+  // in OnScrollTypographyAnimations. MIT licensed; see THIRD_PARTY_NOTICES.md.
+  chars.forEach((char) => gsap.set(char.parentNode, { perspective: 1000 }));
+
+  gsap.fromTo(
+    chars,
+    {
+      willChange: "opacity, transform",
+      transformOrigin: "50% 100%",
+      opacity: 0,
+      rotationX: 90,
+    },
+    {
+      ease: "power4",
+      opacity: 1,
+      stagger: {
+        each: 0.03,
+        from: "random",
+      },
+      rotationX: 0,
+      scrollTrigger: {
+        trigger: title,
+        start: "center bottom",
+        // Complete the letter reveal when the heading reaches its intended
+        // on-screen reading position, including when navigating via the header.
+        end: "center 55%",
+        scrub: true,
+      },
+    },
+  );
+
+  if (subtitle) {
+    gsap.fromTo(
+      subtitle,
+      { opacity: 0, y: 24 },
+      {
+        opacity: 1,
+        y: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: title,
+          start: "center 85%",
+          end: "center 55%",
+          scrub: true,
+        },
+      },
+    );
+  }
+
+  if (rule) {
+    gsap.fromTo(
+      rule,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: title,
+          start: "center 85%",
+          end: "center 55%",
+          scrub: true,
+        },
+      },
+    );
+  }
+
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) {
+      ScrollTrigger.getAll()
+        .filter((trigger) => trigger.trigger === title)
+        .forEach((trigger) => trigger.kill());
+      reset();
+    }
+  });
+}
+
+installPhotographyTitleTransition();
+
+function installPhotographyOutroTransition() {
+  const title = document.querySelector("[data-photo-outro-title]");
+  const section = title?.closest(".photo-outro");
+  const chars = title
+    ? [...title.querySelectorAll(".photo-outro-char")]
+    : [];
+  const archiveLink = title?.querySelector(".photo-outro-here");
+
+  if (!title || !section || !chars.length) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobile = window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
+
+  const reset = () => {
+    chars.forEach((char) => {
+      char.style.transform = "none";
+      char.style.opacity = "1";
+      char.style.willChange = "auto";
+    });
+    section.style.removeProperty("position");
+    section.style.removeProperty("top");
+    section.style.removeProperty("left");
+    section.style.removeProperty("width");
+    section.style.removeProperty("transform");
+  };
+
+  // The pinned outro is a desktop effect. On iOS Safari a restored scroll
+  // position can leave GSAP's pin styles stuck over the hero after a reload.
+  if (mobile.matches && !reducedMotion.matches) {
+    if ("IntersectionObserver" in window) {
+      section.classList.add("photo-outro-mobile-ready");
+      const observer=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          section.classList.add("photo-outro-mobile-visible");
+          observer.disconnect();
+        }
+      },{threshold:.3});
+      observer.observe(section);
+    } else reset();
+    return;
+  }
+  if (
+    reducedMotion.matches ||
+    typeof window.gsap === "undefined" ||
+    typeof window.ScrollTrigger === "undefined"
+  ) {
+    reset();
+    return;
+  }
+
+  const { gsap, ScrollTrigger } = window;
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Adapted directly from Codrops' data-effect25 in
+  // OnScrollTypographyAnimations. The original pins the title's parent while
+  // vertically scaling each character into view across a long scrubbed scroll.
+  gsap.fromTo(
+    chars,
+    {
+      willChange: "transform",
+      transformOrigin: "50% 100%",
+      scaleY: 0,
+    },
+    {
+      ease: "power3.in",
+      opacity: 1,
+      scaleY: 1,
+      stagger: 0.05,
+      scrollTrigger: {
+        id: "photography-outro-effect25",
+        trigger: title,
+        start: "center center",
+        // Short phrase: keep the pinned reveal cinematic without lingering.
+        end: "+=90%",
+        scrub: true,
+        pin: section,
+      },
+    },
+  );
+
+  reducedMotion.addEventListener("change", () => {
+    if (!reducedMotion.matches) return;
+    ScrollTrigger.getById("photography-outro-effect25")?.kill();
+    reset();
+  });
+
+  archiveLink?.addEventListener("click", (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      reducedMotion.matches
+    )
+      return;
+
+    event.preventDefault();
+    archiveLink.classList.add("is-activating");
+    const href = archiveLink.href;
+    window.setTimeout(() => {
+      window.location.href = href;
+    }, 150);
+  });
+}
+
+installPhotographyOutroTransition();
+
 // Photography wall: scroll-scrubbed center-out column reveal inspired by
 // Codrops' Staggered 3D Grid Animations demo:
 // https://github.com/codrops/Staggered3DGridAnimations
@@ -453,10 +1023,11 @@ function installPhotographyStaggeredGrid() {
       const distance = Math.abs(columnIndex - middleColumn);
       // Match the Codrops grid--full timing more closely: each step away
       // from centre starts 0.2 later, producing the steeper pyramid profile.
-      const delay = Math.min(0.6, distance * 0.2);
+      const delay = Math.min(0.6, distance * (window.innerWidth<=700 ? 0.16 : 0.2));
       const localProgress = clamp01((progress - delay) / (1 - delay));
       const eased = Math.sin((localProgress * Math.PI) / 2);
-      const yPercent = 450 * (1 - eased);
+      const mobileGrid=window.matchMedia("(max-width:700px)").matches;
+      const yPercent = (mobileGrid ? 155 : 450) * (1 - eased);
 
       item.style.transform = `translate3d(0, ${yPercent}%, 0)`;
       item.style.opacity = String(Math.min(1, localProgress * 1.35));
@@ -480,6 +1051,412 @@ function installPhotographyStaggeredGrid() {
 }
 
 installPhotographyStaggeredGrid();
+
+function installInfinitePhotographyGallery() {
+  const root = document.querySelector("[data-infinite-photo-gallery]");
+  const stage = root?.querySelector("[data-infinite-photo-stage]");
+  const canvas = root?.querySelector("[data-infinite-photo-canvas]");
+  const overlay = root?.querySelector("[data-infinite-photo-overlay]");
+  const expandedCopy = root?.querySelector("[data-infinite-photo-expanded-copy]");
+  const sourceNodes = root
+    ? [...root.querySelectorAll(".infinite-photo-data [data-photo-src]")]
+    : [];
+
+  if (!root || !stage || !canvas || !overlay || !expandedCopy || !sourceNodes.length)
+    return;
+
+  document.documentElement.classList.add("infinite-photo-active");
+  document.body.classList.add("infinite-photo-active");
+  window.__siteLenis?.stop();
+
+  const photos = sourceNodes.map((node) => ({
+    src: node.dataset.photoSrc,
+    caption: node.dataset.photoCaption || "",
+    category: node.dataset.photoCategory || "",
+    index: Number(node.dataset.photoIndex) || 0,
+  }));
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const title = expandedCopy.querySelector(".infinite-photo-expanded-title");
+  const kicker = expandedCopy.querySelector(".infinite-photo-expanded-kicker");
+  const viewerLink = expandedCopy.querySelector(".infinite-photo-expanded-link");
+
+  let cellWidth = 440;
+  let cellHeight = 560;
+  let baseWidth = 380;
+  let smallHeight = 290;
+  let largeHeight = 430;
+  let gap = 54;
+  const columns = 4;
+  const bufferZone = 1.55;
+  const visibleItems = new Map();
+
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let lastUpdate = 0;
+  let pointerId = null;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let lastPointerTime = 0;
+  let velocityX = 0;
+  let velocityY = 0;
+  let moved = false;
+  let suppressClickUntil = 0;
+  let activeCellId = null;
+  let activeItem = null;
+  let expandedItem = null;
+  let originalRect = null;
+  let animationFrame = 0;
+
+  const mod = (value, length) => ((value % length) + length) % length;
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  const measureGrid = () => {
+    baseWidth = clamp(window.innerWidth * 0.245, 250, 410);
+    if (window.innerWidth <= 700) baseWidth = clamp(window.innerWidth * 0.68, 210, 300);
+
+    smallHeight = baseWidth * 0.72;
+    largeHeight = baseWidth * 1.08;
+    gap = window.innerWidth <= 700 ? 28 : clamp(window.innerWidth * 0.032, 38, 64);
+    cellWidth = baseWidth + gap;
+    cellHeight = largeHeight + gap;
+  };
+
+  const getItemId = (col, row) => `photo-cell-${col}-${row}`;
+  const getItemIndex = (col, row) => mod(row * columns + col, photos.length);
+  const getItemSize = (col, row) => {
+    const tall = mod(row * columns + col, 2) === 1;
+    return {
+      width: baseWidth,
+      height: tall ? largeHeight : smallHeight,
+    };
+  };
+
+  const createItem = (col, row) => {
+    const id = getItemId(col, row);
+    const photo = photos[getItemIndex(col, row)];
+    const size = getItemSize(col, row);
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "infinite-photo-item";
+    item.id = id;
+    item.dataset.col = String(col);
+    item.dataset.row = String(row);
+    item.dataset.photoIndex = String(photo.index);
+    item.setAttribute("aria-label", `View ${photo.caption}`);
+    item.style.width = `${size.width}px`;
+    item.style.height = `${size.height}px`;
+    item.style.left = `${col * cellWidth}px`;
+    item.style.top = `${row * cellHeight}px`;
+
+    const imageWrap = document.createElement("span");
+    imageWrap.className = "infinite-photo-item__image";
+
+    const image = document.createElement("img");
+    image.src = photo.src;
+    image.alt = photo.caption;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.draggable = false;
+    imageWrap.appendChild(image);
+
+    const caption = document.createElement("span");
+    caption.className = "infinite-photo-caption";
+    caption.innerHTML =
+      `<span>${photo.caption}</span><span>${String(photo.index + 1).padStart(2, "0")} / ${photos.length}</span>`;
+
+    item.append(imageWrap, caption);
+    item.addEventListener("click", () => {
+      if (performance.now() < suppressClickUntil || moved || expandedItem) return;
+      expandItem(item, photo);
+    });
+
+    canvas.appendChild(item);
+    visibleItems.set(id, item);
+    return item;
+  };
+
+  const updateVisibleItems = () => {
+    if (expandedItem) return;
+
+    const viewWidth = window.innerWidth * (1 + bufferZone);
+    const viewHeight = window.innerHeight * (1 + bufferZone);
+    const startCol = Math.floor((-currentX - viewWidth / 2) / cellWidth);
+    const endCol = Math.ceil((-currentX + viewWidth * 1.5) / cellWidth);
+    const startRow = Math.floor((-currentY - viewHeight / 2) / cellHeight);
+    const endRow = Math.ceil((-currentY + viewHeight * 1.5) / cellHeight);
+    const needed = new Set();
+
+    for (let row = startRow; row <= endRow; row++) {
+      for (let col = startCol; col <= endCol; col++) {
+        const id = getItemId(col, row);
+        needed.add(id);
+        if (!visibleItems.has(id) && id !== activeCellId) createItem(col, row);
+      }
+    }
+
+    visibleItems.forEach((item, id) => {
+      if (!needed.has(id) && id !== activeCellId) {
+        item.remove();
+        visibleItems.delete(id);
+      }
+    });
+  };
+
+  const showExpandedCopy = (photo) => {
+    kicker.textContent = `${photo.category} · ${String(photo.index + 1).padStart(2, "0")} / ${photos.length}`;
+    title.textContent = photo.caption;
+    viewerLink.href = `/photography/viewer/?photo=${photo.index}`;
+    expandedCopy.setAttribute("aria-hidden", "false");
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      expandedCopy.style.opacity = "1";
+      return;
+    }
+
+    window.gsap.fromTo(
+      expandedCopy,
+      { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.55, delay: 0.24, ease: "power3.out" },
+    );
+  };
+
+  const hideExpandedCopy = () => {
+    expandedCopy.setAttribute("aria-hidden", "true");
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      expandedCopy.style.opacity = "0";
+      return;
+    }
+    window.gsap.to(expandedCopy, {
+      opacity: 0,
+      y: -12,
+      duration: 0.28,
+      ease: "power2.in",
+    });
+  };
+
+  const closeExpandedItem = () => {
+    if (!expandedItem || !originalRect) return;
+
+    const itemToRestore = activeItem;
+    hideExpandedCopy();
+
+    const finish = () => {
+      expandedItem?.remove();
+      expandedItem = null;
+      overlay.classList.remove("is-active");
+      overlay.setAttribute("aria-hidden", "true");
+      overlay.style.opacity = "0";
+      itemToRestore?.style.removeProperty("visibility");
+      activeItem = null;
+      activeCellId = null;
+      originalRect = null;
+      updateVisibleItems();
+    };
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      finish();
+      return;
+    }
+
+    window.gsap.to(overlay, {
+      opacity: 0,
+      duration: 0.38,
+      ease: "power2.inOut",
+    });
+    window.gsap.to(expandedItem, {
+      x: originalRect.left,
+      y: originalRect.top,
+      width: originalRect.width,
+      height: originalRect.height,
+      duration: 0.58,
+      ease: "power4.inOut",
+      onComplete: finish,
+    });
+  };
+
+  const expandItem = (item, photo) => {
+    if (expandedItem) return;
+
+    activeItem = item;
+    activeCellId = item.id;
+    originalRect = item.getBoundingClientRect();
+
+    expandedItem = document.createElement("div");
+    expandedItem.className = "infinite-photo-expanded";
+    expandedItem.style.left = "0";
+    expandedItem.style.top = "0";
+    expandedItem.style.width = `${originalRect.width}px`;
+    expandedItem.style.height = `${originalRect.height}px`;
+    expandedItem.style.transform = `translate3d(${originalRect.left}px, ${originalRect.top}px, 0)`;
+
+    const image = document.createElement("img");
+    image.src = photo.src;
+    image.alt = photo.caption;
+    expandedItem.appendChild(image);
+    expandedItem.addEventListener("click", closeExpandedItem);
+    document.body.appendChild(expandedItem);
+
+    item.style.visibility = "hidden";
+    overlay.classList.add("is-active");
+    overlay.setAttribute("aria-hidden", "false");
+
+    let targetWidth = Math.min(window.innerWidth * 0.56, 980);
+    let targetHeight = targetWidth * (originalRect.height / originalRect.width);
+    const maxHeight = window.innerHeight * 0.66;
+    if (targetHeight > maxHeight) {
+      targetHeight = maxHeight;
+      targetWidth = targetHeight * (originalRect.width / originalRect.height);
+    }
+    const targetX = (window.innerWidth - targetWidth) / 2;
+    const targetY = (window.innerHeight - targetHeight) / 2;
+
+    showExpandedCopy(photo);
+
+    if (reducedMotion.matches || typeof window.gsap === "undefined") {
+      overlay.style.opacity = "1";
+      expandedItem.style.width = `${targetWidth}px`;
+      expandedItem.style.height = `${targetHeight}px`;
+      expandedItem.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+      return;
+    }
+
+    window.gsap.to(overlay, {
+      opacity: 1,
+      duration: 0.5,
+      ease: "power2.inOut",
+    });
+    window.gsap.to(expandedItem, {
+      x: targetX,
+      y: targetY,
+      width: targetWidth,
+      height: targetHeight,
+      duration: 0.68,
+      ease: "power4.inOut",
+    });
+  };
+
+  overlay.addEventListener("click", closeExpandedItem);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && expandedItem) closeExpandedItem();
+  });
+
+  stage.addEventListener("pointerdown", (event) => {
+    if (expandedItem || event.button !== 0) return;
+    pointerId = event.pointerId;
+    stage.setPointerCapture?.(pointerId);
+    dragStartX = lastPointerX = event.clientX;
+    dragStartY = lastPointerY = event.clientY;
+    lastPointerTime = performance.now();
+    velocityX = 0;
+    velocityY = 0;
+    moved = false;
+    stage.classList.add("is-dragging");
+  });
+
+  stage.addEventListener("pointermove", (event) => {
+    if (pointerId !== event.pointerId || expandedItem) return;
+
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+    const now = performance.now();
+    const dt = Math.max(8, now - lastPointerTime);
+
+    if (
+      Math.abs(event.clientX - dragStartX) > 5 ||
+      Math.abs(event.clientY - dragStartY) > 5
+    )
+      moved = true;
+
+    velocityX = dx / dt;
+    velocityY = dy / dt;
+    targetX += dx;
+    targetY += dy;
+
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    lastPointerTime = now;
+  });
+
+  const releasePointer = (event) => {
+    if (pointerId !== event.pointerId) return;
+    pointerId = null;
+    stage.classList.remove("is-dragging");
+
+    if (moved) {
+      suppressClickUntil = performance.now() + 180;
+      const momentum = window.innerWidth <= 700 ? 140 : 210;
+      targetX += velocityX * momentum;
+      targetY += velocityY * momentum;
+    }
+  };
+
+  stage.addEventListener("pointerup", releasePointer);
+  stage.addEventListener("pointercancel", releasePointer);
+
+  stage.addEventListener(
+    "wheel",
+    (event) => {
+      if (expandedItem) return;
+      event.preventDefault();
+      targetX -= event.deltaX * 0.9;
+      targetY -= event.deltaY * 0.9;
+    },
+    { passive: false },
+  );
+
+  const animate = () => {
+    const ease = reducedMotion.matches ? 1 : 0.075;
+    currentX += (targetX - currentX) * ease;
+    currentY += (targetY - currentY) * ease;
+    canvas.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+    const now = performance.now();
+    const distance = Math.hypot(currentX - lastX, currentY - lastY);
+    if (distance > 80 || now - lastUpdate > 110) {
+      updateVisibleItems();
+      lastX = currentX;
+      lastY = currentY;
+      lastUpdate = now;
+    }
+
+    animationFrame = requestAnimationFrame(animate);
+  };
+
+  const handleResize = () => {
+    measureGrid();
+
+    visibleItems.forEach((item) => item.remove());
+    visibleItems.clear();
+
+    if (expandedItem) closeExpandedItem();
+    updateVisibleItems();
+  };
+
+  measureGrid();
+  updateVisibleItems();
+  animationFrame = requestAnimationFrame(animate);
+  window.addEventListener("resize", handleResize);
+
+  window.addEventListener(
+    "pagehide",
+    () => {
+      cancelAnimationFrame(animationFrame);
+      document.documentElement.classList.remove("infinite-photo-active");
+      document.body.classList.remove("infinite-photo-active");
+    },
+    { once: true },
+  );
+}
+
+installInfinitePhotographyGallery();
 
 const dialog = document.querySelector(".lightbox");
 const triggers = [...document.querySelectorAll("[data-enlarge]")];
