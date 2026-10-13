@@ -139,6 +139,41 @@ if (smoothScrollEligible) {
   else window.addEventListener("load", startAfterLoader, { once: true });
 }
 
+// Homepage Photography navigation targets the readable title position, not
+// the section's intentionally long cinematic lead-in. Keep standard anchors
+// on touch layouts, and let Lenis handle desktop scrolling when available.
+function installPhotographyNavLanding(){
+  const link=document.querySelector('.home-nav nav a[href$="#photography"]');
+  const title=document.querySelector("#photography [data-photo-title]");
+  if(!link||!title)return;
+
+  const jump=()=>{
+    // ScrollTrigger pin-spacers upstream are part of the live document
+    // geometry. Measure them now rather than caching a fixed pixel offset.
+    const titleRect=title.getBoundingClientRect();
+    const destination=window.scrollY+titleRect.top+titleRect.height*.5-
+      window.innerHeight*.55;
+    const maxScroll=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+    const top=Math.max(0,Math.min(maxScroll,destination));
+    if(window.__siteLenis){
+      window.__siteLenis.scrollTo(top,{duration:1.25});
+    }else{
+      window.scrollTo({top,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
+    }
+  };
+
+  link.addEventListener("click",event=>{
+    if(event.defaultPrevented||event.button!==0||
+       event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||
+       matchMedia("(max-width: 900px), (pointer: coarse)").matches)return;
+    event.preventDefault();
+    event.stopPropagation();
+    history.pushState(null,"","#photography");
+    jump();
+  });
+}
+installPhotographyNavLanding();
+
 const sections = [...document.querySelectorAll(".home-section,.contact-reveal-spacer")];
 if (sections.length) {
   const nav = [...document.querySelectorAll(".home-nav nav a")];
@@ -734,7 +769,9 @@ function installPhotographyTitleTransition() {
       scrollTrigger: {
         trigger: title,
         start: "center bottom",
-        end: "bottom top+=20%",
+        // Complete the letter reveal when the heading reaches its intended
+        // on-screen reading position, including when navigating via the header.
+        end: "center 55%",
         scrub: true,
       },
     },
@@ -750,8 +787,8 @@ function installPhotographyTitleTransition() {
         ease: "none",
         scrollTrigger: {
           trigger: title,
-          start: "center 58%",
-          end: "bottom 30%",
+          start: "center 85%",
+          end: "center 55%",
           scrub: true,
         },
       },
@@ -767,8 +804,8 @@ function installPhotographyTitleTransition() {
         ease: "none",
         scrollTrigger: {
           trigger: title,
-          start: "center 52%",
-          end: "bottom 28%",
+          start: "center 85%",
+          end: "center 55%",
           scrub: true,
         },
       },
