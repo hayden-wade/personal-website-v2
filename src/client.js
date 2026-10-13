@@ -322,11 +322,11 @@ function installContactReveal() {
       scrollTrigger: {
         trigger: main,
         start: "bottom 80%",
-        // Finish the HBW reveal slightly before the absolute end of the page.
-        // "bottom top" can sit beyond the maximum scroll position when the
-        // fixed footer is a little shorter than the viewport, leaving the
-        // final H partially translated at full scroll.
-        end: "bottom 10%",
+        // Finish exactly at the actual bottom of the scrollable page.
+        // Content-relative endpoints can be unreachable after GSAP pinning
+        // or fixed-footer spacing; "max" tracks the true scroll limit.
+        // This guarantees the last letter (H) can reach full opacity.
+        end: "max",
         scrub: true,
         toggleActions: "play none none reverse",
         markers: false,
