@@ -646,8 +646,13 @@ function setupContourBackground(){
   if(!ctx)return;
   canvas.className="contour-backdrop";
   canvas.setAttribute("aria-hidden","true");
-  main.prepend(canvas);
-  main.classList.add("contour-field-active");
+  // Keep the fixed terrain outside <main>. GSAP pins the horizontal
+  // project reel inside <main>; adding stacking contexts to its sections
+  // can cause the reel to paint over the preceding career runway.
+  const shell=main.closest(".home-reveal-shell");
+  if(!shell)return;
+  shell.append(canvas);
+  shell.classList.add("contour-field-active");
 
   const reduced=matchMedia("(prefers-reduced-motion: reduce)");
   const fine=matchMedia("(hover: hover) and (pointer: fine)");
