@@ -4479,28 +4479,27 @@ body,
   background-image:none;
   background-blend-mode:normal;
 }
-.home-main.contour-field-active{
-  position:relative;
-  isolation:isolate;
-}
-.home-main.contour-field-active>.contour-backdrop{
+/* Keep this decorative layer OUTSIDE the project's pinned scroll tree.
+   The shell already establishes a stacking context; a negative child
+   paints over its graphite background but underneath all real content. */
+.home-reveal-shell.contour-field-active>.contour-backdrop{
   position:fixed;
   inset:0;
   display:block;
   width:100vw;
   height:100vh;
   height:100dvh;
-  z-index:0;
+  z-index:-1;
   pointer-events:none;
   visibility:hidden;
   opacity:1;
 }
-.home-main.contour-field-active>.home-section{
-  position:relative;
-  z-index:1;
+/* The Experience runway may exit horizontally, but must not paint into
+   the pinned Projects chapter. clip does not create a scrolling ancestor. */
+.home-reveal-shell #experience{
+  overflow:clip;
 }
-/* No moving effects for forced-colour users; static canvas is retained for
-   reduced motion and touch, with no pointer-driven animation. */
 @media(forced-colors:active){
-  .home-main.contour-field-active>.contour-backdrop{display:none}
+  .home-reveal-shell.contour-field-active>.contour-backdrop{display:none}
 }
+
