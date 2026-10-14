@@ -339,9 +339,9 @@ function installContactReveal() {
   footerBehindContent();
   window.addEventListener("resize", footerBehindContent);
 
-  // Keep iPhone scrolling native; ScrollTrigger refresh/pinning can move
-  // Safari's restored scroll position during page load.
-  if (window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches) return;
+  // The desktop GSAP timeline also runs on mobile, using the mobile
+  // footer's natural position rather than the desktop fixed-footer reveal.
+  const mobile = window.matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)").matches;
 
   if (
     typeof window.gsap === "undefined" ||
@@ -355,8 +355,8 @@ function installContactReveal() {
   if (paths.length) {
     const svgTimeline = window.gsap.timeline({
       scrollTrigger: {
-        trigger: main,
-        start: "bottom 80%",
+        trigger: mobile ? footer : main,
+        start: mobile ? "top 85%" : "bottom 80%",
         // Finish exactly at the actual bottom of the scrollable page.
         // Content-relative endpoints can be unreachable after GSAP pinning
         // or fixed-footer spacing; "max" tracks the true scroll limit.
@@ -383,7 +383,7 @@ function installContactReveal() {
   const scrollingText = window.gsap.utils.toArray(
     ".footer__marquee-content span",
   );
-  if (scrollingText.length) {
+  if (!mobile && scrollingText.length) {
     const loopTimeline = horizontalLoop(scrollingText, {
       repeat: -1,
       speed: 1,
@@ -719,12 +719,6 @@ function installPhotographyTitleTransition() {
     if (rule) rule.style.transform = "scaleX(1)";
   };
 
-  if (mobile.matches) {
-    // The native-scroll mobile reveal controller below replaces the
-    // one-off observer; no ScrollTrigger pinning on iOS.
-    if (reducedMotion.matches) reset();
-    return;
-  }
   if (
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
@@ -759,10 +753,10 @@ function installPhotographyTitleTransition() {
       rotationX: 0,
       scrollTrigger: {
         trigger: title,
-        start: "center bottom",
+        start: mobile.matches ? "center 94%" : "center bottom",
         // Complete the letter reveal when the heading reaches its intended
         // on-screen reading position, including when navigating via the header.
-        end: "center 55%",
+        end: mobile.matches ? "center 53%" : "center 55%",
         scrub: true,
       },
     },
@@ -778,8 +772,8 @@ function installPhotographyTitleTransition() {
         ease: "none",
         scrollTrigger: {
           trigger: title,
-          start: "center 85%",
-          end: "center 55%",
+          start: mobile.matches ? "center 82%" : "center 85%",
+          end: mobile.matches ? "center 53%" : "center 55%",
           scrub: true,
         },
       },
@@ -795,8 +789,8 @@ function installPhotographyTitleTransition() {
         ease: "none",
         scrollTrigger: {
           trigger: title,
-          start: "center 85%",
-          end: "center 55%",
+          start: mobile.matches ? "center 82%" : "center 85%",
+          end: mobile.matches ? "center 53%" : "center 55%",
           scrub: true,
         },
       },
@@ -841,12 +835,8 @@ function installPhotographyOutroTransition() {
     section.style.removeProperty("transform");
   };
 
-  // The pinned outro is a desktop effect. On iOS Safari a restored scroll
-  // position can leave GSAP's pin styles stuck over the hero after a reload.
-  if (mobile.matches) {
-    if (reducedMotion.matches) reset();
-    return;
-  }
+  // The same desktop letter animation also runs on iPhone. Only the
+  // pinned scroll container is replaced with native scrolling on mobile.
   if (
     reducedMotion.matches ||
     typeof window.gsap === "undefined" ||
@@ -877,11 +867,12 @@ function installPhotographyOutroTransition() {
       scrollTrigger: {
         id: "photography-outro-effect25",
         trigger: title,
-        start: "center center",
-        // Short phrase: keep the pinned reveal cinematic without lingering.
-        end: "+=90%",
+        start: mobile.matches ? "center 93%" : "center center",
+        // The identical vertical letter stretch runs over a reachable
+        // native-scroll window on iPhone. Desktop retains its pin.
+        end: mobile.matches ? "center 32%" : "+=90%",
         scrub: true,
-        pin: section,
+        pin: mobile.matches ? false : section,
       },
     },
   );
@@ -914,133 +905,6 @@ function installPhotographyOutroTransition() {
 }
 
 installPhotographyOutroTransition();
-
-// Mobile scroll-driven typography and HBW footer. On desktop the original
-// GSAP timelines remain intact; phones never pin the page or intercept touch.
-function installMobileEditorialMotion() {
-  if (!document.querySelector(".hero")) return;
-  const mobile = matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const photoTitle = document.querySelector("[data-photo-title]");
-  const photoLetters = [...(photoTitle?.querySelectorAll("[data-photo-letter]") || [])];
-  const photoSubtitle = document.querySelector("[data-photo-subtitle]");
-  const photoRule = document.querySelector("[data-photo-rule]");
-  const outroTitle = document.querySelector("[data-photo-outro-title]");
-  const outroLetters = [...(outroTitle?.querySelectorAll(".photo-outro-char") || [])];
-  const footer = document.querySelector(".footer");
-  // Preserve W, B, H DOM order from the original desktop footer reveal.
-  const logoLetters = [...(footer?.querySelectorAll(".footer__svg-animation .svg-letter") || [])];
-  const editorialHeadings = [...document.querySelectorAll(
-    ".about-flow-heading,.about-flow-word,.about-flow-trailing," +
-    ".about-expand-bio-content h3,.runway-heading,.project-reel-intro h2"
-  )];
-  const clamp = n => Math.max(0, Math.min(1, n));
-  const ease = p => 1 - (1 - p) ** 3;
-  let frame = 0;
-  let wasMobile = false;
-
-  const normal = () => {
-    for (const el of [...photoLetters, ...outroLetters, ...editorialHeadings,
-                      photoSubtitle, photoRule].filter(Boolean)) {
-      el.style.removeProperty("opacity");
-      el.style.removeProperty("transform");
-    }
-    for (const letter of logoLetters) {
-      letter.style.removeProperty("opacity");
-      letter.removeAttribute("transform");
-    }
-  };
-
-  const update = () => {
-    frame = 0;
-    // Do not clear GSAP's inline desktop animation styles during desktop
-    // scroll events. Only reset fields that this mobile controller owned.
-    if (!mobile.matches) {
-      if (wasMobile) normal();
-      wasMobile = false;
-      return;
-    }
-    wasMobile = true;
-    if (reduced.matches) { normal(); return; }
-    const vh = Math.max(1, window.innerHeight);
-    const scroll = Math.max(0, window.scrollY || window.pageYOffset || 0);
-
-    if (photoTitle && photoLetters.length) {
-      const rect = photoTitle.getBoundingClientRect();
-      const center = rect.top + rect.height / 2;
-      const p = clamp((vh * .97 - center) / (vh * .43));
-      const stagger = .024, spread = (photoLetters.length - 1) * stagger;
-      photoLetters.forEach((letter, i) => {
-        const q = clamp((p - i * stagger) / (1 - spread));
-        const eased = ease(q);
-        letter.style.opacity = String(clamp(q * 1.45));
-        letter.style.transform = "translate3d(0," + ((1-eased)*23) +
-          "px,0) rotateX(" + ((1-eased)*72) + "deg)";
-      });
-      const secondary = ease(clamp((p - .28) / .72));
-      if (photoSubtitle) {
-        photoSubtitle.style.opacity = String(secondary);
-        photoSubtitle.style.transform = "translate3d(0," + ((1-secondary)*22) + "px,0)";
-      }
-      if (photoRule) photoRule.style.transform = "scaleX(" + secondary + ")";
-    }
-
-    if (outroTitle && outroLetters.length) {
-      const rect = outroTitle.getBoundingClientRect();
-      const center = rect.top + rect.height / 2;
-      const p = clamp((vh * .95 - center) / (vh * .47));
-      const stagger = .018, spread = (outroLetters.length - 1) * stagger;
-      outroLetters.forEach((letter, i) => {
-        const q = clamp((p - i * stagger) / (1 - spread));
-        const eased = ease(q);
-        letter.style.opacity = String(clamp(q * 1.7));
-        letter.style.transform = "translate3d(0," + ((1-eased)*20) +
-          "px,0) scaleY(" + (.08+.92*eased) + ")";
-      });
-    }
-
-    // Small editorial movement on supporting headings; no layout shifts.
-    for (const heading of editorialHeadings) {
-      const rect = heading.getBoundingClientRect();
-      const p = ease(clamp((vh*.93 - rect.top) / (vh*.31)));
-      heading.style.opacity = String(clamp(p*1.6));
-      heading.style.transform = "translate3d(0," + ((1-p)*19) + "px,0)";
-    }
-
-    if (footer && logoLetters.length) {
-      const maxScroll = Math.max(0,
-        document.documentElement.scrollHeight-vh,
-        document.body.scrollHeight-vh);
-      const footerTop = footer.getBoundingClientRect().top + scroll;
-      // The final glyph is guaranteed fully visible at the real scroll max.
-      const start = Math.max(0, Math.min(
-        footerTop - vh*.83, maxScroll - Math.min(vh*.65, maxScroll)
-      ));
-      const progress = maxScroll <= 0 ? 1 :
-        clamp((scroll - start) / Math.max(1, maxScroll-start));
-      logoLetters.forEach((letter, i) => {
-        const q = clamp((progress - i*.20) / (1-i*.20));
-        const eased = ease(q);
-        letter.style.opacity = String(clamp(q*1.4));
-        // SVG transform attributes are more reliable than text CSS
-        // transforms on iOS Safari.
-        letter.setAttribute("transform", "translate(0 " + ((1-eased)*72) + ")");
-      });
-    }
-  };
-
-  const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
-  addEventListener("scroll", schedule, {passive:true});
-  addEventListener("resize", schedule, {passive:true});
-  addEventListener("pageshow", schedule);
-  addEventListener("load", schedule, {once:true});
-  mobile.addEventListener("change", schedule);
-  reduced.addEventListener("change", schedule);
-  document.fonts?.ready?.then(schedule);
-  schedule();
-}
-installMobileEditorialMotion();
-
 
 // Photography wall: scroll-scrubbed center-out column reveal inspired by
 // Codrops' Staggered 3D Grid Animations demo:
