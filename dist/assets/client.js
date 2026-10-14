@@ -719,19 +719,10 @@ function installPhotographyTitleTransition() {
     if (rule) rule.style.transform = "scaleX(1)";
   };
 
-  if (mobile.matches && !reducedMotion.matches) {
-    // Small, non-pinned editorial reveal on phones. Native touch scroll remains free.
-    const stage=title.closest(".photo-title-stage");
-    if (stage && "IntersectionObserver" in window) {
-      stage.classList.add("photo-title-mobile-ready");
-      const observer=new IntersectionObserver(entries=>{
-        if(entries.some(entry=>entry.isIntersecting)){
-          stage.classList.add("photo-title-mobile-visible");
-          observer.disconnect();
-        }
-      },{threshold:.22});
-      observer.observe(stage);
-    } else reset();
+  if (mobile.matches) {
+    // The native-scroll mobile reveal controller below replaces the
+    // one-off observer; no ScrollTrigger pinning on iOS.
+    if (reducedMotion.matches) reset();
     return;
   }
   if (
@@ -852,17 +843,8 @@ function installPhotographyOutroTransition() {
 
   // The pinned outro is a desktop effect. On iOS Safari a restored scroll
   // position can leave GSAP's pin styles stuck over the hero after a reload.
-  if (mobile.matches && !reducedMotion.matches) {
-    if ("IntersectionObserver" in window) {
-      section.classList.add("photo-outro-mobile-ready");
-      const observer=new IntersectionObserver(entries=>{
-        if(entries.some(entry=>entry.isIntersecting)){
-          section.classList.add("photo-outro-mobile-visible");
-          observer.disconnect();
-        }
-      },{threshold:.3});
-      observer.observe(section);
-    } else reset();
+  if (mobile.matches) {
+    if (reducedMotion.matches) reset();
     return;
   }
   if (
@@ -932,6 +914,133 @@ function installPhotographyOutroTransition() {
 }
 
 installPhotographyOutroTransition();
+
+// Mobile scroll-driven typography and HBW footer. On desktop the original
+// GSAP timelines remain intact; phones never pin the page or intercept touch.
+function installMobileEditorialMotion() {
+  if (!document.querySelector(".hero")) return;
+  const mobile = matchMedia("(max-width: 700px), (pointer: coarse) and (max-width: 960px)");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const photoTitle = document.querySelector("[data-photo-title]");
+  const photoLetters = [...(photoTitle?.querySelectorAll("[data-photo-letter]") || [])];
+  const photoSubtitle = document.querySelector("[data-photo-subtitle]");
+  const photoRule = document.querySelector("[data-photo-rule]");
+  const outroTitle = document.querySelector("[data-photo-outro-title]");
+  const outroLetters = [...(outroTitle?.querySelectorAll(".photo-outro-char") || [])];
+  const footer = document.querySelector(".footer");
+  // Preserve W, B, H DOM order from the original desktop footer reveal.
+  const logoLetters = [...(footer?.querySelectorAll(".footer__svg-animation .svg-letter") || [])];
+  const editorialHeadings = [...document.querySelectorAll(
+    ".about-flow-heading,.about-flow-word,.about-flow-trailing," +
+    ".about-expand-bio-content h3,.runway-heading,.project-reel-intro h2"
+  )];
+  const clamp = n => Math.max(0, Math.min(1, n));
+  const ease = p => 1 - (1 - p) ** 3;
+  let frame = 0;
+  let wasMobile = false;
+
+  const normal = () => {
+    for (const el of [...photoLetters, ...outroLetters, ...editorialHeadings,
+                      photoSubtitle, photoRule].filter(Boolean)) {
+      el.style.removeProperty("opacity");
+      el.style.removeProperty("transform");
+    }
+    for (const letter of logoLetters) {
+      letter.style.removeProperty("opacity");
+      letter.removeAttribute("transform");
+    }
+  };
+
+  const update = () => {
+    frame = 0;
+    // Do not clear GSAP's inline desktop animation styles during desktop
+    // scroll events. Only reset fields that this mobile controller owned.
+    if (!mobile.matches) {
+      if (wasMobile) normal();
+      wasMobile = false;
+      return;
+    }
+    wasMobile = true;
+    if (reduced.matches) { normal(); return; }
+    const vh = Math.max(1, window.innerHeight);
+    const scroll = Math.max(0, window.scrollY || window.pageYOffset || 0);
+
+    if (photoTitle && photoLetters.length) {
+      const rect = photoTitle.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const p = clamp((vh * .97 - center) / (vh * .43));
+      const stagger = .024, spread = (photoLetters.length - 1) * stagger;
+      photoLetters.forEach((letter, i) => {
+        const q = clamp((p - i * stagger) / (1 - spread));
+        const eased = ease(q);
+        letter.style.opacity = String(clamp(q * 1.45));
+        letter.style.transform = "translate3d(0," + ((1-eased)*23) +
+          "px,0) rotateX(" + ((1-eased)*72) + "deg)";
+      });
+      const secondary = ease(clamp((p - .28) / .72));
+      if (photoSubtitle) {
+        photoSubtitle.style.opacity = String(secondary);
+        photoSubtitle.style.transform = "translate3d(0," + ((1-secondary)*22) + "px,0)";
+      }
+      if (photoRule) photoRule.style.transform = "scaleX(" + secondary + ")";
+    }
+
+    if (outroTitle && outroLetters.length) {
+      const rect = outroTitle.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const p = clamp((vh * .95 - center) / (vh * .47));
+      const stagger = .018, spread = (outroLetters.length - 1) * stagger;
+      outroLetters.forEach((letter, i) => {
+        const q = clamp((p - i * stagger) / (1 - spread));
+        const eased = ease(q);
+        letter.style.opacity = String(clamp(q * 1.7));
+        letter.style.transform = "translate3d(0," + ((1-eased)*20) +
+          "px,0) scaleY(" + (.08+.92*eased) + ")";
+      });
+    }
+
+    // Small editorial movement on supporting headings; no layout shifts.
+    for (const heading of editorialHeadings) {
+      const rect = heading.getBoundingClientRect();
+      const p = ease(clamp((vh*.93 - rect.top) / (vh*.31)));
+      heading.style.opacity = String(clamp(p*1.6));
+      heading.style.transform = "translate3d(0," + ((1-p)*19) + "px,0)";
+    }
+
+    if (footer && logoLetters.length) {
+      const maxScroll = Math.max(0,
+        document.documentElement.scrollHeight-vh,
+        document.body.scrollHeight-vh);
+      const footerTop = footer.getBoundingClientRect().top + scroll;
+      // The final glyph is guaranteed fully visible at the real scroll max.
+      const start = Math.max(0, Math.min(
+        footerTop - vh*.83, maxScroll - Math.min(vh*.65, maxScroll)
+      ));
+      const progress = maxScroll <= 0 ? 1 :
+        clamp((scroll - start) / Math.max(1, maxScroll-start));
+      logoLetters.forEach((letter, i) => {
+        const q = clamp((progress - i*.20) / (1-i*.20));
+        const eased = ease(q);
+        letter.style.opacity = String(clamp(q*1.4));
+        // SVG transform attributes are more reliable than text CSS
+        // transforms on iOS Safari.
+        letter.setAttribute("transform", "translate(0 " + ((1-eased)*72) + ")");
+      });
+    }
+  };
+
+  const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+  addEventListener("scroll", schedule, {passive:true});
+  addEventListener("resize", schedule, {passive:true});
+  addEventListener("pageshow", schedule);
+  addEventListener("load", schedule, {once:true});
+  mobile.addEventListener("change", schedule);
+  reduced.addEventListener("change", schedule);
+  document.fonts?.ready?.then(schedule);
+  schedule();
+}
+installMobileEditorialMotion();
+
 
 // Photography wall: scroll-scrubbed center-out column reveal inspired by
 // Codrops' Staggered 3D Grid Animations demo:
