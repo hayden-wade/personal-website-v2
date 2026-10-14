@@ -4715,3 +4715,26 @@ body,
     overflow-wrap: anywhere;
   }
 }
+
+
+/* Phone career timeline: extend its final orange turn all the way to
+   the physical screen edge. The previous 100%-wide section inherited
+   the homepage's 20px horizontal gutters, clipping the rail early. */
+@media (max-width: 700px), (pointer: coarse) and (max-width: 960px) {
+  .home-main > .runway-experience {
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    margin-right: 0;
+  }
+  .home-main > .runway-experience .runway-track {
+    width: 100%;
+    max-width: none;
+  }
+  .home-main > .runway-experience .runway-svg-mobile {
+    /* Keep the path's rightward exit outside the SVG clipping boundary.
+       The track still clips precisely at the edge of the screen. */
+    width: calc(100% + 28px);
+    max-width: none;
+  }
+}
