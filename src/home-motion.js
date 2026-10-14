@@ -697,12 +697,12 @@ function setupContourBackground(){
   const resize=()=>{
     width=Math.max(1,innerWidth);
     height=Math.max(1,innerHeight);
-    const dpr=Math.min(devicePixelRatio||1,1.5);
+    const dpr=Math.min(devicePixelRatio||1,width<=700?1:1.5);
     canvas.width=Math.round(width*dpr);
     canvas.height=Math.round(height*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     // Slightly coarser sampling on wide displays keeps deformation fluid.
-    step=width>1900?22:width>850?18:19;
+    step=width<=700?24:width>1900?22:width>850?18:19;
     cols=Math.ceil(width/step)+1;
     rows=Math.ceil(height/step)+1;
     base=new Float32Array(cols*rows);
@@ -814,8 +814,11 @@ function setupContourBackground(){
     request();
   };
   const onPointer=event=>{
-    if(!canInteract()||event.pointerType==="touch"||!visible)return;
-    // Don't let pointer activity on the hero or footer deform the field.
+    const touch=event.pointerType==="touch";
+    if(!visible||reduced.matches||(!touch&&!canInteract())||
+       (touch&&!event.isPrimary))return;
+    // Touch pressure makes the same terrain respond to a finger without
+    // hijacking scrolling, swiping the projects, or triggering hover states.
     const rect=main.getBoundingClientRect();
     if(event.clientY<Math.max(0,rect.top)||
        event.clientY>Math.min(innerHeight,rect.bottom)){
@@ -824,7 +827,7 @@ function setupContourBackground(){
     }
     target.x=event.clientX;
     target.y=event.clientY;
-    target.pressure=1;
+    target.pressure=touch?.7:1;
     request();
   };
   const visibility=flag=>{
@@ -861,7 +864,10 @@ function setupContourBackground(){
   resize();
   syncBounds();
   addEventListener("scroll",scheduleBounds,{passive:true});
+  addEventListener("pointerdown",onPointer,{passive:true});
   addEventListener("pointermove",onPointer,{passive:true});
+  addEventListener("pointerup",release,{passive:true});
+  addEventListener("pointercancel",release,{passive:true});
   addEventListener("mouseout",e=>{if(!e.relatedTarget)release();},{passive:true});
   addEventListener("blur",release);
   document.addEventListener("visibilitychange",scheduleBounds);

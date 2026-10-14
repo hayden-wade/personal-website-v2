@@ -4503,3 +4503,193 @@ body,
   .home-reveal-shell.contour-field-active>.contour-backdrop{display:none}
 }
 
+
+
+/* Mobile editorial parity — 15 October 2026.
+   Preserve the desktop scene and palette, with calmer native touch scrolling. */
+@media (max-width: 700px) {
+  html { scroll-padding-top: calc(68px + env(safe-area-inset-top, 0px)); }
+  .home-main, .home-reveal-shell { width: 100%; min-width: 0; }
+  .hero {
+    height: 100svh;
+    min-height: min(620px, 100svh);
+    padding-inline: max(18px, env(safe-area-inset-left, 0px));
+    padding-bottom: calc(42px + env(safe-area-inset-bottom, 0px));
+  }
+  .hero h1 {
+    max-width: 100%;
+    margin-top: clamp(76px, 13svh, 160px);
+    font-size: clamp(76px, 25.6vw, 134px);
+    line-height: .86;
+    letter-spacing: -.062em;
+    text-wrap: nowrap;
+  }
+  .hero-role {
+    margin-top: clamp(20px, 4svh, 36px);
+    font-size: 10px;
+    line-height: 1.6;
+    letter-spacing: .14em;
+  }
+  .hero-bottom { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .hero-bottom a { min-height: 44px; display: inline-flex; align-items: center; }
+  .site-header.home-nav, .site-header.home-nav::before {
+    background-color: rgba(32, 33, 31, .98);
+  }
+  .site-header.menu-open,
+  .site-header.menu-open::before { background: #20211f; }
+  .site-header nav {
+    background: linear-gradient(180deg, rgba(32,33,31,.99), rgba(23,24,22,.99));
+    overscroll-behavior: contain;
+  }
+  .site-header nav a {
+    font-size: clamp(37px, 10.6vw, 58px);
+    line-height: 1;
+  }
+  /* The desktop pill sits inside the sentence. On a phone it reads as a
+     smaller central capsule between the opening and closing lines. */
+  .about-flow {
+    padding: clamp(82px, 13svh, 130px) 20px 70px !important;
+  }
+  .about-flow .about-cinema-meta { margin-bottom: 40px; }
+  .about-flow-heading {
+    font-size: clamp(45px, 11.6vw, 70px);
+    line-height: .98;
+    margin-bottom: clamp(40px, 9svh, 70px);
+  }
+  .about-flow-sentence { gap: 16px; }
+  .about-flow-word {
+    font-size: clamp(45px, 10.8vw, 64px);
+    line-height: 1.02;
+  }
+  .about-flow-image {
+    width: min(61vw, 264px) !important;
+    max-width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 110px !important;
+    margin: 12px 0 16px !important;
+    box-shadow: 0 12px 42px rgba(0,0,0,.16);
+  }
+  .about-flow-trailing {
+    font-size: clamp(35px, 9.45vw, 56px);
+    line-height: .94;
+    max-width: 100%;
+    letter-spacing: -.055em;
+    align-self: flex-end;
+    white-space: nowrap;
+  }
+  .about-flow .about-expand-aside {
+    margin-top: 40px;
+    max-width: 36ch;
+    line-height: 1.68;
+  }
+  .about-flow .about-expand-bio {
+    padding-top: clamp(110px, 17svh, 165px);
+  }
+  .about-flow .about-expand-bio-content h3 {
+    font-size: clamp(54px, 12.4vw, 79px);
+    line-height: .98;
+  }
+  #experience::before, #projects::before, #photography::before {
+    height: clamp(135px, 23svh, 225px) !important;
+  }
+  .runway-experience { padding-top: 0 !important; }
+  .runway-heading {
+    font-size: clamp(39px, 10.25vw, 66px);
+    margin-bottom: 78px !important;
+  }
+  .runway-career { z-index: 1; }
+  .runway-career .runway-description {
+    font-size: clamp(13px, 3.55vw, 15px);
+    line-height: 1.65;
+  }
+  .runway-career h3 { overflow-wrap: anywhere; }
+  .project-reel-intro h2 {
+    font-size: clamp(43px, 10.65vw, 66px);
+    line-height: 1.04;
+  }
+  .project-reel-viewport {
+    scroll-snap-type: x mandatory;
+    touch-action: pan-x pan-y;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+  }
+  .project-reel-viewport::-webkit-scrollbar { display: none; }
+  .project-reel-slide { scroll-snap-stop: always; }
+  .project-reel-gallery {
+    height: clamp(245px, 71vw, 340px);
+    padding-top: 16px;
+  }
+  .project-reel-mobile-copy { padding-top: 23px; }
+  .project-reel-mobile-copy h3 { font-size: clamp(38px, 9.6vw, 62px); }
+  .project-reel-mobile-copy a { min-height: 44px; }
+  .photo-title-stage {
+    min-height: 62svh;
+    padding-top: 68px;
+    padding-bottom: 54px;
+  }
+  .photo-cinematic-title {
+    font-size: clamp(39px, 10.45vw, 72px);
+    letter-spacing: -.065em;
+  }
+  .photo-3d-stage { padding-bottom: 70px; }
+  .photo-3d-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .photo-outro {
+    min-height: 56svh;
+    padding-block: 46px 70px;
+  }
+  .photo-outro-title {
+    margin: 35px 0 55px;
+    font-size: clamp(44px, 12vw, 78px);
+    line-height: .92;
+  }
+  .photo-outro-here { min-height: 54px; }
+  .home-section#photography { padding-bottom: clamp(110px, 16svh, 175px); }
+  /* Keep HBW fully visible, not masked by the browser bottom toolbar. */
+  .footer {
+    position: relative;
+    min-height: 0;
+    padding: 70px 20px calc(36px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+  }
+  .footer__center { gap: 30px; }
+  .footer__center-content { font-size: clamp(30px, 7.6vw, 46px); }
+  .footer__socials { gap: 16px; margin-top: 26px; }
+  .footer__svg-animation {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    margin: 18px 0 4px;
+    padding: 8px 0;
+  }
+  .footer__svg-animation > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .footer__bottom {
+    margin-top: 25px;
+    padding-top: 24px;
+    line-height: 1.6;
+  }
+  .home-reveal-shell.contour-field-active > .contour-backdrop {
+    opacity: .82;
+  }
+}
+@media (max-width: 360px) {
+  .about-flow-trailing { font-size: 9.15vw; }
+  .runway-career { width: 70%; left: 28vw !important; padding-right: 10px; }
+  .runway-career .runway-description { font-size: 12.5px; }
+  .project-reel-mobile-copy h3 { font-size: 35px; }
+}
+@media (max-height: 500px) and (orientation: landscape) and (pointer: coarse) {
+  .hero { height: 100svh; min-height: 0; }
+  .hero h1 { font-size: clamp(65px, 16vh, 110px); margin-top: 5vh; }
+  .hero-role { margin-top: 10px; }
+  .about-flow-image { width: min(42vw, 245px) !important; }
+}
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .about-flow-image { clip-path: none !important; opacity: 1 !important; transform: none !important; }
+  .project-reel-track { scroll-behavior: auto; }
+}

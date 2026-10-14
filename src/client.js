@@ -165,11 +165,11 @@ function installPhotographyNavLanding(){
   link.addEventListener("click",event=>{
     if(event.defaultPrevented||event.button!==0||
        event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||
-       matchMedia("(max-width: 900px), (pointer: coarse)").matches)return;
+       false)return;
     event.preventDefault();
     event.stopPropagation();
     history.pushState(null,"","#photography");
-    jump();
+    requestAnimationFrame(jump);
   });
 }
 installPhotographyNavLanding();
