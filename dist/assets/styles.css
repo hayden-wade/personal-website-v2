@@ -4693,3 +4693,25 @@ body,
   .about-flow-image { clip-path: none !important; opacity: 1 !important; transform: none !important; }
   .project-reel-track { scroll-behavior: auto; }
 }
+
+
+/* Alternate the mobile career runway around its centre-crossing path.
+   First & third labels remain right of the left rail; the middle label moves
+   to the left of the right rail, matching the desktop's three-stage flow. */
+@media (max-width: 700px), (pointer: coarse) and (max-width: 960px) {
+  .runway-career--2 {
+    left: max(20px, 4.5vw) !important;
+    right: auto !important;
+    width: calc(70% - 12px);
+    max-width: 480px;
+    padding: 0 10px 0 0;
+    text-align: left !important;
+  }
+  .runway-career--2 .runway-description {
+    margin-left: 0;
+    max-width: 100%;
+  }
+  .runway-career--2 h3 {
+    overflow-wrap: anywhere;
+  }
+}

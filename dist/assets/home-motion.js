@@ -508,7 +508,7 @@ function setupRunwayExperience(){
   const reduced=matchMedia("(prefers-reduced-motion:reduce)");
   const configurations=[
     {selector:".runway-svg:not(.runway-svg-mobile)",coordinates:[[105,795],[1090,1700],[105,2605]]},
-    {selector:".runway-svg-mobile",coordinates:[[60,355],[54,1000],[80,1640]]}
+    {selector:".runway-svg-mobile",coordinates:[[60,355],[334,1035],[54,1680]]}
   ];
   let active=null,frame=0;
   const clamp=v=>Math.max(0,Math.min(1,v));
@@ -523,58 +523,44 @@ function setupRunwayExperience(){
     const sampleCount=1600;
     const viewHeight=svg.viewBox.baseVal.height || 3400;
     let dashLength=length, pathPositions=null, renderDistances=null, markerDistances=null;
-    let fractions=null;
 
-    if(mobile.matches){
-      // Preserve the original mobile dash rendering and checkpoint timing.
-      fractions=configuration.coordinates.map(([x,y])=>{
-        let best=0,nearest=Infinity;
-        for(let i=0;i<=800;i++){
-          const p=path.getPointAtLength(i*length/800);
-          const d=(p.x-x)**2+(p.y-y)**2;
-          if(d<nearest){nearest=d;best=i/800}
-        }
-        return best;
-      });
-    }else{
-      // SVG preserveAspectRatio="none" scales X and Y differently.
-      // With a non-scaling stroke, dashes follow *screen-space* distance,
-      // whereas getTotalLength() measures unstretched SVG coordinates.
-      // Compute the full rendered arc length so ticks and amber tip agree.
-      const matrix=path.getScreenCTM();
-      const points=new Array(sampleCount+1);
-      pathPositions=new Array(sampleCount+1);
-      renderDistances=new Array(sampleCount+1);
-      let drawn=0,previous=null;
-      for(let i=0;i<=sampleCount;i++){
-        const fraction=i/sampleCount;
-        const point=path.getPointAtLength(fraction*length);
-        points[i]=point;
-        if(previous){
-          const dx=point.x-previous.x,dy=point.y-previous.y;
-          drawn+=matrix
-            ? Math.hypot(dx*matrix.a+dy*matrix.c,dx*matrix.b+dy*matrix.d)
-            : Math.hypot(dx,dy);
-        }
-        renderDistances[i]=drawn;
-        pathPositions[i]=point.y*.78 + fraction*viewHeight*.22;
-        previous=point;
+    // Dash lengths use rendered screen pixels (including the stretched mobile
+    // viewBox), so the orange tip remains aligned through the sweeping bends.
+    const matrix=path.getScreenCTM();
+    const points=new Array(sampleCount+1);
+    pathPositions=new Array(sampleCount+1);
+    renderDistances=new Array(sampleCount+1);
+    let drawn=0,previous=null;
+    for(let i=0;i<=sampleCount;i++){
+      const fraction=i/sampleCount;
+      const point=path.getPointAtLength(fraction*length);
+      points[i]=point;
+      if(previous){
+        const dx=point.x-previous.x,dy=point.y-previous.y;
+        drawn+=matrix
+          ? Math.hypot(dx*matrix.a+dy*matrix.c,dx*matrix.b+dy*matrix.d)
+          : Math.hypot(dx,dy);
       }
-      dashLength=drawn;
-      markerDistances=configuration.coordinates.map(([x,y])=>{
-        let best=0,nearest=Infinity;
-        for(let i=0;i<=sampleCount;i++){
-          const p=points[i];
-          const distance=(p.x-x)**2+(p.y-y)**2;
-          if(distance<nearest){nearest=distance;best=i}
-        }
-        return renderDistances[best];
-      });
+      renderDistances[i]=drawn;
+      // Mix physical height with path progression so horizontal sections
+      // visibly draw as the user scrolls rather than snapping into place.
+      pathPositions[i]=point.y*.78 + fraction*viewHeight*.22;
+      previous=point;
     }
+    dashLength=drawn;
+    markerDistances=configuration.coordinates.map(([x,y])=>{
+      let best=0,nearest=Infinity;
+      for(let i=0;i<=sampleCount;i++){
+        const p=points[i];
+        const distance=(p.x-x)**2+(p.y-y)**2;
+        if(distance<nearest){nearest=distance;best=i}
+      }
+      return renderDistances[best];
+    });
 
     path.style.strokeDasharray=String(dashLength);
     path.style.strokeDashoffset=String(dashLength);
-    active={path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+    active={path,svg,length,dashLength,markers,careers,markerDistances,
       pathPositions,renderDistances,sampleCount,viewHeight};
     section.classList.toggle("runway-enhanced",!reduced.matches);
     update();
@@ -582,21 +568,18 @@ function setupRunwayExperience(){
   const update=()=>{
     frame=0;
     if(!active)return;
-    const {path,svg,length,dashLength,markers,careers,fractions,markerDistances,
+    const {path,svg,dashLength,markers,careers,markerDistances,
       pathPositions,renderDistances,sampleCount,viewHeight}=active;
-    const rect=track.getBoundingClientRect();
-    let progress,drawnDistance=0;
+    let drawnDistance=0;
     if(reduced.matches){
-      progress=1;
       drawnDistance=dashLength;
-    }else if(mobile.matches){
-      // Keep the existing phone animation unchanged.
-      progress=clamp((innerHeight*.8-rect.top)/(rect.height-innerHeight*.2));
-      drawnDistance=dashLength*progress;
     }else{
-      // Keep the line's leading edge near the desktop viewport centre.
+      // Both layouts follow the viewport rather than a percentage of the
+      // entire timeline. Mobile uses a slightly lower focal point to allow
+      // the curve to unfold naturally while swiping up.
       const svgRect=svg.getBoundingClientRect();
-      const targetY=(innerHeight*.5-svgRect.top)/Math.max(1,svgRect.height)*viewHeight;
+      const focalY=mobile.matches?innerHeight*.60:innerHeight*.50;
+      const targetY=(focalY-svgRect.top)/Math.max(1,svgRect.height)*viewHeight;
       let lo=0,hi=sampleCount;
       while(lo<hi){
         const mid=Math.floor((lo+hi)/2);
@@ -605,17 +588,13 @@ function setupRunwayExperience(){
       const index=Math.max(1,lo);
       const span=pathPositions[index]-pathPositions[index-1];
       const within=span>0?clamp((targetY-pathPositions[index-1])/span):0;
-      progress=clamp((index-1+within)/sampleCount);
-      // The path is drawn in actual rendered pixels; so are the checkpoints.
       drawnDistance=renderDistances[index-1]+
         (renderDistances[index]-renderDistances[index-1])*within;
       drawnDistance=Math.min(dashLength,Math.max(0,drawnDistance));
     }
     path.style.strokeDashoffset=String(dashLength-drawnDistance);
     markers.forEach((marker,i)=>{
-      const visible=reduced.matches||(mobile.matches
-        ? progress>=fractions[i]
-        : drawnDistance>=markerDistances[i]);
+      const visible=reduced.matches||drawnDistance>=markerDistances[i];
       marker?.classList.toggle("is-active",visible);
       careers[i]?.classList.toggle("is-active",visible);
     });
@@ -625,9 +604,8 @@ function setupRunwayExperience(){
   reduced.addEventListener("change",setup);
   addEventListener("scroll",schedule,{passive:true});
   addEventListener("resize",()=>{
-    // Recalculate the X/Y stretch if the desktop SVG changes dimensions.
-    if(mobile.matches) schedule();
-    else setup();
+    // Recalculate rendered path length whenever the phone rotates or resizes.
+    setup();
   },{passive:true});
   setup();
 }

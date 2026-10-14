@@ -74,9 +74,9 @@ const runwayExperience = () => {
         ${[[105,795],[1090,1700],[105,2605]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="38"/><circle class="runway-checkpoint-inner" r="28"/><path class="runway-checkmark" d="M-15 0 L-3 12 L18 -14"/></g>`).join("")}
       </svg>
       <svg class="runway-svg runway-svg-mobile" viewBox="0 0 390 2100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="runway-base" d="M60 0 V355 C60 475 78 510 78 600 V775 C78 875 54 915 54 1000 V1420 C54 1520 80 1540 80 1640 V1740 C80 1850 175 1930 280 1930 H490"/>
-        <path class="runway-draw" data-runway-path d="M60 0 V355 C60 475 78 510 78 600 V775 C78 875 54 915 54 1000 V1420 C54 1520 80 1540 80 1640 V1740 C80 1850 175 1930 280 1930 H490"/>
-        ${[[60,355],[54,1000],[80,1640]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="24"/><circle class="runway-checkpoint-inner" r="17"/><path class="runway-checkmark" d="M-11 0 L-2 9 L13 -11"/></g>`).join("")}
+        <path class="runway-base" d="M60 0 V355 V660 C60 750 96 815 198 815 H242 C306 815 334 860 334 935 V1035 V1285 C334 1380 292 1435 217 1435 H164 C88 1435 54 1505 54 1585 V1680 V1810 C54 1915 126 1985 252 1985 H450"/>
+        <path class="runway-draw" data-runway-path d="M60 0 V355 V660 C60 750 96 815 198 815 H242 C306 815 334 860 334 935 V1035 V1285 C334 1380 292 1435 217 1435 H164 C88 1435 54 1505 54 1585 V1680 V1810 C54 1915 126 1985 252 1985 H450"/>
+        ${[[60,355],[334,1035],[54,1680]].map(([x,y],i)=>`<g class="runway-checkpoint" data-runway-checkpoint="${i}" transform="translate(${x} ${y})"><circle class="runway-checkpoint-disc" r="24"/><circle class="runway-checkpoint-inner" r="17"/><path class="runway-checkmark" d="M-11 0 L-2 9 L13 -11"/></g>`).join("")}
       </svg>
       ${career.map((j,i)=>`<article class="runway-career runway-career--${i+1}" data-runway-career="${i}" style="--runway-y:${positions[i]/34}%">
         <span class="runway-date">${esc(j.date)}</span>
