@@ -116,3 +116,40 @@ The mobile navigation adapts the rotated image-marquee and SVG-curved menu
 opening concept from [Theodore](https://github.com/codrops/Theodore) by
 Codrops (MIT license). Implementation rewritten for iPhone and this website's
 own photographs. License: https://github.com/codrops/Theodore/blob/main/LICENSE
+
+
+## Codrops — DoubleSlideshow
+
+The experimental homepage Projects section draws on the dual background/foreground
+slideshow concept and opposite-direction vertical transformations from Codrops' demo:
+
+- Project: DoubleSlideshow (Demo 1)
+- Repository: https://github.com/codrops/DoubleSlideshow
+- Demo: https://tympanus.net/Development/DoubleSlideshow/
+- Copyright (c) 2009 - 2022 Codrops
+- License: MIT
+
+The site uses its own responsive HTML structure, project imagery and native Web
+Animations API controls rather than importing the demo's dependencies.
+
+MIT License
+
+Copyright (c) 2009 - 2022 Codrops
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
