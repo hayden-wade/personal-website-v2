@@ -24,10 +24,16 @@ function closeMenu() {
 menu?.addEventListener("click", () => {
   const open = menu.getAttribute("aria-expanded") !== "true";
   header.classList.toggle("menu-open", open);
+  header.classList.remove("header-hidden");
   menu.setAttribute("aria-expanded", String(open));
   menu.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   document.documentElement.classList.toggle("nav-open", open);
 });
+// Dismiss the compact panel when tapping the exposed page beneath it.
+document.addEventListener("pointerdown", (event) => {
+  if (header?.classList.contains("menu-open") && !header.contains(event.target))
+    closeMenu();
+}, { passive: true });
 header
   ?.querySelectorAll("nav a")
   .forEach((a) => a.addEventListener("click", closeMenu));
