@@ -22,6 +22,24 @@ const menu = document.querySelector(".menu-toggle");
 function createMobileCinemaMenu() {
   const nav = header?.querySelector("#site-nav");
   if (!nav) return {setOpen(){}};
+
+  // The scrolling/sticky homepage header is not a safe containing block for
+  // a fixed overlay in iOS Safari. Portal the SAME nav into <body> on phones,
+  // then restore it to the header if the viewport switches to desktop.
+  const anchor = document.createComment("Return desktop navigation here");
+  nav.before(anchor);
+  const closeButton = document.createElement("button");
+  closeButton.className = "menu-cinema-close";
+  closeButton.type = "button";
+  closeButton.setAttribute("aria-label", "Close navigation");
+  closeButton.innerHTML = '<span aria-hidden="true">×</span>';
+  closeButton.addEventListener("click", () => closeMenu());
+
+  const brand = document.createElement("span");
+  brand.className = "menu-cinema-brand";
+  brand.textContent = "HAYDEN WADE";
+  nav.append(brand, closeButton);
+
   const sources = [
     "/images/photography/blue-mountains-small.jpg",
     "/images/photography/e30-road-small.jpg",
@@ -69,6 +87,18 @@ function createMobileCinemaMenu() {
 
   const mobile=matchMedia("(max-width:700px)");
   const reduced=matchMedia("(prefers-reduced-motion:reduce)");
+  const relocate=()=>{
+    if (mobile.matches) {
+      if (nav.parentElement !== document.body) {
+        document.body.append(nav);
+        nav.classList.add("cinema-portal");
+      }
+    } else if (nav.parentElement !== header) {
+      anchor.after(nav);
+      nav.classList.remove("cinema-portal");
+    }
+  };
+  relocate();
   const clamp=v=>Math.max(0,Math.min(1,v));
   const ease=t=>1-Math.pow(1-t,3);
   let progress=0, frame=0;
@@ -107,6 +137,9 @@ function createMobileCinemaMenu() {
   }
   mobile.addEventListener("change",()=>{
     cancelAnimationFrame(frame);frame=0;
+    // A resized/rotated Safari page must not leave its menu orphaned.
+    if (!mobile.matches && header.classList.contains("menu-open")) closeMenu();
+    relocate();
     nav.style.removeProperty("clip-path");
     if(mobile.matches)render(header.classList.contains("menu-open")?1:0);
   });
@@ -136,14 +169,17 @@ menu?.addEventListener("click", () => {
 });
 // Dismiss this full-screen overlay when tapping outside or pressing Escape.
 document.addEventListener("pointerdown", (event) => {
-  if (header?.classList.contains("menu-open") && !header.contains(event.target))
+  if (header?.classList.contains("menu-open") &&
+      !header.contains(event.target) &&
+      !document.getElementById("site-nav")?.contains(event.target))
     closeMenu();
 }, { passive: true });
-header?.querySelector("#site-nav")?.addEventListener("click", event => {
+const siteNav = document.getElementById("site-nav");
+siteNav?.addEventListener("click", event => {
+  // The photograph layer doesn't trap touches; touching empty space closes.
   if(event.target === event.currentTarget) closeMenu();
 });
-header
-  ?.querySelectorAll("nav a")
+siteNav?.querySelectorAll("a")
   .forEach((a) => a.addEventListener("click", closeMenu));
 
 if (header && window.matchMedia("(max-width: 700px)").matches) {
@@ -257,7 +293,8 @@ if (smoothScrollEligible) {
 // the section's intentionally long cinematic lead-in. Keep standard anchors
 // on touch layouts, and let Lenis handle desktop scrolling when available.
 function installPhotographyNavLanding(){
-  const link=document.querySelector('.home-nav nav a[href$="#photography"]');
+  const link=document.querySelector('.home-nav nav a[href$="#photography"]') ||
+    (document.querySelector(".hero") && document.querySelector('#site-nav a[href$="#photography"]'));
   const title=document.querySelector("#photography [data-photo-title]");
   if(!link||!title)return;
 
