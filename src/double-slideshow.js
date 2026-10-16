@@ -40,8 +40,6 @@
     };
 
     const updateDetails = (index) => {
-      const ref = root.querySelectorAll(".ds-abstract"); // Keeps placeholders independent of metadata.
-      void ref;
       const entry = backgrounds[index];
       if (!entry) return;
       const project = entry.dataset;
