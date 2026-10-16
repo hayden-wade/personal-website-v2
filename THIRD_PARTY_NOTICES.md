@@ -109,3 +109,10 @@ The standalone Photography page uses Francesco Colombati's CodePen as a visual a
 - Author: Francesco Colombati
 
 The implementation in this repository is independently rewritten for this site. It reproduces the core interaction ideas — an effectively infinite two-dimensional image field, pointer/touch dragging with momentum, dynamic tile creation, and click-to-expand imagery — while using this site's own markup, styling, content and motion code.
+
+## Codrops — Theodore SVG Overlay and Infinite Menu Background
+
+The mobile navigation adapts the rotated image-marquee and SVG-curved menu
+opening concept from [Theodore](https://github.com/codrops/Theodore) by
+Codrops (MIT license). Implementation rewritten for iPhone and this website's
+own photographs. License: https://github.com/codrops/Theodore/blob/main/LICENSE

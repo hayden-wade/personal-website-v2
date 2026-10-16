@@ -15,7 +15,111 @@ if (document.querySelector(".hero") &&
 
 const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
+
+// Adapted from Codrops Theodore's SVG overlay + diagonal image marquee:
+// https://github.com/codrops/Theodore (MIT). Reimplemented for native
+// Safari scrolling and this portfolio's own photographs.
+function createMobileCinemaMenu() {
+  const nav = header?.querySelector("#site-nav");
+  if (!nav) return {setOpen(){}};
+  const sources = [
+    "/images/photography/blue-mountains-small.jpg",
+    "/images/photography/e30-road-small.jpg",
+    "/images/photography/workshop-small.jpg",
+    "/images/photography/e30-detail-small.jpg",
+    "/images/e30-respray/finished-small.jpg",
+    "/images/e30-respray/painting-small.jpg",
+    "/images/about/portrait-small.jpg",
+    "/images/honda/engine-rebuild.jpg",
+    "/images/e30-respray/before-small.jpg",
+    "/images/e30-respray/paint-detail-small.jpg"
+  ];
+  const scene = document.createElement("div");
+  scene.className = "menu-cinema";
+  scene.setAttribute("aria-hidden","true");
+  const tiles = document.createElement("div");
+  tiles.className = "menu-cinema-tiles";
+  for (let row=0;row<6;row++) {
+    const lane=document.createElement("div");
+    lane.className="menu-cinema-row";
+    // Repeat the identical six-photo sequence for a seamless looping drift.
+    for (let i=0;i<12;i++) {
+      const tile=document.createElement("span");
+      tile.className="menu-cinema-tile";
+      const src=sources[(row*3+(i%6)*2)%sources.length];
+      tile.style.backgroundImage='url("'+src+'")';
+      lane.append(tile);
+    }
+    tiles.append(lane);
+  }
+  const shade=document.createElement("div");
+  shade.className="menu-cinema-shade";
+  scene.append(tiles,shade);
+
+  const svgNS="http://www.w3.org/2000/svg";
+  const svg=document.createElementNS(svgNS,"svg");
+  svg.classList.add("menu-cinema-wave");
+  svg.setAttribute("viewBox","0 0 100 100");
+  svg.setAttribute("preserveAspectRatio","none");
+  svg.setAttribute("aria-hidden","true");
+  const edge=document.createElementNS(svgNS,"path");
+  edge.setAttribute("d","M 100 0 Q 50 0 0 0");
+  svg.append(edge);
+  nav.prepend(scene,svg);
+
+  const mobile=matchMedia("(max-width:700px)");
+  const reduced=matchMedia("(prefers-reduced-motion:reduce)");
+  const clamp=v=>Math.max(0,Math.min(1,v));
+  const ease=t=>1-Math.pow(1-t,3);
+  let progress=0, frame=0;
+  function render(p) {
+    progress=clamp(p);
+    const bend=Math.sin(progress*Math.PI)*14;
+    const right=clamp(progress+bend/100)*100;
+    const left=clamp(progress-bend/100)*100;
+    const middle=clamp(progress+Math.sin(progress*Math.PI)*.05)*100;
+    const points=["0% 0%","100% 0%"];
+    for(let i=0;i<=16;i++){
+      const t=i/16;
+      const y=(1-t)*(1-t)*right+2*(1-t)*t*middle+t*t*left;
+      points.push((100*(1-t)).toFixed(2)+"% "+y.toFixed(2)+"%");
+    }
+    nav.style.clipPath="polygon("+points.join(",")+")";
+    edge.setAttribute("d","M 100 "+right.toFixed(2)+" Q 50 "+middle.toFixed(2)+" 0 "+left.toFixed(2));
+  }
+  function setOpen(open){
+    cancelAnimationFrame(frame);
+    frame=0;
+    if(!mobile.matches){nav.style.removeProperty("clip-path");return;}
+    const target=open?1:0;
+    if(reduced.matches){render(target);return;}
+    const start=progress, distance=Math.abs(target-start);
+    if(distance<.001){render(target);return;}
+    const duration=Math.max(130,760*distance);
+    const began=performance.now();
+    function tick(now){
+      const t=clamp((now-began)/duration);
+      render(start+(target-start)*ease(t));
+      if(t<1)frame=requestAnimationFrame(tick);
+      else frame=0;
+    }
+    frame=requestAnimationFrame(tick);
+  }
+  mobile.addEventListener("change",()=>{
+    cancelAnimationFrame(frame);frame=0;
+    nav.style.removeProperty("clip-path");
+    if(mobile.matches)render(header.classList.contains("menu-open")?1:0);
+  });
+  reduced.addEventListener("change",()=>{
+    if(mobile.matches)setOpen(header.classList.contains("menu-open"));
+  });
+  if(mobile.matches)render(0);
+  return {setOpen};
+}
+const mobileCinemaMenu=createMobileCinemaMenu();
+
 function closeMenu() {
+  mobileCinemaMenu.setOpen(false);
   header?.classList.remove("menu-open");
   menu?.setAttribute("aria-expanded", "false");
   menu?.setAttribute("aria-label", "Open menu");
@@ -25,15 +129,19 @@ menu?.addEventListener("click", () => {
   const open = menu.getAttribute("aria-expanded") !== "true";
   header.classList.toggle("menu-open", open);
   header.classList.remove("header-hidden");
+  mobileCinemaMenu.setOpen(open);
   menu.setAttribute("aria-expanded", String(open));
   menu.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   document.documentElement.classList.toggle("nav-open", open);
 });
-// Dismiss the compact panel when tapping the exposed page beneath it.
+// Dismiss this full-screen overlay when tapping outside or pressing Escape.
 document.addEventListener("pointerdown", (event) => {
   if (header?.classList.contains("menu-open") && !header.contains(event.target))
     closeMenu();
 }, { passive: true });
+header?.querySelector("#site-nav")?.addEventListener("click", event => {
+  if(event.target === event.currentTarget) closeMenu();
+});
 header
   ?.querySelectorAll("nav a")
   .forEach((a) => a.addEventListener("click", closeMenu));
