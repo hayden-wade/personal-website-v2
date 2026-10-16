@@ -21,7 +21,7 @@ export function doubleSlideshowMarkup(projectData, mediaMap, img, esc, label) {
   };
   const frames = (role) => projects.map((project,index) => {
     const active = index === 0;
-    return `<div class="ds-frame${active ? " is-current" : ""}" data-ds-frame data-ds-index="${index}" aria-hidden="true">
+    return `<div class="ds-frame${active ? " is-current" : ""}" data-ds-frame data-ds-index="${index}" data-category="${esc(project.category)}" data-description="${esc(project.description)}" data-url="${esc(project.url || "")}" aria-hidden="true">
       <div class="ds-frame-inner">${photo(project, role === "background" ? 0 : 1, role, index < 2)}</div>
     </div>`;
   }).join("");
