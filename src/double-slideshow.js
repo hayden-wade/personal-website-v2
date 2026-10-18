@@ -26,7 +26,12 @@
     let startedAt = null;
     let mouseStart = null;
     let lastWheel = 0;
-    const duration = 1080;
+    const mobileScroll = window.matchMedia("(max-width: 700px)");
+    const section = root.closest("#projects");
+    if (section) section.style.setProperty("--ds-project-count", String(slides));
+    let scrollFrame = 0;
+    let desiredIndex = 0;
+    const duration = 820;
     const ease = "cubic-bezier(.76,0,.24,1)";
 
     const preload = (index) => {
@@ -67,6 +72,9 @@
       root.classList.remove("ds-transitioning");
       preload(index + 1);
       busy = false;
+      if (mobileScroll.matches && desiredIndex !== active) {
+        go(desiredIndex > active ? 1 : -1);
+      }
     };
 
     function transitionLayer(group, index, upcoming, direction, reversed) {
@@ -146,13 +154,45 @@
         });
     };
 
+    // Native page scrolling drives the pinned mobile slideshow. Each project
+    // occupies a viewport of scroll distance, so swiping up/down progresses
+    // through the projects before the next page section is revealed.
+    const indexFromScroll = () => {
+      if (!section || !mobileScroll.matches) return;
+      const travel = Math.max(1, section.offsetHeight - window.innerHeight);
+      const top = section.getBoundingClientRect().top;
+      const progress = Math.max(0, Math.min(1, -top / travel));
+      desiredIndex = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
+      if (!busy && desiredIndex !== active) go(desiredIndex > active ? 1 : -1);
+    };
+    const scheduleScroll = () => {
+      if (scrollFrame) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = 0;
+        indexFromScroll();
+      });
+    };
+    const scrollToIndex = (index) => {
+      if (!section || !mobileScroll.matches) return false;
+      const target = Math.max(0, Math.min(slides - 1, index));
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      const travel = Math.max(1, section.offsetHeight - window.innerHeight);
+      window.scrollTo({
+        top: top + travel * (target / (slides - 1)),
+        behavior: reduced.matches ? "instant" : "smooth"
+      });
+      return true;
+    };
+    window.addEventListener("scroll", scheduleScroll, { passive:true });
+    window.addEventListener("resize", scheduleScroll);
+    mobileScroll.addEventListener("change", scheduleScroll);
     // Encode metadata in the background frames; keeps authoring to one project list.
     // Any route with no dedicated page points to the general projects archive.
-    previous.addEventListener("click", () => go(-1));
-    next.addEventListener("click", () => go(1));
+    previous.addEventListener("click", () => { if (!scrollToIndex(active - 1)) go(-1); });
+    next.addEventListener("click", () => { if (!scrollToIndex(active + 1)) go(1); });
     stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") { event.preventDefault(); go(1); }
-      else if (event.key === "ArrowLeft") { event.preventDefault(); go(-1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); if (!scrollToIndex(active + 1)) go(1); }
+      else if (event.key === "ArrowLeft") { event.preventDefault(); if (!scrollToIndex(active - 1)) go(-1); }
     });
     stage.addEventListener("touchstart", (event) => {
       if (event.touches.length !== 1 || event.target.closest("button,a")) {
@@ -166,7 +206,10 @@
       const dx = event.changedTouches[0].clientX - startedAt.x;
       const dy = event.changedTouches[0].clientY - startedAt.y;
       startedAt = null;
-      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) go(dx < 0 ? 1 : -1);
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+        const delta = dx < 0 ? 1 : -1;
+        if (!scrollToIndex(active + delta)) go(delta);
+      }
     }, { passive:true });
     stage.addEventListener("touchcancel", () => { startedAt = null; }, { passive:true });
 
@@ -179,7 +222,10 @@
       const dx = event.clientX - mouseStart.x;
       const dy = event.clientY - mouseStart.y;
       mouseStart = null;
-      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.35) go(dx < 0 ? 1 : -1);
+      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.35) {
+        const delta = dx < 0 ? 1 : -1;
+        if (!scrollToIndex(active + delta)) go(delta);
+      }
     });
     stage.addEventListener("pointercancel", () => { mouseStart = null; });
     stage.addEventListener("wheel", (event) => {
@@ -189,12 +235,14 @@
       const now = performance.now();
       if (now - lastWheel < 1200) return;
       lastWheel = now;
-      go(event.deltaX > 0 ? 1 : -1);
+      const delta = event.deltaX > 0 ? 1 : -1;
+      if (!scrollToIndex(active + delta)) go(delta);
     }, { passive:false });
 
     preload(0);
     preload(1);
     preload(slides - 1);
     updateDetails(0);
+    scheduleScroll();
   });
 })();
