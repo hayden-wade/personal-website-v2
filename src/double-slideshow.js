@@ -31,6 +31,10 @@
     if (section) section.style.setProperty("--ds-project-count", String(slides));
     let scrollFrame = 0;
     let desiredIndex = 0;
+    let runningAnimations = [];
+    let animationToken = 0;
+    let chapterTop = 0;
+    let chapterTravel = 1;
     const duration = 820;
     const ease = "cubic-bezier(.76,0,.24,1)";
 
@@ -73,7 +77,7 @@
       preload(index + 1);
       busy = false;
       if (mobileScroll.matches && desiredIndex !== active) {
-        go(desiredIndex > active ? 1 : -1);
+        go(desiredIndex > active ? 1 : -1, desiredIndex);
       }
     };
 
@@ -112,11 +116,22 @@
       return jobs;
     }
 
-    const go = (direction) => {
-      if (busy || !direction) return;
-      const upcoming = (active + direction + slides) % slides;
+    const go = (direction, targetIndex = null) => {
+      if (!direction && targetIndex === null) return;
+      const upcoming = targetIndex === null
+        ? (active + direction + slides) % slides
+        : Math.max(0, Math.min(slides - 1, targetIndex));
+      // Scroll position is the source of truth. A fast swipe can jump several
+      // chapters; cancel the old transition and animate directly to the new one.
+      if (busy) {
+        animationToken++;
+        runningAnimations.forEach((job) => job.cancel());
+        runningAnimations = [];
+        clearAll(active);
+      }
       if (upcoming === active) return;
       busy = true;
+      const token = ++animationToken;
       root.classList.add("ds-transitioning");
       preload(upcoming);
       const currentTitle = titles[active];
@@ -142,13 +157,18 @@
         { opacity:1,transform:"translate3d(0,0,0) rotate(0deg)" }
       ], {duration:duration,easing,fill:"both"}));
 
+      runningAnimations = jobs;
       Promise.allSettled(jobs.map((job) => job.finished))
         .then(() => {
+          if (token !== animationToken) return;
+          runningAnimations = [];
           // CSS state is established before cancelling fill animations.
           clearAll(upcoming);
           jobs.forEach((job) => job.cancel());
         })
         .catch(() => {
+          if (token !== animationToken) return;
+          runningAnimations = [];
           clearAll(upcoming);
           jobs.forEach((job) => job.cancel());
         });
@@ -157,23 +177,35 @@
     // Native page scrolling drives the pinned mobile slideshow. Each project
     // occupies a viewport of scroll distance, so swiping up/down progresses
     // through the projects before the next page section is revealed.
+    const measureChapter = () => {
+      if (!section) return;
+      // offsetTop can be relative to a transformed ancestor. Capture the
+      // document-space start using scrollY while the element is in flow.
+      const wasFixed = section.classList.contains("ds-is-active");
+      if (wasFixed) section.classList.remove("ds-is-active");
+      chapterTop = section.getBoundingClientRect().top + window.scrollY;
+      chapterTravel = Math.max(1, section.offsetHeight - stage.offsetHeight);
+      if (wasFixed) section.classList.add("ds-is-active");
+    };
     const indexFromScroll = () => {
       if (!section) return;
       if (!mobileScroll.matches) {
         section.classList.remove("ds-is-active", "ds-is-past");
         return;
       }
-      const travel = Math.max(1, section.offsetHeight - stage.offsetHeight);
-      const bounds = section.getBoundingClientRect();
-      const top = bounds.top;
+      // Document scroll position is monotonic even while the fixed stage
+      // animates and Safari expands/collapses its address bar.
+      const position = window.scrollY - chapterTop;
       const viewport = stage.offsetHeight;
-      const inChapter = top <= 0 && bounds.bottom > viewport;
-      const pastChapter = bounds.bottom <= viewport;
-      section.classList.toggle("ds-is-active", inChapter);
-      section.classList.toggle("ds-is-past", pastChapter);
-      const progress = Math.max(0, Math.min(1, -top / travel));
-      desiredIndex = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
-      if (!busy && desiredIndex !== active) go(desiredIndex > active ? 1 : -1);
+      const activeChapter = position >= 0 && position < chapterTravel;
+      section.classList.toggle("ds-is-active", activeChapter);
+      section.classList.toggle("ds-is-past", position >= chapterTravel);
+      const progress = Math.max(0, Math.min(1, position / chapterTravel));
+      const index = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
+      if (index !== desiredIndex) {
+        desiredIndex = index;
+        if (desiredIndex !== active) go(desiredIndex > active ? 1 : -1, desiredIndex);
+      }
     };
     const scheduleScroll = () => {
       if (scrollFrame) return;
@@ -185,8 +217,8 @@
     const scrollToIndex = (index) => {
       if (!section || !mobileScroll.matches) return false;
       const target = Math.max(0, Math.min(slides - 1, index));
-      const top = section.getBoundingClientRect().top + window.scrollY;
-      const travel = Math.max(1, section.offsetHeight - stage.offsetHeight);
+      const top = chapterTop;
+      const travel = chapterTravel;
       window.scrollTo({
         top: top + travel * (target / (slides - 1)),
         behavior: reduced.matches ? "instant" : "smooth"
@@ -194,8 +226,15 @@
       return true;
     };
     window.addEventListener("scroll", scheduleScroll, { passive:true });
-    window.addEventListener("resize", scheduleScroll);
-    mobileScroll.addEventListener("change", scheduleScroll);
+    let lastWidth = window.innerWidth;
+    window.addEventListener("resize", () => {
+      // Ignore Safari browser chrome changing the viewport height mid-scroll.
+      if (Math.abs(window.innerWidth - lastWidth) < 2) return;
+      lastWidth = window.innerWidth;
+      measureChapter();
+      scheduleScroll();
+    });
+    mobileScroll.addEventListener("change", () => { measureChapter(); scheduleScroll(); });
     // Encode metadata in the background frames; keeps authoring to one project list.
     // Any route with no dedicated page points to the general projects archive.
     previous.addEventListener("click", () => { if (!scrollToIndex(active - 1)) go(-1); });
@@ -253,6 +292,7 @@
     preload(1);
     preload(slides - 1);
     updateDetails(0);
+    measureChapter();
     scheduleScroll();
   });
 })();
