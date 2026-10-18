@@ -1073,7 +1073,8 @@ function installPhotographyStaggeredGrid() {
   let columns = 0;
   let scheduled = false;
   let stableViewportHeight = window.innerHeight;
-  let maxMobileProgress = 0;
+  let gridDocumentTop = 0;
+  let gridHeight = 0;
 
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
@@ -1117,6 +1118,9 @@ function installPhotographyStaggeredGrid() {
 
     items = [...grid.querySelectorAll(":scope > .photo-3d-item")];
     items.forEach(decorate);
+    const bounds = grid.getBoundingClientRect();
+    gridDocumentTop = bounds.top + window.scrollY;
+    gridHeight = bounds.height;
   };
 
   const reset = () => {
@@ -1137,18 +1141,18 @@ function installPhotographyStaggeredGrid() {
     const liveColumns = getColumns();
     if (liveColumns !== columns) syncTiles();
 
-    const rect = grid.getBoundingClientRect();
-    // Use a fixed height on iOS: Safari's address bar changes innerHeight
-    // mid-scroll, which otherwise reverses the tile reveal for a frame.
+    // Scroll-linked and reversible: all columns rise on the way down and
+    // return on the way up. Cache the grid's document position to avoid
+    // mobile Safari's dynamic address-bar resizing causing flicker.
     const viewportHeight = mobileGrid.matches ? stableViewportHeight : window.innerHeight;
-    const endTop = (viewportHeight - rect.height) / 2;
-    const measuredProgress = clamp01(
-      (viewportHeight - rect.top) / Math.max(1, viewportHeight - endTop),
+    const rectTop = mobileGrid.matches
+      ? gridDocumentTop - window.scrollY
+      : grid.getBoundingClientRect().top;
+    const rectHeight = mobileGrid.matches ? gridHeight : grid.getBoundingClientRect().height;
+    const endTop = (viewportHeight - rectHeight) / 2;
+    const progress = clamp01(
+      (viewportHeight - rectTop) / Math.max(1, viewportHeight - endTop),
     );
-    // Preserve the staggered rise-in effect on mobile, but don't re-hide
-    // already revealed photographs as the browser viewport changes.
-    if (mobileGrid.matches) maxMobileProgress = Math.max(maxMobileProgress, measuredProgress);
-    const progress = mobileGrid.matches ? maxMobileProgress : measuredProgress;
     const middleColumn = (columns - 1) / 2;
 
     items.forEach((item, index) => {
@@ -1156,7 +1160,7 @@ function installPhotographyStaggeredGrid() {
       const distance = Math.abs(columnIndex - middleColumn);
       // Match the Codrops grid--full timing more closely: each step away
       // from centre starts 0.2 later, producing the steeper pyramid profile.
-      const delay = Math.min(0.6, distance * (window.innerWidth<=700 ? 0.16 : 0.2));
+      const delay = Math.min(0.6, distance * (mobileGrid.matches ? 0.16 : 0.2));
       const localProgress = clamp01((progress - delay) / (1 - delay));
       const eased = Math.sin((localProgress * Math.PI) / 2);
       const yPercent = (mobileGrid.matches ? 155 : 450) * (1 - eased);
@@ -1183,14 +1187,12 @@ function installPhotographyStaggeredGrid() {
     if (Math.abs(width - lastLayoutWidth) < 2) return;
     lastLayoutWidth = width;
     stableViewportHeight = window.innerHeight;
-    maxMobileProgress = 0;
     syncTiles();
     schedule();
   });
   reducedMotion.addEventListener("change", schedule);
   mobileGrid.addEventListener("change", () => {
     stableViewportHeight = window.innerHeight;
-    maxMobileProgress = 0;
     syncTiles();
     schedule();
   });
