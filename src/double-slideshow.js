@@ -76,9 +76,6 @@
       root.classList.remove("ds-transitioning");
       preload(index + 1);
       busy = false;
-      if (mobileScroll.matches && desiredIndex !== active) {
-        go(desiredIndex > active ? 1 : -1, desiredIndex);
-      }
     };
 
     function transitionLayer(group, index, upcoming, direction, reversed) {
