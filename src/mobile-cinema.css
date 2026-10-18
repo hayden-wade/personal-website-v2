@@ -235,3 +235,37 @@
   #projects .project-dual-slide .project-dual-image{transform:none!important}
   #projects .project-dual-slide .project-dual-bottom{opacity:1!important;transform:none!important}
 }
+
+/* Keep the entire project card within the mobile viewport, rather than
+   positioning a 100vw slide inside the narrower padded gallery. */
+@media(max-width:700px){
+  #projects .project-dual-mobile{
+    box-sizing:border-box;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+  }
+  #projects .project-dual-viewport{
+    box-sizing:border-box;
+    width:calc(100% - 40px);
+    max-width:calc(100% - 40px);
+    margin-inline:20px;
+    overflow-x:auto;
+  }
+  #projects .project-dual-slide{
+    box-sizing:border-box;
+    flex:0 0 calc(100vw - 40px);
+    width:calc(100vw - 40px);
+    max-width:calc(100vw - 40px);
+  }
+  #projects .project-dual-top{
+    padding-inline:clamp(14px,4vw,24px);
+  }
+  #projects .project-dual-bottom{
+    padding-inline:clamp(15px,4vw,24px);
+  }
+  #projects .project-dual-bottom h3{
+    font-size:clamp(44px,12.4vw,68px);
+    overflow-wrap:break-word;
+  }
+}
