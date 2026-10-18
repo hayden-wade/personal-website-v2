@@ -1072,6 +1072,8 @@ function installPhotographyStaggeredGrid() {
   let items = [];
   let columns = 0;
   let scheduled = false;
+  let stableViewportHeight = window.innerHeight;
+  let maxMobileProgress = 0;
 
   const clamp01 = (value) => Math.min(1, Math.max(0, value));
 
@@ -1127,9 +1129,7 @@ function installPhotographyStaggeredGrid() {
   const update = () => {
     scheduled = false;
 
-    // Mobile Safari changes the visual viewport while scrolling. Avoid
-    // continuously re-triggering opacity and transform on photo tiles.
-    if (mobileGrid.matches || reducedMotion.matches) {
+    if (reducedMotion.matches) {
       reset();
       return;
     }
@@ -1138,11 +1138,17 @@ function installPhotographyStaggeredGrid() {
     if (liveColumns !== columns) syncTiles();
 
     const rect = grid.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
+    // Use a fixed height on iOS: Safari's address bar changes innerHeight
+    // mid-scroll, which otherwise reverses the tile reveal for a frame.
+    const viewportHeight = mobileGrid.matches ? stableViewportHeight : window.innerHeight;
     const endTop = (viewportHeight - rect.height) / 2;
-    const progress = clamp01(
+    const measuredProgress = clamp01(
       (viewportHeight - rect.top) / Math.max(1, viewportHeight - endTop),
     );
+    // Preserve the staggered rise-in effect on mobile, but don't re-hide
+    // already revealed photographs as the browser viewport changes.
+    if (mobileGrid.matches) maxMobileProgress = Math.max(maxMobileProgress, measuredProgress);
+    const progress = mobileGrid.matches ? maxMobileProgress : measuredProgress;
     const middleColumn = (columns - 1) / 2;
 
     items.forEach((item, index) => {
@@ -1153,8 +1159,7 @@ function installPhotographyStaggeredGrid() {
       const delay = Math.min(0.6, distance * (window.innerWidth<=700 ? 0.16 : 0.2));
       const localProgress = clamp01((progress - delay) / (1 - delay));
       const eased = Math.sin((localProgress * Math.PI) / 2);
-      const mobileGrid=window.matchMedia("(max-width:700px)").matches;
-      const yPercent = (mobileGrid ? 155 : 450) * (1 - eased);
+      const yPercent = (mobileGrid.matches ? 155 : 450) * (1 - eased);
 
       item.style.transform = `translate3d(0, ${yPercent}%, 0)`;
       item.style.opacity = String(Math.min(1, localProgress * 1.35));
@@ -1177,11 +1182,18 @@ function installPhotographyStaggeredGrid() {
     const width = window.innerWidth;
     if (Math.abs(width - lastLayoutWidth) < 2) return;
     lastLayoutWidth = width;
+    stableViewportHeight = window.innerHeight;
+    maxMobileProgress = 0;
     syncTiles();
     schedule();
   });
   reducedMotion.addEventListener("change", schedule);
-  mobileGrid.addEventListener("change", () => { syncTiles(); schedule(); });
+  mobileGrid.addEventListener("change", () => {
+    stableViewportHeight = window.innerHeight;
+    maxMobileProgress = 0;
+    syncTiles();
+    schedule();
+  });
 }
 
 installPhotographyStaggeredGrid();
