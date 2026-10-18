@@ -549,3 +549,27 @@
   .double-project-section .ds-stage{scroll-behavior:auto!important}
   .double-project-section .ds-progress i{transition:none!important}
 }
+
+/* This trial is mobile-only. The original desktop project reel is retained. */
+#projects.double-project-section .ds-root{display:none}
+@media(max-width:700px){
+  #projects.double-project-section .project-reel-stage,
+  #projects.double-project-section .project-dual-mobile{display:none!important}
+  #projects.double-project-section .ds-root{display:block!important}
+  #projects.double-project-section.home-section{
+    padding-top:0;
+    padding-bottom:80px;
+  }
+  #projects.double-project-section .ds-stage{
+    height:clamp(540px,76svh,740px);
+    min-height:0;
+  }
+  #projects.double-project-section .ds-layer--fg{
+    width:clamp(170px,48vw,270px);
+    height:min(49%,370px);
+    top:43%;
+  }
+  #projects.double-project-section .ds-title{
+    font-size:clamp(48px,12vw,72px);
+  }
+}
