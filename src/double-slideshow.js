@@ -159,7 +159,7 @@
     // through the projects before the next page section is revealed.
     const indexFromScroll = () => {
       if (!section || !mobileScroll.matches) return;
-      const travel = Math.max(1, section.offsetHeight - window.innerHeight);
+      const travel = Math.max(1, section.offsetHeight - stage.offsetHeight);
       const top = section.getBoundingClientRect().top;
       const progress = Math.max(0, Math.min(1, -top / travel));
       desiredIndex = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
@@ -176,7 +176,7 @@
       if (!section || !mobileScroll.matches) return false;
       const target = Math.max(0, Math.min(slides - 1, index));
       const top = section.getBoundingClientRect().top + window.scrollY;
-      const travel = Math.max(1, section.offsetHeight - window.innerHeight);
+      const travel = Math.max(1, section.offsetHeight - stage.offsetHeight);
       window.scrollTo({
         top: top + travel * (target / (slides - 1)),
         behavior: reduced.matches ? "instant" : "smooth"
