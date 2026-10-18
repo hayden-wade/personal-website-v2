@@ -1068,6 +1068,7 @@ function installPhotographyStaggeredGrid() {
   if (!originals.length) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileGrid = window.matchMedia("(max-width: 700px)");
   let items = [];
   let columns = 0;
   let scheduled = false;
@@ -1126,7 +1127,9 @@ function installPhotographyStaggeredGrid() {
   const update = () => {
     scheduled = false;
 
-    if (reducedMotion.matches) {
+    // Mobile Safari changes the visual viewport while scrolling. Avoid
+    // continuously re-triggering opacity and transform on photo tiles.
+    if (mobileGrid.matches || reducedMotion.matches) {
       reset();
       return;
     }
@@ -1167,11 +1170,18 @@ function installPhotographyStaggeredGrid() {
   syncTiles();
   update();
   window.addEventListener("scroll", schedule, { passive: true });
+  let lastLayoutWidth = window.innerWidth;
   window.addEventListener("resize", () => {
+    // Safari's collapsing URL bar fires resize during vertical scrolling.
+    // Rebuild only if the layout width actually changed.
+    const width = window.innerWidth;
+    if (Math.abs(width - lastLayoutWidth) < 2) return;
+    lastLayoutWidth = width;
     syncTiles();
     schedule();
   });
   reducedMotion.addEventListener("change", schedule);
+  mobileGrid.addEventListener("change", () => { syncTiles(); schedule(); });
 }
 
 installPhotographyStaggeredGrid();
