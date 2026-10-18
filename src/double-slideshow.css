@@ -573,3 +573,65 @@
     font-size:clamp(48px,12vw,72px);
   }
 }
+
+/* Mobile scroll story: the page scrolls normally, while the full-screen
+   slideshow stays pinned for six project-length chapters. No touch trapping. */
+@media(max-width:700px){
+  #projects.double-project-section.home-section{
+    box-sizing:border-box;
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding:0;
+    height:calc(var(--ds-project-count,6) * 100svh);
+    min-height:0;
+    overflow:visible!important;
+    position:relative;
+    isolation:isolate;
+  }
+  #projects.double-project-section .project-reel-intro{display:none!important}
+  #projects.double-project-section .ds-root{
+    display:block!important;
+    box-sizing:border-box;
+    position:sticky;
+    top:0;
+    width:100%;
+    height:100svh;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+  }
+  #projects.double-project-section .ds-stage{
+    box-sizing:border-box;
+    display:block;
+    width:100%;
+    height:100svh;
+    min-height:0;
+    max-height:none;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    touch-action:pan-y;
+  }
+  #projects.double-project-section .ds-after{display:none}
+  #projects.double-project-section .ds-topline{
+    top:max(0px,env(safe-area-inset-top));
+  }
+  #projects.double-project-section .ds-layer--fg{
+    width:clamp(172px,52vw,280px);
+    height:49%;
+    top:43%;
+  }
+  #projects.double-project-section .ds-bottom{
+    padding-bottom:max(52px,calc(env(safe-area-inset-bottom) + 32px));
+  }
+  #projects.double-project-section .ds-progress{
+    bottom:max(20px,calc(env(safe-area-inset-bottom) + 10px));
+  }
+  #projects.double-project-section .ds-swipe-hint{
+    display:none;
+  }
+  #projects.double-project-section .ds-title{
+    font-size:clamp(49px,12vw,75px);
+  }
+}
