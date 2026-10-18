@@ -236,36 +236,73 @@
   #projects .project-dual-slide .project-dual-bottom{opacity:1!important;transform:none!important}
 }
 
-/* Keep the entire project card within the mobile viewport, rather than
-   positioning a 100vw slide inside the narrower padded gallery. */
+/* Fit every card to the carousel's *actual* content box, not 100vw.
+   The previous 100vw calculation was wider than its padded parent on iOS. */
 @media(max-width:700px){
   #projects .project-dual-mobile{
+    display:block;
     box-sizing:border-box;
     width:100%;
     max-width:100%;
+    min-width:0;
     overflow:hidden;
   }
   #projects .project-dual-viewport{
+    display:block;
     box-sizing:border-box;
     width:calc(100% - 40px);
     max-width:calc(100% - 40px);
     margin-inline:20px;
     overflow-x:auto;
+    overflow-y:hidden;
+  }
+  #projects .project-dual-track{
+    display:flex;
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    gap:0;
+    padding:0;
   }
   #projects .project-dual-slide{
+    display:block;
     box-sizing:border-box;
-    flex:0 0 calc(100vw - 40px);
-    width:calc(100vw - 40px);
-    max-width:calc(100vw - 40px);
+    flex:0 0 100%;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+  }
+  #projects .project-dual-scene{
+    box-sizing:border-box;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
   }
   #projects .project-dual-top{
-    padding-inline:clamp(14px,4vw,24px);
+    box-sizing:border-box;
+    padding-inline:18px;
+  }
+  #projects .project-dual-top span:last-child{
+    flex:0 0 auto;
+    text-align:right;
   }
   #projects .project-dual-bottom{
-    padding-inline:clamp(15px,4vw,24px);
+    box-sizing:border-box;
+    padding-inline:18px;
   }
   #projects .project-dual-bottom h3{
-    font-size:clamp(44px,12.4vw,68px);
+    max-width:100%;
+    font-size:clamp(43px,11.5vw,64px);
     overflow-wrap:break-word;
+  }
+  #projects .project-dual-reveal{
+    box-sizing:border-box;
+    max-width:100%;
+  }
+  #projects .project-dual-footer{
+    box-sizing:border-box;
+    width:100%;
+    padding-inline:20px;
   }
 }
