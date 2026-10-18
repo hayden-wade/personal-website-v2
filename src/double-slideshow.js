@@ -158,9 +158,19 @@
     // occupies a viewport of scroll distance, so swiping up/down progresses
     // through the projects before the next page section is revealed.
     const indexFromScroll = () => {
-      if (!section || !mobileScroll.matches) return;
+      if (!section) return;
+      if (!mobileScroll.matches) {
+        section.classList.remove("ds-is-active", "ds-is-past");
+        return;
+      }
       const travel = Math.max(1, section.offsetHeight - stage.offsetHeight);
-      const top = section.getBoundingClientRect().top;
+      const bounds = section.getBoundingClientRect();
+      const top = bounds.top;
+      const viewport = stage.offsetHeight;
+      const inChapter = top <= 0 && bounds.bottom > viewport;
+      const pastChapter = bounds.bottom <= viewport;
+      section.classList.toggle("ds-is-active", inChapter);
+      section.classList.toggle("ds-is-past", pastChapter);
       const progress = Math.max(0, Math.min(1, -top / travel));
       desiredIndex = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
       if (!busy && desiredIndex !== active) go(desiredIndex > active ? 1 : -1);
