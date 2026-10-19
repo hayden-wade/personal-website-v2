@@ -3,7 +3,7 @@
  * GSAP ScrollTrigger owns pinning and the entire animation timeline.
  * No custom fixed-position toggles, wheel traps, or asynchronous slide queue.
  */
-(() => {
+document.addEventListener("DOMContentLoaded", () => {
   const root = document.querySelector("#projects [data-double-slideshow]");
   if (!root || !window.matchMedia("(max-width: 700px)").matches) return;
   if (!window.gsap || !window.ScrollTrigger) {
@@ -113,4 +113,4 @@
   showMetadata(0);
   // Refresh after images/fonts affect layout; avoid doing so on every scroll.
   if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
-})();
+});
