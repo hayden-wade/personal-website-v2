@@ -87,7 +87,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // One viewport of native scroll per project change. ScrollTrigger handles
   // pin spacing and unpins automatically when the last project is reached.
-  const scrollDistance = () => Math.round(stage.getBoundingClientRect().height * (count - 1));
+  const scrollDistance = () => Math.round(stage.offsetHeight * (count - 1));
+  const hasFixedContainingBlock = () => {
+    for (let ancestor = section.parentElement; ancestor && ancestor !== document.body; ancestor = ancestor.parentElement) {
+      const style = getComputedStyle(ancestor);
+      if (style.transform !== "none" || style.perspective !== "none" ||
+          style.filter !== "none" || style.backdropFilter !== "none" ||
+          /transform|perspective|filter/.test(style.willChange || "") ||
+          /paint|layout|strict|content/.test(style.contain || "")) return true;
+    }
+    return false;
+  };
   ScrollTrigger.create({
     id: "mobile-projects-scroll-story",
     // Pin the SECTION, not the nested .ds-root. With pinReparent the
@@ -99,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pinSpacing: true,
     // Only reparent if an ancestor establishes a fixed-position containing block.
     // Reparenting unnecessarily breaks layout and can flash on iOS Safari.
-    pinReparent: false,
+    pinReparent: hasFixedContainingBlock(),
     start: "top top",
     end: () => "+=" + scrollDistance(),
     scrub: reduceMotion ? true : .25,
