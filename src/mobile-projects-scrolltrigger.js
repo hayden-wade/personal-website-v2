@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const gsap = window.gsap;
   const ScrollTrigger = window.ScrollTrigger;
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   const section = root.closest("#projects");
   const stage = root.querySelector("[data-ds-stage]");
@@ -96,7 +97,9 @@ document.addEventListener("DOMContentLoaded", () => {
     trigger: section,
     pin: section,
     pinSpacing: true,
-    pinReparent: true,
+    // Only reparent if an ancestor establishes a fixed-position containing block.
+    // Reparenting unnecessarily breaks layout and can flash on iOS Safari.
+    pinReparent: false,
     start: "top top",
     end: () => "+=" + scrollDistance(),
     scrub: reduceMotion ? true : .25,
@@ -120,8 +123,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Other page sections create pins earlier in the document. Sort by actual
   // scroll position so their pin spacing is incorporated before this section.
   ScrollTrigger.sort();
-  if (document.fonts?.ready) document.fonts.ready.then(() => {
-    ScrollTrigger.sort();
-    ScrollTrigger.refresh(true);
-  });
+  const refresh = () => { ScrollTrigger.sort(); ScrollTrigger.refresh(true); };
+  if (document.fonts?.ready) document.fonts.ready.then(refresh);
+  window.addEventListener("load", refresh, { once: true });
+  window.addEventListener("pageshow", (event) => { if (event.persisted) refresh(); });
 });
