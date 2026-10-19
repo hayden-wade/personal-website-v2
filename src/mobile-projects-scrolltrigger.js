@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     pin: section,
     pinSpacing: true,
     pinReparent: true,
-    refreshPriority: 10,
     start: "top top",
     end: () => "+=" + scrollDistance(),
     scrub: reduceMotion ? true : .25,
@@ -118,5 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showMetadata(0);
   // Refresh after images/fonts affect layout; avoid doing so on every scroll.
-  if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh(true));
+  // Other page sections create pins earlier in the document. Sort by actual
+  // scroll position so their pin spacing is incorporated before this section.
+  ScrollTrigger.sort();
+  if (document.fonts?.ready) document.fonts.ready.then(() => {
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh(true);
+  });
 });
