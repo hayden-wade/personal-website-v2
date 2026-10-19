@@ -1,5 +1,7 @@
 /* Dual image layers move vertically in opposite directions, inspired by Codrops DoubleSlideshow (MIT). */
 (function installDoubleSlideshow(){
+  // Mobile is owned exclusively by GSAP ScrollTrigger (no competing listeners).
+  if (window.matchMedia("(max-width: 700px)").matches) return;
   const sliders = document.querySelectorAll("[data-double-slideshow]");
   if (!sliders.length) return;
 
