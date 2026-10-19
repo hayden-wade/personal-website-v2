@@ -15,12 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const ScrollTrigger = window.ScrollTrigger;
   gsap.registerPlugin(ScrollTrigger);
 
+  const section = root.closest("#projects");
   const stage = root.querySelector("[data-ds-stage]");
   const backgrounds = gsap.utils.toArray(root.querySelectorAll(".ds-layer--bg .ds-frame"));
   const foregrounds = gsap.utils.toArray(root.querySelectorAll(".ds-layer--fg .ds-frame"));
   const titles = gsap.utils.toArray(root.querySelectorAll("[data-ds-title]"));
   const count = backgrounds.length;
-  if (!stage || count < 2 || foregrounds.length !== count || titles.length !== count) return;
+  if (!section || !stage || count < 2 || foregrounds.length !== count || titles.length !== count) return;
 
   const counter = root.querySelector("[data-ds-counter]");
   const category = root.querySelector("[data-ds-category]");
@@ -88,13 +89,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const scrollDistance = () => Math.round(stage.getBoundingClientRect().height * (count - 1));
   ScrollTrigger.create({
     id: "mobile-projects-scroll-story",
-    trigger: root,
-    pin: root,
+    // Pin the SECTION, not the nested .ds-root. With pinReparent the
+    // section retains its #projects descendant selectors while moved to body.
+    // Pinning .ds-root caused those selectors to stop matching on Safari,
+    // making the slideshow disappear immediately after pin activation.
+    trigger: section,
+    pin: section,
     pinSpacing: true,
     pinReparent: true,
+    refreshPriority: 10,
     start: "top top",
     end: () => "+=" + scrollDistance(),
-    scrub: reduceMotion ? true : .45,
+    scrub: reduceMotion ? true : .25,
     invalidateOnRefresh: true,
     animation: timeline,
     anticipatePin: 1,
@@ -112,5 +118,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showMetadata(0);
   // Refresh after images/fonts affect layout; avoid doing so on every scroll.
-  if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
+  if (document.fonts?.ready) document.fonts.ready.then(() => ScrollTrigger.refresh(true));
 });
