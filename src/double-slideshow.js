@@ -26,7 +26,6 @@
     let startedAt = null;
     let mouseStart = null;
     let lastWheel = 0;
-    const mobileScroll = window.matchMedia("(max-width: 700px)");
     const section = root.closest("#projects");
     if (section) section.style.setProperty("--ds-project-count", String(slides));
     let scrollFrame = 0;
@@ -171,9 +170,8 @@
         });
     };
 
-    // Native page scrolling drives the pinned mobile slideshow. Each project
-    // occupies a viewport of scroll distance, so swiping up/down progresses
-    // through the projects before the next page section is revealed.
+    // Native vertical page scrolling drives both desktop and mobile chapters.
+    // Each project occupies one viewport of scroll travel; no wheel hijacking.
     const measureChapter = () => {
       if (!section) return;
       // offsetTop can be relative to a transformed ancestor. Capture the
@@ -186,10 +184,6 @@
     };
     const indexFromScroll = () => {
       if (!section) return;
-      if (!mobileScroll.matches) {
-        section.classList.remove("ds-is-active", "ds-is-past");
-        return;
-      }
       // Document scroll position is monotonic even while the fixed stage
       // animates and Safari expands/collapses its address bar.
       const position = window.scrollY - chapterTop;
@@ -212,7 +206,7 @@
       });
     };
     const scrollToIndex = (index) => {
-      if (!section || !mobileScroll.matches) return false;
+      if (!section) return false;
       const target = Math.max(0, Math.min(slides - 1, index));
       const top = chapterTop;
       const travel = chapterTravel;
@@ -231,14 +225,13 @@
       measureChapter();
       scheduleScroll();
     });
-    mobileScroll.addEventListener("change", () => { measureChapter(); scheduleScroll(); });
     // Encode metadata in the background frames; keeps authoring to one project list.
     // Any route with no dedicated page points to the general projects archive.
     previous.addEventListener("click", () => { if (!scrollToIndex(active - 1)) go(-1); });
     next.addEventListener("click", () => { if (!scrollToIndex(active + 1)) go(1); });
     stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") { event.preventDefault(); if (!scrollToIndex(active + 1)) go(1); }
-      else if (event.key === "ArrowLeft") { event.preventDefault(); if (!scrollToIndex(active - 1)) go(-1); }
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); if (!scrollToIndex(active + 1)) go(1); }
+      else if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); if (!scrollToIndex(active - 1)) go(-1); }
     });
     stage.addEventListener("touchstart", (event) => {
       if (event.touches.length !== 1 || event.target.closest("button,a")) {
