@@ -708,3 +708,99 @@
     padding:0 18px!important;
   }
 }
+
+
+/*
+ * Desktop double-slideshow experiment — 2026-10-20.
+ * Native vertical page scroll controls six full-viewport chapters, matching
+ * the mobile project story. The original horizontal desktop gallery is
+ * preserved on checkpoint/desktop-projects-horizontal-20261020.
+ */
+@media (min-width: 701px) {
+  #projects.double-project-section.home-section {
+    box-sizing: border-box;
+    position: relative;
+    isolation: isolate;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: 0 !important;
+    height: calc(var(--ds-project-count, 6) * 100vh) !important;
+    min-height: 0;
+    padding: 0 !important;
+    overflow: visible !important;
+    transform: none !important;
+    contain: none !important;
+  }
+
+  /* No competing hidden GSAP-pinned reel, headings or extra scroll spacer. */
+  #projects.double-project-section::before,
+  #projects.double-project-section .project-reel-intro,
+  #projects.double-project-section .project-reel-stage,
+  #projects.double-project-section .project-dual-mobile {
+    display: none !important;
+  }
+
+  #projects.double-project-section .ds-root {
+    display: block !important;
+    box-sizing: border-box;
+    position: absolute !important;
+    inset: 0 auto auto 0;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    padding: 0;
+    margin: 0 !important;
+    border: 0;
+    overflow: hidden;
+    z-index: 50;
+    transform: none !important;
+  }
+
+  #projects.double-project-section.ds-is-active .ds-root {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+  }
+
+  #projects.double-project-section.ds-is-past .ds-root {
+    position: absolute !important;
+    inset: auto auto 0 0 !important;
+  }
+
+  #projects.double-project-section .ds-stage {
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0;
+    touch-action: pan-y;
+  }
+
+  #projects.double-project-section .ds-after {
+    display: none;
+  }
+
+  #projects.double-project-section .ds-swipe-hint {
+    display: block;
+  }
+
+  html:has(#projects.ds-is-active) .site-header {
+    visibility: hidden !important;
+  }
+}
+
+/* Mid-size laptops retain the dual-layer composition without cramped text. */
+@media (min-width: 701px) and (max-width: 1050px) {
+  #projects.double-project-section .ds-layer--fg {
+    top: 45%;
+    width: clamp(190px, 30vw, 325px);
+    height: 55%;
+  }
+  #projects.double-project-section .ds-title {
+    font-size: clamp(67px, 10vw, 115px);
+  }
+  #projects.double-project-section .ds-bottom {
+    padding-bottom: 47px;
+  }
+}
