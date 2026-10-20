@@ -148,14 +148,19 @@
 
       currentTitle.classList.add("is-leaving");
       upcomingTitle.classList.add("is-entering");
+      // Text changes happen in sequence, not simultaneously: the outgoing
+      // project name clears before the incoming name becomes readable.
+      // This prevents illegible overlapping serif headings mid-transition.
       jobs.push(currentTitle.animate([
-        { opacity:1,transform:"translate3d(0,0,0) rotate(0deg)" },
-        { opacity:0,transform:`translate3d(0,${-direction * 52}px,0) rotate(${-direction * 5}deg)` }
-      ], {duration:duration * .88,easing:ease,fill:"both"}));
+        { opacity:1, transform:"translate3d(0,0,0) rotate(0deg)", offset:0 },
+        { opacity:0, transform:`translate3d(0,${-direction * 25}px,0) rotate(${-direction * 2}deg)`, offset:.45 },
+        { opacity:0, transform:`translate3d(0,${-direction * 52}px,0) rotate(${-direction * 5}deg)`, offset:1 }
+      ], {duration,easing:ease,fill:"both"}));
       jobs.push(upcomingTitle.animate([
-        { opacity:0,transform:`translate3d(0,${direction * 64}px,0) rotate(${direction * 5}deg)` },
-        { opacity:1,transform:"translate3d(0,0,0) rotate(0deg)" }
-      ], {duration:duration,easing:ease,fill:"both"}));
+        { opacity:0, transform:`translate3d(0,${direction * 64}px,0) rotate(${direction * 5}deg)`, offset:0 },
+        { opacity:0, transform:`translate3d(0,${direction * 25}px,0) rotate(${direction * 2}deg)`, offset:.45 },
+        { opacity:1, transform:"translate3d(0,0,0) rotate(0deg)", offset:1 }
+      ], {duration,easing:ease,fill:"both"}));
 
       runningAnimations = jobs;
       Promise.allSettled(jobs.map((job) => job.finished))
