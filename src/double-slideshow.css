@@ -790,6 +790,15 @@
   }
 }
 
+/* Keep only the visible pair promoted to the compositor. Rendering all
+   twelve hidden image frames as transform layers consumes unnecessary VRAM. */
+@media (min-width: 701px) {
+  #projects .ds-frame:not(.is-current):not(.is-entering):not(.is-leaving),
+  #projects .ds-frame:not(.is-current):not(.is-entering):not(.is-leaving) .ds-frame-inner {
+    will-change: auto;
+  }
+}
+
 /* Mid-size laptops retain the dual-layer composition without cramped text. */
 @media (min-width: 701px) and (max-width: 1050px) {
   #projects.double-project-section .ds-layer--fg {
