@@ -223,6 +223,10 @@
       }
 
       desktopProgrammaticScroll = true;
+      // Pin synchronously, before moving the document scroll position.
+      // Waiting for the next scroll/rAF event can flash the previous section.
+      section.classList.add("ds-is-active");
+      section.classList.remove("ds-is-past");
       go(Math.sign(direction), target);
       window.scrollTo({top: desktopPosition(target), behavior:"instant"});
       // Let the scroll event update the pin class, but not the slide state:
