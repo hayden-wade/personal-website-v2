@@ -155,7 +155,7 @@
       jobs.push(upcomingTitle.animate([
         { opacity:0,transform:`translate3d(0,${direction * 64}px,0) rotate(${direction * 5}deg)` },
         { opacity:1,transform:"translate3d(0,0,0) rotate(0deg)" }
-      ], {duration:duration,easing,fill:"both"}));
+      ], {duration:duration,easing:ease,fill:"both"}));
 
       runningAnimations = jobs;
       Promise.allSettled(jobs.map((job) => job.finished))
