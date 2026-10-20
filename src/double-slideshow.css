@@ -741,11 +741,19 @@
     display: none !important;
   }
 
-  #projects.double-project-section .ds-root {
+  /*
+   * Pin the stage in ordinary document flow. Switching it between fixed
+   * and absolute caused the slideshow to jump into/out of Photography,
+   * especially with rapid trackpad input.
+   */
+  #projects.double-project-section .ds-root,
+  #projects.double-project-section.ds-is-active .ds-root,
+  #projects.double-project-section.ds-is-past .ds-root {
     display: block !important;
     box-sizing: border-box;
-    position: absolute !important;
-    inset: 0 auto auto 0;
+    position: sticky !important;
+    inset: auto !important;
+    top: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
     height: 100vh !important;
@@ -755,17 +763,6 @@
     overflow: hidden;
     z-index: 50;
     transform: none !important;
-  }
-
-  #projects.double-project-section.ds-is-active .ds-root {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 99999 !important;
-  }
-
-  #projects.double-project-section.ds-is-past .ds-root {
-    position: absolute !important;
-    inset: auto auto 0 0 !important;
   }
 
   #projects.double-project-section .ds-stage {
@@ -785,9 +782,7 @@
     display: block;
   }
 
-  html:has(#projects.ds-is-active) .site-header {
-    visibility: hidden !important;
-  }
+  /* Keep header state stable as the sticky Projects stage enters or exits. */
 }
 
 /* Keep only the visible pair promoted to the compositor. Rendering all
