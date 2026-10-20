@@ -120,6 +120,10 @@
       // Scroll position is the source of truth. A fast swipe can jump several
       // chapters; cancel the old transition and animate directly to the new one.
       if (busy) {
+        // Codrops' original slideshow locks navigation until the current
+        // transition completes. Desktop must never cancel an in-flight scene.
+        if (desktopScroll.matches) return false;
+        // Preserve mobile's existing fast-scroll recovery behaviour.
         animationToken++;
         runningAnimations.forEach((job) => job.cancel());
         runningAnimations = [];
@@ -183,74 +187,84 @@
       if (wasFixed) section.classList.add("ds-is-active");
     };
     const desktopScroll = window.matchMedia("(min-width: 701px)");
-    let desktopShown = -1;
+    let desktopProgrammaticScroll = false;
+    let desktopWheelAccum = 0;
+    let desktopLastWheel = -Infinity;
+    let desktopGestureConsumed = false;
+    let desktopLastNavigation = -Infinity;
+    const desktopWheelThreshold = 28;
+    const desktopGestureIdle = 230;
 
-    // Desktop: one deterministic scene controlled by page scroll progress.
-    // Never restart/cancel overlapping Web Animations while the scroll wheel
-    // crosses slide boundaries; that caused the visible snapping and flicker.
-    // Mobile retains its existing discrete transitions and viewport handling.
-    const renderDesktop = (progress) => {
-      const page = Math.max(0, Math.min(slides - 1, progress * (slides - 1)));
-      const from = Math.min(slides - 2, Math.floor(page));
-      const fraction = Math.max(0, Math.min(1, page - from));
-      const linear = Math.max(0, Math.min(1, (fraction - .18) / .64));
-      const eased = reduced.matches ? (fraction >= .5 ? 1 : 0)
-        : linear * linear * (3 - 2 * linear);
-      const to = from + 1;
-      const moving = eased > 0 && eased < 1;
+    // Match the original Codrops DoubleSlideshow: one input causes one
+    // full-duration, eased slide animation. Never seek the animation by
+    // scroll progress (which leaves scenes halfway between projects).
+    // Unlike the fullscreen Codrops demo, this page has sections before and
+    // after the slideshow, so the first/last inputs release page scrolling.
+    const desktopStep = () => chapterTravel / slides;
+    const desktopPosition = (index) => chapterTop + desktopStep() * index;
 
-      const paintLayer = (frames, reverse) => {
-        frames.forEach((frame, index) => {
-          const leaving = moving && index === from;
-          const entering = moving && index === to;
-          const current = !moving && index === (eased === 1 ? to : from);
-          const shown = leaving || entering || current;
-          frame.classList.toggle("is-current", current);
-          frame.classList.toggle("is-leaving", leaving);
-          frame.classList.toggle("is-entering", entering);
-          if (!shown) {
-            frame.style.removeProperty("transform");
-            frame.querySelector(".ds-frame-inner")?.style.removeProperty("transform");
-            return;
-          }
+    const navigateDesktop = (direction) => {
+      if (!section || !desktopScroll.matches || busy || !direction) return false;
+      const target = active + Math.sign(direction);
+      desktopLastNavigation = performance.now();
 
-          const y = moving
-            ? (index === from ? (reverse ? 100 : -100) * eased
-              : (reverse ? -100 : 100) * (1 - eased))
-            : 0;
-          // Small inner counter-motion, not a second asynchronous animation.
-          const depth = moving
-            ? (index === from ? eased : 1 - eased)
-            : 0;
-          const parallax = (reverse ? -8 : 8) * (index === from ? depth : -depth);
-          frame.style.transform = `translate3d(0,${y.toFixed(3)}%,0)`;
-          const inner = frame.querySelector(".ds-frame-inner");
-          if (inner) inner.style.transform =
-            `translate3d(0,${parallax.toFixed(3)}%,0) scale(${(1 + depth * .075).toFixed(4)})`;
+      if (target < 0) {
+        // Back to the previous page section on the next upward gesture.
+        window.scrollTo({
+          top: Math.max(0, chapterTop - Math.max(120, window.innerHeight * .65)),
+          behavior: "instant"
         });
-      };
-
-      paintLayer(backgrounds, false);
-      paintLayer(foregrounds, true);
-      titles.forEach((title, index) => {
-        const visible = index === from || index === to;
-        const opacity = index === from ? 1 - eased : index === to ? eased : 0;
-        title.classList.toggle("is-current", visible && opacity > 0);
-        title.classList.remove("is-entering", "is-leaving");
-        title.style.opacity = visible ? String(opacity) : "";
-        title.style.transform = visible
-          ? `translate3d(0,${(index === from ? -46 * eased : 46 * (1 - eased)).toFixed(2)}px,0)`
-          : "";
-      });
-
-      const shownIndex = eased < .5 ? from : to;
-      if (shownIndex !== desktopShown) {
-        desktopShown = shownIndex;
-        active = shownIndex;
-        updateDetails(shownIndex);
-        preload(shownIndex + 1);
+        return true;
       }
+      if (target >= slides) {
+        // Release to Photography instead of wrapping to project number one.
+        window.scrollTo({top: chapterTop + chapterTravel + 2, behavior:"instant"});
+        return true;
+      }
+
+      desktopProgrammaticScroll = true;
+      go(Math.sign(direction), target);
+      window.scrollTo({top: desktopPosition(target), behavior:"instant"});
+      // Let the scroll event update the pin class, but not the slide state:
+      // 'go' commits the scene only when every layer finishes animating.
+      requestAnimationFrame(() => {
+        desktopProgrammaticScroll = false;
+      });
+      return true;
     };
+
+    const onDesktopWheel = (event) => {
+      if (!desktopScroll.matches || !section || event.ctrlKey) return;
+      const localY = window.scrollY - chapterTop;
+      if (localY < -2 || localY >= chapterTravel - 1) return;
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1;
+      const dx = event.deltaX * unit;
+      const dy = event.deltaY * unit;
+      // Vertical wheel and trackpad gestures are equivalent, but don't
+      // respond to browser pinch-zoom gestures (Ctrl+wheel).
+      const delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+      if (!Number.isFinite(delta) || delta === 0) return;
+      event.preventDefault();
+
+      const now = performance.now();
+      if (now - desktopLastWheel > desktopGestureIdle) {
+        desktopWheelAccum = 0;
+        desktopGestureConsumed = false;
+      }
+      desktopLastWheel = now;
+      if (busy || desktopGestureConsumed || now - desktopLastNavigation < duration + 150) return;
+      desktopWheelAccum += delta;
+      if (Math.abs(desktopWheelAccum) < desktopWheelThreshold) return;
+      desktopGestureConsumed = true;
+      const direction = Math.sign(desktopWheelAccum);
+      desktopWheelAccum = 0;
+      navigateDesktop(direction);
+    };
+
+    // Passive scroll listeners cannot reliably prevent the natural scroll.
+    // This non-passive, section-gated listener absorbs wheel inertia ONLY
+    // inside the slideshow; elsewhere the page keeps normal scrolling.
+    window.addEventListener("wheel", onDesktopWheel, {passive:false});
 
     const indexFromScroll = () => {
       if (!section) return;
@@ -261,7 +275,13 @@
       const progress = Math.max(0, Math.min(1, position / chapterTravel));
 
       if (desktopScroll.matches) {
-        renderDesktop(progress);
+        // Scrollbar dragging, browser restoration and in-page links should
+        // always show a *complete* scene, never a half-transition.
+        if (!busy && !desktopProgrammaticScroll) {
+          const nearest = Math.min(slides - 1,
+            Math.max(0, Math.round(position / desktopStep())));
+          if (nearest !== active) clearAll(nearest);
+        }
         return;
       }
 
@@ -281,6 +301,7 @@
     };
     const scrollToIndex = (index) => {
       if (!section) return false;
+      if (desktopScroll.matches) return navigateDesktop(index - active);
       const target = Math.max(0, Math.min(slides - 1, index));
       const top = chapterTop;
       const travel = chapterTravel;
@@ -305,17 +326,20 @@
       runningAnimations.forEach((job) => job.cancel());
       runningAnimations = [];
       clearAll(active);
-      desktopShown = -1;
+      desktopProgrammaticScroll = false;
+      desktopGestureConsumed = false;
+      desktopWheelAccum = 0;
+      desktopLastNavigation = -Infinity;
       measureChapter();
       scheduleScroll();
     });
     // Encode metadata in the background frames; keeps authoring to one project list.
     // Any route with no dedicated page points to the general projects archive.
-    previous.addEventListener("click", () => { if (!scrollToIndex(active - 1)) go(-1); });
-    next.addEventListener("click", () => { if (!scrollToIndex(active + 1)) go(1); });
+    previous.addEventListener("click", () => { if (!scrollToIndex(active - 1) && !desktopScroll.matches) go(-1); });
+    next.addEventListener("click", () => { if (!scrollToIndex(active + 1) && !desktopScroll.matches) go(1); });
     stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); if (!scrollToIndex(active + 1)) go(1); }
-      else if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); if (!scrollToIndex(active - 1)) go(-1); }
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") { event.preventDefault(); if (!scrollToIndex(active + 1) && !desktopScroll.matches) go(1); }
+      else if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); if (!scrollToIndex(active - 1) && !desktopScroll.matches) go(-1); }
     });
     stage.addEventListener("touchstart", (event) => {
       if (event.touches.length !== 1 || event.target.closest("button,a")) {
@@ -331,7 +355,7 @@
       startedAt = null;
       if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
         const delta = dx < 0 ? 1 : -1;
-        if (!scrollToIndex(active + delta)) go(delta);
+        if (!scrollToIndex(active + delta) && !desktopScroll.matches) go(delta);
       }
     }, { passive:true });
     stage.addEventListener("touchcancel", () => { startedAt = null; }, { passive:true });
@@ -347,19 +371,22 @@
       mouseStart = null;
       if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.35) {
         const delta = dx < 0 ? 1 : -1;
-        if (!scrollToIndex(active + delta)) go(delta);
+        if (!scrollToIndex(active + delta) && !desktopScroll.matches) go(delta);
       }
     });
     stage.addEventListener("pointercancel", () => { mouseStart = null; });
     stage.addEventListener("wheel", (event) => {
-      // Only horizontal trackpad motion changes slides; vertical wheel scrolls the page.
+      // Desktop uses the section-gated global wheel input; prevent
+      // duplicate navigation from the stage's horizontal handler.
+      if (desktopScroll.matches) return;
+      // Only horizontal trackpad motion changes slides on mobile; vertical wheel scrolls the page.
       if (Math.abs(event.deltaX) < 28 || Math.abs(event.deltaX) < Math.abs(event.deltaY) * 1.4) return;
       event.preventDefault();
       const now = performance.now();
       if (now - lastWheel < 1200) return;
       lastWheel = now;
       const delta = event.deltaX > 0 ? 1 : -1;
-      if (!scrollToIndex(active + delta)) go(delta);
+      if (!scrollToIndex(active + delta) && !desktopScroll.matches) go(delta);
     }, { passive:false });
 
     preload(0);
