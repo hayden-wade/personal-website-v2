@@ -222,8 +222,13 @@
         return true;
       }
       if (target >= slides) {
-        // Release to Photography instead of wrapping to project number one.
-        window.scrollTo({top: chapterTop + chapterTravel + 2, behavior:"instant"});
+        // Let the last project finish, then move the whole pinned frame off
+        // screen into Photography instead of jumping to a single pixel beyond
+        // the scroll lock and requiring extra wheel gestures.
+        window.scrollTo({
+          top: chapterTop + chapterTravel + stage.offsetHeight,
+          behavior: reduced.matches ? "instant" : "smooth"
+        });
         return true;
       }
 
