@@ -615,6 +615,9 @@ tabs.forEach((tab, i) => {
 });
 
 function installProjectReel() {
+  // The trial replaces the desktop horizontal reel with the pinned dual-image
+  // scroll story. Never create the old GSAP pin on its hidden DOM.
+  if (document.querySelector("#projects [data-double-slideshow]")) return;
   const stage = document.querySelector("[data-project-reel]");
   const viewport = stage?.querySelector(".project-reel-viewport");
   const track = stage?.querySelector("[data-project-reel-track]");
