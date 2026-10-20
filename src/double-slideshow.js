@@ -182,16 +182,90 @@
       chapterTravel = Math.max(1, section.offsetHeight - stage.offsetHeight);
       if (wasFixed) section.classList.add("ds-is-active");
     };
+    const desktopScroll = window.matchMedia("(min-width: 701px)");
+    let desktopShown = -1;
+
+    // Desktop: one deterministic scene controlled by page scroll progress.
+    // Never restart/cancel overlapping Web Animations while the scroll wheel
+    // crosses slide boundaries; that caused the visible snapping and flicker.
+    // Mobile retains its existing discrete transitions and viewport handling.
+    const renderDesktop = (progress) => {
+      const page = Math.max(0, Math.min(slides - 1, progress * (slides - 1)));
+      const from = Math.min(slides - 2, Math.floor(page));
+      const fraction = Math.max(0, Math.min(1, page - from));
+      const linear = Math.max(0, Math.min(1, (fraction - .18) / .64));
+      const eased = reduced.matches ? (fraction >= .5 ? 1 : 0)
+        : linear * linear * (3 - 2 * linear);
+      const to = from + 1;
+      const moving = eased > 0 && eased < 1;
+
+      const paintLayer = (frames, reverse) => {
+        frames.forEach((frame, index) => {
+          const leaving = moving && index === from;
+          const entering = moving && index === to;
+          const current = !moving && index === (eased === 1 ? to : from);
+          const shown = leaving || entering || current;
+          frame.classList.toggle("is-current", current);
+          frame.classList.toggle("is-leaving", leaving);
+          frame.classList.toggle("is-entering", entering);
+          if (!shown) {
+            frame.style.removeProperty("transform");
+            frame.querySelector(".ds-frame-inner")?.style.removeProperty("transform");
+            return;
+          }
+
+          const y = moving
+            ? (index === from ? (reverse ? 100 : -100) * eased
+              : (reverse ? -100 : 100) * (1 - eased))
+            : 0;
+          // Small inner counter-motion, not a second asynchronous animation.
+          const depth = moving
+            ? (index === from ? eased : 1 - eased)
+            : 0;
+          const parallax = (reverse ? -8 : 8) * (index === from ? depth : -depth);
+          frame.style.transform = `translate3d(0,${y.toFixed(3)}%,0)`;
+          const inner = frame.querySelector(".ds-frame-inner");
+          if (inner) inner.style.transform =
+            `translate3d(0,${parallax.toFixed(3)}%,0) scale(${(1 + depth * .075).toFixed(4)})`;
+        });
+      };
+
+      paintLayer(backgrounds, false);
+      paintLayer(foregrounds, true);
+      titles.forEach((title, index) => {
+        const visible = index === from || index === to;
+        const opacity = index === from ? 1 - eased : index === to ? eased : 0;
+        title.classList.toggle("is-current", visible && opacity > 0);
+        title.classList.remove("is-entering", "is-leaving");
+        title.style.opacity = visible ? String(opacity) : "";
+        title.style.transform = visible
+          ? `translate3d(0,${(index === from ? -46 * eased : 46 * (1 - eased)).toFixed(2)}px,0)`
+          : "";
+      });
+
+      const shownIndex = eased < .5 ? from : to;
+      if (shownIndex !== desktopShown) {
+        desktopShown = shownIndex;
+        active = shownIndex;
+        updateDetails(shownIndex);
+        preload(shownIndex + 1);
+      }
+    };
+
     const indexFromScroll = () => {
       if (!section) return;
-      // Document scroll position is monotonic even while the fixed stage
-      // animates and Safari expands/collapses its address bar.
       const position = window.scrollY - chapterTop;
-      const viewport = stage.offsetHeight;
       const activeChapter = position >= 0 && position < chapterTravel;
       section.classList.toggle("ds-is-active", activeChapter);
       section.classList.toggle("ds-is-past", position >= chapterTravel);
       const progress = Math.max(0, Math.min(1, position / chapterTravel));
+
+      if (desktopScroll.matches) {
+        renderDesktop(progress);
+        return;
+      }
+
+      // Mobile keeps its scroll-triggered discrete slide choreography.
       const index = Math.min(slides - 1, Math.max(0, Math.round(progress * (slides - 1))));
       if (index !== desiredIndex) {
         desiredIndex = index;
@@ -222,6 +296,16 @@
       // Ignore Safari browser chrome changing the viewport height mid-scroll.
       if (Math.abs(window.innerWidth - lastWidth) < 2) return;
       lastWidth = window.innerWidth;
+      measureChapter();
+      scheduleScroll();
+    });
+    desktopScroll.addEventListener("change", () => {
+      // Clear inline desktop scrub styles before restoring mobile animation.
+      animationToken++;
+      runningAnimations.forEach((job) => job.cancel());
+      runningAnimations = [];
+      clearAll(active);
+      desktopShown = -1;
       measureChapter();
       scheduleScroll();
     });
